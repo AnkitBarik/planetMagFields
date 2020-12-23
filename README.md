@@ -6,17 +6,20 @@ Requires [cartopy](https://scitools.org.uk/cartopy/docs/latest/).
 #### For a single planet
 
 ```
-$ ./magField <planet name>
-```
-The planet name is case insensitive. For example:
-```
-$ ./magField earth
+$ ./magField <planet name> <radius>
 ```
 
+The planet name is case insensitive. The radius of the surface is 1 and is the default.
+Examples:
+
+```
+$ ./magField earth
+$ ./magField jupiter 0.75
+```
 #### All planets
 
 ```
-$ ./magField all
+$ ./magField all <radius>
 ```
 
 would produce a plot of all magnetic field maps of different planets in a single figure
