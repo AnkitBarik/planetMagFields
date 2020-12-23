@@ -20,3 +20,7 @@ $ ./magField all
 
 would produce a plot of all magnetic field maps of different planets in a single figure
 along with a table of information about dipole tilt for each.
+
+## References
+
+Will add soon
