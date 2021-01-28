@@ -1,6 +1,7 @@
 # planetMagFields
 
 Routines to plot magnetic fields of planets in our solar system
+
 Requires [cartopy](https://scitools.org.uk/cartopy/docs/latest/).
 
 ## Usage:
@@ -57,9 +58,15 @@ along with a table of information about dipole tilt for each.
 # Data sources
 
 Mercury : [Anderson et. al. 2012](https://doi.org/10.1029/2012JE004159)
+
 Earth   : [IGRF 13](https://www.ngdc.noaa.gov/IAGA/vmod/igrf.html)
+
 Jupiter : [JRM09, Connerny et. al. 2018](https://doi.org/10.1002/2018GL077312)
+
 Saturn  : [Cassini 11+, Cao et. al. 2020](https://doi.org/10.1016/j.icarus.2019.113541)
+
 Uranus  : [Connerny et. al. 1987](https://doi.org/10.1029/JA092iA13p15329)
+
 Neptune : [Connerny et. al. 1991](https://doi.org/10.1029/91JA01165)
+
 Ganymede: [Kivelson et. al. 2002](https://doi.org/10.1006/icar.2002.6834)
