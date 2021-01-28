@@ -1,15 +1,21 @@
 # planetMagFields
+
 Routines to plot magnetic fields of planets in our solar system
+Requires [cartopy](https://scitools.org.uk/cartopy/docs/latest/).
 
 ## Usage:
 
-`$ ./magField <planet> <radius>`
+```
+$ ./magField <planet> <radius>`
+```
 
 This will plot the radial magnetic field of a planet (any of the names from the list
 below, case insensitive) at a radius given in terms of the surface radius. The default
 is the surface field. For example,
 
-`$ ./magField earth`
+```
+$ ./magField earth
+```
 
 displays some information about Earth's field and produces the surface field of Earth 
 
@@ -26,7 +32,9 @@ Dipole tilt (degrees) = -9.410531
 
 while
 
-`$ ./magField earth 0.55`
+```
+$ ./magField earth 0.55
+```
 
 produces the field at the core-mantle boundary (CMB)
 
@@ -38,6 +46,13 @@ Dipole tilt (degrees) = -9.410531
 ```
 
 ![Earth's CMB field](/images/br_earth_cmb.png)
+
+```
+$ ./magField all <radius>
+```
+
+would produce a plot of all magnetic field maps of different planets in a single figure
+along with a table of information about dipole tilt for each.
 
 # Data sources
 

@@ -5,7 +5,7 @@ import numpy as np
 import scipy.special as sp
 
 def get_data(datDir,planet="earth"):
-    
+
     datfile = datDir + planet + '.dat'
 
     if planet == "earth":
@@ -32,7 +32,7 @@ def get_data(datDir,planet="earth"):
         g   = dat.flatten()
         lmax = len(g) - 1
         h = np.zeros_like(g)
-    
+
     elif planet == "jupiter":
         dat = np.loadtxt(datfile)
         l_dat = dat[:,-2]
@@ -51,7 +51,7 @@ def get_data(datDir,planet="earth"):
             mask = l_dat == i
             n = len(l_dat[mask])
             half = int(n/2)
-            
+
             g.append(ghlm[mask][:half+1])
             h.append(np.concatenate([[0.],ghlm[mask][half+1:]]))
 
@@ -78,7 +78,7 @@ def get_data(datDir,planet="earth"):
     return g,h,lmax
 
 def get_grid(nphi=256,ntheta=128):
-    
+
     phi    = np.linspace(0.,2*np.pi,nphi)
     x,w    = sp.roots_legendre(ntheta)
     theta  = np.sort(np.arccos(x))
@@ -129,7 +129,7 @@ def gen_arr(lmax, l1,m1,mode='g'):
             idx[l,m] = count
             lArr.append(l)
             mArr.append(m)
-            
+
             count += 1
 
     glm  = np.array(glm)
@@ -158,7 +158,7 @@ def gen_idx(lmax):
     return np.int32(idx)
 
 def getB(lmax,glm,hlm,idx,r,p2D,th2D,planet="earth"):
-    
+
     Br = np.zeros_like(p2D)
 
     for l in range(1,lmax+1):
@@ -169,9 +169,9 @@ def getB(lmax,glm,hlm,idx,r,p2D,th2D,planet="earth"):
             else:
                 fac_m = (-1)**m
             fac = fac_m * (l+1) * r**(-l-2) * np.sqrt((4.*np.pi)/(2*l+1))
-            
+
             G = glm[idx[l,m]] * np.real(ylm)
-            H = hlm[idx[l,m]] * np.imag(ylm) 
+            H = hlm[idx[l,m]] * np.imag(ylm)
 
             Br +=   np.real(fac * (G + H))
 
@@ -191,7 +191,7 @@ def getBm0(lmax,g,p2D,th2D):
     return Br
 
 def sphInt(f,g,phi,th2D,theta):
-    
+
     thetaInt = np.trapz(f * g * np.sin(th2D),theta,axis=1)
     phiInt = np.trapz(thetaInt,phi)
 
@@ -205,30 +205,30 @@ def getGauss(lmax,Br,r,phi,theta,th2D,p2D):
     '''
     glm = []
     hlm = []
-    
+
     comp = complex(0,1)
 
     for l in range(0,lmax+1):
         for m in range(0,l+1):
-           
+
             ylm = (-1)**m * sp.sph_harm(m, l, p2D, th2D)
 
             ylm_conj = np.conjugate(ylm)
 
-            fac = r**(l+2)/(l+1) 
+            fac = r**(l+2)/(l+1)
 
             if m==0:
                 fac *= 0.5
-            
+
             I1 = sphInt(Br,ylm,phi,th2D,theta)
             I2 = sphInt(Br,ylm_conj,phi,th2D,theta)
-          
-            g = fac * (I2 + I1) 
-            h = comp * fac * (I2 - I1) 
-            
+
+            g = fac * (I2 + I1)
+            h = comp * fac * (I2 - I1)
+
             glm.append(g)
             hlm.append(h)
-            
+
     glm = np.array(glm)
     hlm = np.array(hlm)
 

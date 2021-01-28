@@ -41,7 +41,7 @@ def getBr(datDir="data/",planet="earth",r=1,info=True):
         print("Planet: %s" %planet.capitalize())
         print("Depth (fraction of surface radius) = %.2f" %r)
         print("l_max = %d" %lmax)
-        print("Dipole tilt (degrees) = %f" %dipTheta)    
+        print("Dipole tilt (degrees) = %f" %dipTheta)
 
     return p2D, th2D, Br, dipTheta, dipPhi
 
@@ -69,7 +69,7 @@ def plotAllFields(datDir="data/",r=1.0):
             print('|%-8s | %-3.1f | %-5.1f |' %(planet.capitalize(),dipTheta, dipPhi))
 
     print('|---------|------|-------|')
-    
+
 
 
 def plotMagField(datDir="data/",planet="earth",r=1):
@@ -95,11 +95,11 @@ if __name__=="__main__":
         print("Planet or radius not specified, plotting for Earth's surface\n")
         planet="earth"
         r=1.
-    
+
     if planet == 'all':
         plotAllFields()
     else:
         plotMagField(planet=planet,r=r)
-    
+
     plt.tight_layout()
     plt.show()
