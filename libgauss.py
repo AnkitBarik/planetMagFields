@@ -4,6 +4,23 @@
 import numpy as np
 import scipy.special as sp
 
+def gen_idx(lmax):
+
+    '''
+    Generate index to convert from (l,m) to [idx]
+    '''
+
+    idx = np.zeros([lmax+1,lmax+1])
+    count = 0
+
+    for l in range(lmax+1):
+        for m in range(l+1):
+
+            idx[l,m] = count
+            count += 1
+
+    return np.int32(idx)
+
 def get_data(datDir,planet="earth"):
 
     datfile = datDir + planet + '.dat'
@@ -75,7 +92,14 @@ def get_data(datDir,planet="earth"):
 
         lmax = np.int32(gl.max())
 
-    return g,h,lmax
+    idx = gen_idx(lmax)
+
+    # Insert (0,0) -> 0 for less confusion
+
+    g = np.insert(g,0,0.)
+    h = np.insert(h,0,0.)
+
+    return g,h,lmax,idx
 
 def get_grid(nphi=256,ntheta=128):
 
@@ -140,23 +164,6 @@ def gen_arr(lmax, l1,m1,mode='g'):
 
     return glm, hlm, lArr, mArr, idx
 
-def gen_idx(lmax):
-
-    '''
-    Generate index to convert from (l,m) to [idx]
-    '''
-
-    idx = np.zeros([lmax+1,lmax+1])
-    count = 0
-
-    for l in range(1,lmax+1):
-        for m in range(l+1):
-
-            idx[l,m] = count
-            count += 1
-
-    return np.int32(idx)
-
 def getB(lmax,glm,hlm,idx,r,p2D,th2D,planet="earth"):
 
     Br = np.zeros_like(p2D)
@@ -186,7 +193,7 @@ def getBm0(lmax,g,p2D,th2D):
         ylm = sp.sph_harm(0, l1, p2D, th2D)
         fac = (l1 + 1) * np.sqrt((4.*np.pi)/(2*l+1))
 
-        Br += fac * g[l] * np.real(ylm)
+        Br += fac * g[l1] * np.real(ylm)
 
     return Br
 
