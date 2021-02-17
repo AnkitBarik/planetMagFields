@@ -1,8 +1,7 @@
 # planetMagFields
 
-Routines to plot magnetic fields of planets in our solar system
-
-Requires [cartopy](https://scitools.org.uk/cartopy/docs/latest/).
+Routines to plot magnetic fields of planets in our solar system.
+Requires the [cartopy](https://scitools.org.uk/cartopy/docs/latest/) library.
 
 ## Usage:
 
