@@ -19,13 +19,12 @@ def plotB(p2D,th2D,B,planet="earth"):
     if planet == "earth":
         ax.coastlines()
 
-    p2D -= np.pi
-    th2D -= np.pi/2
-    th2D = -th2D
+    lon2D = p2D - np.pi
+    lat2D = np.pi/2 - th2D
 
     divnorm = colors.TwoSlopeNorm(vmin=bmin, vcenter=0, vmax=bmax)
 
-    cont = ax.contourf(p2D*180/np.pi,th2D*180/np.pi,B,100,  \
+    cont = ax.contourf(lon2D*180/np.pi,lat2D*180/np.pi,B,100,  \
            transform=ccrs.PlateCarree(),cmap='RdBu_r',norm=divnorm)
 
     cbar = plt.colorbar(cont,orientation='horizontal',fraction=0.06, pad=0.04,ticks=[bmin,0,bmax])
