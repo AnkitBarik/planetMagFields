@@ -6,7 +6,7 @@ Requires the [cartopy](https://scitools.org.uk/cartopy/docs/latest/) library.
 ## Usage:
 
 ```
-$ ./magField <planet> <radius>`
+$ ./magField <planet> <radius>
 ```
 
 This will plot the radial magnetic field of a planet (any of the names from the list
