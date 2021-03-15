@@ -13,13 +13,22 @@ from planetMagFields import *
 p = planet(name='earth',datDir='planetMagFields/data/')
 ```
 
-This displays the same information about the planet as above and gives access to
+This displays the some information about the planet
+
+```
+Planet: Earth
+Depth (fraction of surface radius) = 1.00
+l_max = 13
+Dipole tilt (degrees) = -9.410531
+```
+
+and gives access to
 variables associated with the planet such as:
 
- - p.lmax
- - p.Br
- - p.dipTheta
- - p.dipPhi
+ - `p.lmax` : maximum spherical harmonic degree till which data is available
+ - `p.Br` : computed radial magnetic field at surface
+ - `p.dipTheta` : dipole tilt with respect to the rotation axis
+ - `p.dipPhi` : dipole longitude ( in case zero longitude is known, applicable to Earth )
 
 as well as the functions:
 
