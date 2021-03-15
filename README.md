@@ -1,7 +1,7 @@
 # planetMagFields
 
 Routines to plot magnetic fields of planets in our solar system.
-Requires the [cartopy](https://scitools.org.uk/cartopy/docs/latest/) library.
+Makes use of the [SHTns](https://bitbucket.org/nschaeff/shtns), [cartopy](https://scitools.org.uk/cartopy/docs/latest/) and [PyEVTK](https://github.com/paulo-herrera/PyEVTK) libraries.
 
 ## Usage:
 
