@@ -171,6 +171,10 @@ def getB(lmax,glm,hlm,idx,r,p2D,th2D,planet="earth"):
     for l in range(1,lmax+1):
         for m in range(l+1):
             ylm = sp.sph_harm(m, l, p2D, th2D)
+
+            # Include Condon-Shortley Phase for Earth but not other planets
+            # Scipy sph_harm has the phase included by default
+
             if planet in ["earth"]:
                 fac_m = 1.
             else:

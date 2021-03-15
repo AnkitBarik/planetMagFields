@@ -4,6 +4,7 @@
 import numpy as np
 import shtns
 
+
 def extrapot(lmax,rcmb,brcmb,rout):
 
     nphi, ntheta = brcmb.shape
@@ -11,7 +12,7 @@ def extrapot(lmax,rcmb,brcmb,rout):
 
     polar_opt = 1e-10
 
-    lmax = int(lmax)
+    lmax = int(nphi/3)
     mmax = lmax
 
     norm=shtns.sht_orthonormal | shtns.SHT_NO_CS_PHASE
@@ -19,9 +20,12 @@ def extrapot(lmax,rcmb,brcmb,rout):
     sh = shtns.sht(lmax,mmax=mmax,norm=norm)
     ntheta, nphi = sh.set_grid(ntheta, nphi, polar_opt=polar_opt)
 
-    brlm = sh.analys(brcmb.transpose())
+
+    L = sh.l * (sh.l + 1)
+
+    brlm = sh.analys(brcmb.T)
     bpolcmb = np.zeros_like(brlm)
-    bpolcmb[1:] = brlm[1:]/(sh.l[1:]*(sh.l[1:]+1))*rcmb**2
+    bpolcmb[1:] = rcmb**2 * brlm[1:]/L[1:]
     btor = np.zeros_like(brlm)
 
     brout = np.zeros([ntheta,nphi,nrout])
@@ -30,13 +34,17 @@ def extrapot(lmax,rcmb,brcmb,rout):
 
     for k,radius in enumerate(rout):
         print(("%d/%d" %(k,nrout)))
+
         radratio = rcmb/radius
-        bpol = bpolcmb * radratio**sh.l
+        bpol = bpolcmb * radratio**(sh.l)
+        print(bpol)
+        brlm = bpol * L/radius**2
+        brout[...,k] = sh.synth(brlm)
+
         dbpoldr = -sh.l/radius * bpol
-        brlm = sh.l*(sh.l+1) * bpol / radius**2
-        brout[..., k] = sh.synth(brlm)
-        Slm = dbpoldr + bpol/radius
-        btout[...,k], bpout[...,k] = sh.synth(Slm,btor)
+        slm = dbpoldr
+
+        btout[...,k], bpout[...,k] = sh.synth(slm,btor)
 
     brout = np.transpose(brout,(1,0,2))
     btout = np.transpose(btout,(1,0,2))
@@ -77,25 +85,33 @@ def get_cart(vr,vt,vp,r3D,th3D,p3D):
     return vx,vy,vz
 
 def writeVts(name,br,btheta,bphi,r,theta,phi):
-    
+
     r3D,th3D,p3D, x,y,z, s = get_grid(r,theta,phi)
 
     print("grid shape=",th3D.shape)
-    
+
     bx,by,bz = get_cart(br, btheta, bphi,r3D,th3D,p3D)
 
     try:
-        from pyevtk.hl import gridToVTK
-    except ImportError:
-        print("The pyevtk library is needed to write a VTS file")
-        print("You can install it using: pip install pyevtk")
+        try: # Version 2 changed naming convention of functions
+            #import evtk
+            from evtk.hl import structuredToVTK
+            #gridToVTK = evtk.hl.structuredToVTK
+            gridToVTK = structuredToVTK
+        except:
+            import evtk
+            gridToVTK = evtk.hl.gridToVTK
+    except:
+        print("movie2vtk requires the use of evtk library!")
+        print("You can get it from https://github.com/paulo-herrera/PyEVTK")
 
-    br = np.asfortranarray(bx)
+
+    br = np.asfortranarray(br)
     bx = np.asfortranarray(bx)
     by = np.asfortranarray(by)
     bz = np.asfortranarray(bz)
 
     gridToVTK("%s"%name,x,y,z,pointData= {"radius":r3D,
-                                              "Radial mag field":br,
-                                              "Mag Field":(bx, by,bz)})
+                                          "Radial mag field":br,
+                                          "Mag Field":(bx, by,bz)})
 
