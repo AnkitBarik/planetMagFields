@@ -37,7 +37,6 @@ def extrapot(lmax,rcmb,brcmb,rout):
 
         radratio = rcmb/radius
         bpol = bpolcmb * radratio**(sh.l)
-        print(bpol)
         brlm = bpol * L/radius**2
         brout[...,k] = sh.synth(brlm)
 
