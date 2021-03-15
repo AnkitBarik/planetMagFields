@@ -1,9 +1,9 @@
 # planetMagFields
 
-Routines to plot magnetic fields of planets in our solar system.
+Routines to visualize magnetic fields of planets in our solar system, in both 2D and 3D.
 Makes use of the [SHTns](https://bitbucket.org/nschaeff/shtns), [cartopy](https://scitools.org.uk/cartopy/docs/latest/) and [PyEVTK](https://github.com/paulo-herrera/PyEVTK) libraries.
 
-## Usage:
+## Quickplot using the `magField` script:
 
 ```
 $ ./magField <planet> <radius>
@@ -53,6 +53,39 @@ $ ./magField all <radius>
 
 would produce a plot of all magnetic field maps of different planets in a single figure
 along with a table of information about dipole tilt for each.
+
+# The `planet` class
+
+This gives access to all the relevant properties of a planet and has methods to plot
+the field and write a `vts` file for 3D visualization. Usage:
+
+```python
+from planetMagFields import *
+p = planet(name='earth',datDir='planetMagFields/data/')
+```
+
+This displays the same information about the planet as above and gives access to
+variables associated with the planet such as:
+
+ - p.lmax
+ - p.Br
+ - p.dipTheta
+ - p.dipPhi
+
+as well as the functions:
+
+ - `p.plot()` which will plot a 2D surface plot of the field, and
+ - `p.writeVtsFile` which will write a vts file that can be used to produce 3D visualizations of field lines with Paraview/VisIt. Usage:
+
+```python
+p.writeVtsFile(potExtra=False, ratio_out=2, nrout=32)
+```
+where,
+
+  - `potExtra` : bool, whether to use potential extrapolation
+  - `ratio_out`: float, radius till which the field would be extrapolated in terms of the surface radius
+  - `nrout`: radial resolution for extrapolation
+
 
 # Data sources
 
