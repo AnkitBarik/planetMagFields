@@ -69,7 +69,7 @@ l_max = 13
 Dipole tilt (degrees) = -9.410531
 ```
 
-![Earth's field](/images/br_earth.png)
+![Earth's field](planetMagFields/images/br_earth.png)
 
 while
 
@@ -86,7 +86,7 @@ l_max = 13
 Dipole tilt (degrees) = -9.410531
 ```
 
-![Earth's CMB field](/images/br_earth_cmb.png)
+![Earth's CMB field](planetMagFields/images/br_earth_cmb.png)
 
 ```
 $ ./magField all <radius>
