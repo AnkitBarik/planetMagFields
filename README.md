@@ -32,8 +32,42 @@ variables associated with the planet such as:
 
 as well as the functions:
 
- - `p.plot()` which will plot a 2D surface plot of the field, and
- - `p.writeVtsFile` which will write a vts file that can be used to produce 3D visualizations of field lines with Paraview/VisIt. Usage:
+## `planet.plot(r=1)`
+
+This function plots a 2D surface plot of the radial magnetic field at radius `r` given in terms of the surface radius.
+For example,
+
+```python
+from planetMagFields import *
+p = planet(name='earth',datDir='planetMagFields/data/')
+p.plot(r=1)
+```
+
+produces the info mentioned above first and then the following plot of Earth's magnetic field
+
+![Earth's field](planetMagFields/images/earth_surface.png)
+
+while
+
+```python
+from planetMagFields import *
+p = planet(name='jupiter',datDir='planetMagFields/data/')
+p.plot(r=0.8)
+```
+produces the following info about Jupiter and then plot that follows
+
+```
+Planet: Jupiter
+Depth (fraction of surface radius) = 1.00
+l_max = 10
+Dipole tilt (degrees) = 10.307870
+```
+
+![Jupiter r=0.8](planetMagFields/images/jupiter_r08.png)
+
+## `p.writeVtsFile`
+
+This function writes a vts file that can be used to produce 3D visualizations of field lines with Paraview/VisIt. Usage:
 
 ```python
 p.writeVtsFile(potExtra=True, ratio_out=2, nrout=32)
@@ -58,42 +92,45 @@ is the surface field. For example,
 $ ./magField earth
 ```
 
-displays some information about Earth's field and produces the surface field of Earth 
+displays the same information as above about Earth's field and produces the surface field of Earth while
 
 ```
-Radius not specified, using surface
-
-Planet: Earth
-Depth (fraction of surface radius) = 1.00
-l_max = 13
-Dipole tilt (degrees) = -9.410531
+$ ./magField jupiter 0.8
 ```
 
-![Earth's field](planetMagFields/images/br_earth.png)
-
-while
-
-```
-$ ./magField earth 0.55
-```
-
-produces the field at the core-mantle boundary (CMB)
-
-```
-Planet: Earth
-Depth (fraction of surface radius) = 0.55
-l_max = 13
-Dipole tilt (degrees) = -9.410531
-```
-
-![Earth's CMB field](planetMagFields/images/br_earth_cmb.png)
+produces the same plot of Jupiter's field as shown before.
 
 ```
 $ ./magField all <radius>
 ```
 
-would produce a plot of all magnetic field maps of different planets in a single figure
-along with a table of information about dipole tilt for each.
+would produce a table of information about dipole tilt for each planet and magnetic field maps of all different planets at the given radius in a single figure.
+
+For example: 
+
+```
+$ ./magField all 0.9
+```
+
+would give
+
+```
+|=========|======|=======|
+|Planet   | Theta| Phi   |
+|=========|======|=======|
+|Mercury  | 0.0  | 0.0   |
+|Earth    | -9.4 | -72.7 |
+|Jupiter  | 10.3 | -16.6 |
+|Saturn   | 0.0  | 0.0   |
+|Uranus   | 58.6 | -53.6 |
+|Neptune  | 46.9 | -72.0 |
+|Ganymede | -4.2 | 25.5  |
+|---------|------|-------|
+```
+
+followed by the following plot
+
+![All fields r=0.8](planetMagFields/images/magField_all_09.png)
 
 
 # Data sources
