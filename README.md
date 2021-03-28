@@ -45,7 +45,7 @@ p.plot(r=1)
 
 produces the info mentioned above first and then the following plot of Earth's magnetic field
 
-![Earth's field](planetMagFields/images/earth_surface.png)
+<img src="planetMagFields/images/earth_surface.png" width="500">
 
 while
 
@@ -63,7 +63,7 @@ l_max = 10
 Dipole tilt (degrees) = 10.307870
 ```
 
-![Jupiter r=0.8](planetMagFields/images/jupiter_r08.png)
+<img src="planetMagFields/images/jupiter_r08.png" width="500">
 
 ## `planet.writeVtsFile`
 
@@ -78,12 +78,27 @@ where,
   - `ratio_out`: float, radius till which the field would be extrapolated in terms of the surface radius
   - `nrout`: radial resolution for extrapolation
 
-Example of a 3D image produced using Paraview.
+Example of a 3D image produced using Paraview for Neptune's field, extrapolated till 5 times the surface radius.
 
-![Neptune 3D](planetMagFields/images/3d/neptune3d.png)
+<img src="planetMagFields/images/3d/neptune3d.png" width="500">
 
+# Potential extrapolation
 
-## Quickplot using the `magField` script:
+The `potextra` class provides a method for potential extrapolation of a planets magnetic field.
+This uses the [SHTns](https://bitbucket.org/nschaeff/shtns) library for spherical harmonic transforms.
+Usage example:
+
+```python
+import numpy as np
+from planetMagFields import *
+p = planet('saturn')
+ratio_out = 5 # Ratio (> 1) in terms of surface radius to which to extrapolate
+nrout = 32 # Number of grid points in radius between 1 and ratio_out
+rout = np.linspace(1,ratio_out,nrout)
+brout, btout, bpout = potextra.extrapot(p.lmax,1.,p.Br,rout)
+```
+
+# Quickplot using the `magField` script:
 
 ```
 $ ./magField <planet> <radius>
