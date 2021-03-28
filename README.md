@@ -65,7 +65,7 @@ Dipole tilt (degrees) = 10.307870
 
 ![Jupiter r=0.8](planetMagFields/images/jupiter_r08.png)
 
-## `p.writeVtsFile`
+## `planet.writeVtsFile`
 
 This function writes a vts file that can be used to produce 3D visualizations of field lines with Paraview/VisIt. Usage:
 
@@ -77,6 +77,10 @@ where,
   - `potExtra` : bool, whether to use potential extrapolation
   - `ratio_out`: float, radius till which the field would be extrapolated in terms of the surface radius
   - `nrout`: radial resolution for extrapolation
+
+Example of a 3D image produced using Paraview.
+
+
 
 ## Quickplot using the `magField` script:
 
