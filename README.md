@@ -36,7 +36,7 @@ as well as the functions:
  - `p.writeVtsFile` which will write a vts file that can be used to produce 3D visualizations of field lines with Paraview/VisIt. Usage:
 
 ```python
-p.writeVtsFile(potExtra=False, ratio_out=2, nrout=32)
+p.writeVtsFile(potExtra=True, ratio_out=2, nrout=32)
 ```
 where,
 
