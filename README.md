@@ -80,6 +80,7 @@ where,
 
 Example of a 3D image produced using Paraview.
 
+![Neptune 3D](planetMagFields/images/3d/neptune3d.png)
 
 
 ## Quickplot using the `magField` script:
