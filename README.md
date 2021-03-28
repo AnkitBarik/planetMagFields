@@ -153,6 +153,10 @@ followed by the following plot
 
 ![All fields r=0.9](planetMagFields/images/magField_all_09.png)
 
+# Spherical harmonic normalization and Condon-Shortley phase
+
+All the Gauss coefficients in the collected data are Schmidt semi-normalized.
+Only the data for Earth uses a Condon-Shortley phase, the others do not.
 
 # Data sources
 
