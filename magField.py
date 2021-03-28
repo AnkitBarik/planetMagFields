@@ -21,9 +21,16 @@ else:
     r=1.
 
 if planet == 'all':
-    plotAllFields(datDir='./planetMagFields/data/')
+    plotAllFields(datDir='./planetMagFields/data/',r=r)
+    plt.tight_layout()
+    plt.subplots_adjust(top=0.895,
+                        bottom=0.035,
+                        left=0.023,
+                        right=0.976,
+                        hspace=0.38,
+                        wspace=0.109)
 else:
     plotMagField(planet=planet,r=r,datDir='./planetMagFields/data/')
+    plt.tight_layout()
 
-plt.tight_layout()
 plt.show()

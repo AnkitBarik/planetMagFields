@@ -10,8 +10,13 @@ def plotB(p2D,th2D,B,r=1,planet="earth"):
 
     planet = planet.lower()
 
-    bmax = B.max()
-    bmin = B.min()
+    bmax = np.abs(B).max()
+    digits = int(np.log10(bmax)) + 1
+
+    if digits > 1:
+        bmax = np.round(bmax)
+    else:
+        bmax = np.round(bmax,decimals=1)
 
     projection = ccrs.Mollweide()
     ax = plt.axes(projection=projection)
@@ -22,12 +27,14 @@ def plotB(p2D,th2D,B,r=1,planet="earth"):
     lon2D = p2D - np.pi
     lat2D = np.pi/2 - th2D
 
-    divnorm = colors.TwoSlopeNorm(vmin=bmin, vcenter=0, vmax=bmax)
+    divnorm = colors.TwoSlopeNorm(vmin=-bmax, vcenter=0, vmax=bmax)
 
-    cont = ax.contourf(lon2D*180/np.pi,lat2D*180/np.pi,B,100,  \
-           transform=ccrs.PlateCarree(),cmap='RdBu_r',norm=divnorm)
+    cs = np.linspace(-bmax,bmax,100)
 
-    cbar = plt.colorbar(cont,orientation='horizontal',fraction=0.06, pad=0.04,ticks=[bmin,0,bmax])
+    cont = ax.contourf(lon2D*180/np.pi,lat2D*180/np.pi,B,cs,  \
+           transform=ccrs.PlateCarree(),cmap='RdBu_r',norm=divnorm,extend='both')
+
+    cbar = plt.colorbar(cont,orientation='horizontal',fraction=0.06, pad=0.04,ticks=[-bmax,0,bmax])
     cbar.ax.set_xlabel(r'Radial magnetic field ($\mu$T)',fontsize=25)
     cbar.ax.tick_params(labelsize=20)
 
@@ -41,8 +48,13 @@ def plotB(p2D,th2D,B,r=1,planet="earth"):
 def plotB_subplot(p2D,th2D,B,ax,planet="earth"):
     planet = planet.lower()
 
-    bmax = B.max()
-    bmin = B.min()
+    bmax = np.abs(B).max()
+    digits = int(np.log10(bmax)) + 1
+
+    if digits > 1:
+        bmax = np.round(bmax)
+    else:
+        bmax = np.round(bmax,decimals=1)
 
     if planet == "earth":
         ax.coastlines()
@@ -51,13 +63,14 @@ def plotB_subplot(p2D,th2D,B,ax,planet="earth"):
     th2D -= np.pi/2
     th2D = -th2D
 
-    divnorm = colors.TwoSlopeNorm(vmin=bmin, vcenter=0, vmax=bmax)
+    cs = np.linspace(-bmax,bmax,100)
+    divnorm = colors.TwoSlopeNorm(vmin=-bmax, vcenter=0, vmax=bmax)
 
-    cont = ax.contourf(p2D*180/np.pi,th2D*180/np.pi,B,100,  \
-           transform=ccrs.PlateCarree(),cmap='RdBu_r',norm=divnorm)
+    cont = ax.contourf(p2D*180/np.pi,th2D*180/np.pi,B,cs,  \
+           transform=ccrs.PlateCarree(),cmap='RdBu_r',norm=divnorm,extend='both')
 
-    cbar = plt.colorbar(cont,orientation='horizontal',fraction=0.06, pad=0.04,ticks=[bmin,0,bmax])
-    cbar.ax.set_xlabel(r'Radial magnetic field ($\mu$T)',fontsize=15)
+    cbar = plt.colorbar(cont,orientation='horizontal',fraction=0.06, pad=0.04,ticks=[-bmax,0,bmax])
+    #cbar.ax.set_xlabel(r'Radial magnetic field ($\mu$T)',fontsize=15)
     cbar.ax.tick_params(labelsize=15)
 
-    ax.set_title(planet.capitalize(),fontsize=20,pad=20)
+    ax.set_title(planet.capitalize(),fontsize=20)

@@ -69,10 +69,16 @@ def plotAllFields(datDir="data/",r=1.0):
 
     print('|---------|------|-------|')
 
+    if r == 1:
+        plt.suptitle(r'Radial magnetic field ($\mu$T) at surface', fontsize=20)
+    else:
+        plt.suptitle(r'Radial magnetic field ($\mu$T) at $r/r_{\rm surface} = %.2f$' %r, fontsize=20)
+
+
 
 
 def plotMagField(datDir="data/",planet="earth",r=1):
 
     p2D, th2D, Br, dum1,dum2 = getBr(datDir=datDir,planet=planet,r=r)
-    plt.figure(figsize=(16,9))
+    plt.figure(figsize=(12,6.75))
     plotB(p2D,th2D,Br,planet=planet)
