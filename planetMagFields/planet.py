@@ -4,7 +4,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from .libgauss import get_data
-from .magField import getBr
+from .libbfield import getBr
 from .plotlib import plotB
 
 class planet:
