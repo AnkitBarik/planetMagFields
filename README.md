@@ -85,7 +85,7 @@ Example of a 3D image produced using Paraview for Neptune's field, extrapolated 
 
 # Potential extrapolation
 
-The `potextra` module provides a method for potential extrapolation of a planets magnetic field.
+The `potextra` module provides a method for potential extrapolation of a planet's magnetic field.
 This uses the [SHTns](https://bitbucket.org/nschaeff/shtns) library for spherical harmonic transforms.
 Usage example:
 
