@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 import cartopy.crs as ccrs
 
-def plotB(p2D,th2D,B,planet="earth"):
+def plotB(p2D,th2D,B,r=1,planet="earth"):
 
     planet = planet.lower()
 
@@ -31,7 +31,12 @@ def plotB(p2D,th2D,B,planet="earth"):
     cbar.ax.set_xlabel(r'Radial magnetic field ($\mu$T)',fontsize=30)
     cbar.ax.tick_params(labelsize=20)
 
-    ax.set_title(planet.capitalize(),fontsize=30,pad=20)
+    if r==1:
+        radLabel = '  Surface'
+    else:
+        radLabel = r'  $r/r_{\rm surface}=%.2f$' %r
+
+    ax.set_title(planet.capitalize() + radLabel,fontsize=30,pad=20)
 
 def plotB_subplot(p2D,th2D,B,ax,planet="earth"):
     planet = planet.lower()

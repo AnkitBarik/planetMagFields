@@ -21,10 +21,18 @@ class planet:
 
         self.phi = self.p2D[:,0]
         self.theta = self.th2D[0,:]
+        self.r = 1
 
-    def plot(self):
+    def plot(self,r=1):
         plt.figure(figsize=(16,9))
-        plotB(self.p2D,self.th2D,self.Br,planet=self.name)
+        if r == 1:
+            plotB(self.p2D,self.th2D,self.Br,planet=self.name)
+        else:
+            self.p2D, self.th2D, self.Br, self.dipTheta, self.dipPhi = \
+                    getBr(datDir=self.datDir,planet=self.name,r=r,info=False)
+            self.r = r
+            plotB(self.p2D,self.th2D,self.Br,r=self.r,planet=self.name)
+            
 
     def writeVtsFile(self,potExtra=False,ratio_out=2,nrout=32):
             from .potextra import extrapot, writeVts
