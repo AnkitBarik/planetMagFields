@@ -27,6 +27,7 @@ variables associated with the planet such as:
 
  - `p.lmax` : maximum spherical harmonic degree till which data is available
  - `p.Br` : computed radial magnetic field at surface
+ - `p.glm`, `p.hlm`: Gauss coefficients
  - `p.dipTheta` : dipole tilt with respect to the rotation axis
  - `p.dipPhi` : dipole longitude ( in case zero longitude is known, applicable to Earth )
 
