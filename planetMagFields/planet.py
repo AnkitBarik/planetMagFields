@@ -24,7 +24,8 @@ class planet:
         self.r = 1
 
     def plot(self,r=1):
-        plt.figure(figsize=(16,9))
+        plt.figure(figsize=(12,6.75))
+
         if r == 1:
             plotB(self.p2D,self.th2D,self.Br,planet=self.name)
         else:
@@ -32,7 +33,8 @@ class planet:
                     getBr(datDir=self.datDir,planet=self.name,r=r,info=False)
             self.r = r
             plotB(self.p2D,self.th2D,self.Br,r=self.r,planet=self.name)
-            
+
+        plt.tight_layout()            
 
     def writeVtsFile(self,potExtra=False,ratio_out=2,nrout=32):
             from .potextra import extrapot, writeVts

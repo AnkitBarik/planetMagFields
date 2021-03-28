@@ -28,7 +28,7 @@ def plotB(p2D,th2D,B,r=1,planet="earth"):
            transform=ccrs.PlateCarree(),cmap='RdBu_r',norm=divnorm)
 
     cbar = plt.colorbar(cont,orientation='horizontal',fraction=0.06, pad=0.04,ticks=[bmin,0,bmax])
-    cbar.ax.set_xlabel(r'Radial magnetic field ($\mu$T)',fontsize=30)
+    cbar.ax.set_xlabel(r'Radial magnetic field ($\mu$T)',fontsize=25)
     cbar.ax.tick_params(labelsize=20)
 
     if r==1:
@@ -36,7 +36,7 @@ def plotB(p2D,th2D,B,r=1,planet="earth"):
     else:
         radLabel = r'  $r/r_{\rm surface}=%.2f$' %r
 
-    ax.set_title(planet.capitalize() + radLabel,fontsize=30,pad=20)
+    ax.set_title(planet.capitalize() + radLabel,fontsize=25,pad=20)
 
 def plotB_subplot(p2D,th2D,B,ax,planet="earth"):
     planet = planet.lower()
