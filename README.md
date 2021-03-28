@@ -130,7 +130,7 @@ would give
 
 followed by the following plot
 
-![All fields r=0.8](planetMagFields/images/magField_all_09.png)
+![All fields r=0.9](planetMagFields/images/magField_all_09.png)
 
 
 # Data sources
