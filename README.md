@@ -84,6 +84,44 @@ Example of a 3D image produced using Paraview for Neptune's field, extrapolated 
 
 <img src="planetMagFields/images/3d/neptune3d.png" width="500">
 
+# Field filtering using `planet.plot_filt`
+
+The `planet` class also provides a function for producing a filtered view of the radial magnetic field using the function `plot_filt`.
+This function can take in either an arbitrary array of spherical harmonic degrees and orders or cut-off values. This is illustrated
+below with examples, assuming the user is in the repository directory.
+
+## Saturn's small-scale magnetic field at a depth of 0.75 planetary radius ( degree > 3 )
+
+```python
+from planetMagFields import *
+p = planet(name='saturn')
+p.plot_filt(r=0.75,lCutMin=4)
+```
+
+<img src="planetMagFields/images/saturn_lgeq4_2d.png" width="500">
+
+Compare this with Fig. 20 from [Cao et al. 2020](https://doi.org/10.1016/j.icarus.2019.113541)
+
+## Jupiter's surface field restricted to degrees 1,2,3 and order 3
+
+```python
+from planetMagFields import *
+p = planet(name='jupiter')
+p.plot_filt(r=1,larr=[1,2,3],marr=[3])
+```
+
+<img src="planetMagFields/images/jupiter_l123m3_2d.png" width="500">
+
+## Earth's smaller scale surface field for degree > 4 and order > 3
+
+```python
+from planetMagFields import *
+p = planet(name='earth')
+p.plot_filt(r=1,lCutMin=5,mmin=4)
+```
+
+<img src="planetMagFields/images/earth_lgeq5mgeq4_2d.png" width="500">
+
 # Potential extrapolation
 
 The `potextra` module provides a method for potential extrapolation of a planet's magnetic field.
