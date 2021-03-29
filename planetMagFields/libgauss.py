@@ -3,6 +3,7 @@
 
 import numpy as np
 import scipy.special as sp
+from copy import deepcopy
 
 def gen_idx(lmax):
 
@@ -47,7 +48,7 @@ def get_data(datDir,planet="earth"):
     elif planet in ["mercury","saturn"]:
         dat = np.loadtxt(datfile,usecols=[3])
         g   = dat.flatten()
-        lmax = len(g) - 1
+        lmax = len(g)
         h = np.zeros_like(g)
 
     elif planet == "jupiter":
@@ -92,12 +93,15 @@ def get_data(datDir,planet="earth"):
 
         lmax = np.int32(gl.max())
 
-    idx = gen_idx(lmax)
-
     # Insert (0,0) -> 0 for less confusion
 
     g = np.insert(g,0,0.)
     h = np.insert(h,0,0.)
+
+    if planet in ['mercury','saturn']:
+        idx = np.arange(lmax+1)
+    else:
+        idx = gen_idx(lmax)
 
     return g,h,lmax,idx
 
@@ -188,18 +192,97 @@ def getB(lmax,glm,hlm,idx,r,p2D,th2D,planet="earth"):
 
     return Br
 
-def getBm0(lmax,g,p2D,th2D):
+def getBm0(lmax,g,r,p2D,th2D):
 
     Br = np.zeros_like(p2D)
 
-    for l in range(lmax):
-        l1 = l+1
-        ylm = sp.sph_harm(0, l1, p2D, th2D)
-        fac = (l1 + 1) * np.sqrt((4.*np.pi)/(2*l+1))
+    for l in range(1,lmax+1):
+        ylm = sp.sph_harm(0, l, p2D, th2D)
+        fac = (l + 1) * r**(-l-2) * np.sqrt((4.*np.pi)/(2*l+1))
 
-        Br += fac * g[l1] * np.real(ylm)
+        Br += fac * g[l] * np.real(ylm)
 
     return Br
+
+def filt_Gauss(glm,hlm,lmax,idx,larr=None,marr=None,lCutMin=0,lCutMax=None,mmin=0,mmax=None):
+
+    glm_filt = deepcopy(glm)
+    hlm_filt = deepcopy(hlm)
+
+    if lCutMax is None:
+        lCutMax = lmax
+    if mmax is None:
+        mmax = lmax
+
+    if larr is not None:
+        if max(larr) > lmax:
+            print("Error! Values in filter array must be <= lmax=%d" %lmax)
+        else:
+            for ell in range(lmax+1):
+                if ell not in larr:
+                    glm_filt[idx[ell,:]] = 0.
+                    hlm_filt[idx[ell,:]] = 0.
+    else:
+        if lCutMax > lmax or lCutMin > lmax:
+            print("Error! lCutMin/lCutMax must be <= lmax = %d" %lmax)
+        else:
+            for ell in range(lCutMin):
+                    glm_filt[idx[ell,:]] = 0.
+                    hlm_filt[idx[ell,:]] = 0.
+            for ell in range(lCutMax,lmax+1):
+                    glm_filt[idx[ell,:]] = 0.
+                    hlm_filt[idx[ell,:]] = 0.
+
+    if marr is not None:
+        if max(marr) > lmax:
+            print("Error! Values in filter array must be <= lmax=%d" %lmax)
+        else:
+            for m in range(lmax+1):
+                if m not in marr:
+                    glm_filt[idx[:,m]] = 0.
+                    hlm_filt[idx[:,m]] = 0.
+    else:
+        if mmin > lmax or mmax > lmax:
+            print("Error! mmin/mmax must be <= lmax = %d" %lmax)
+        else:
+            for m in range(mmin):
+                    glm_filt[idx[:,m]] = 0.
+                    hlm_filt[idx[:,m]] = 0.
+            for m in range(mmax+1,lmax+1):
+                    glm_filt[idx[:,m]] = 0.
+                    hlm_filt[idx[:,m]] = 0.
+
+    return glm_filt,hlm_filt
+
+def filt_Gaussm0(glm,hlm,lmax,larr=None,lCutMin=0,lCutMax=None):
+
+    glm_filt = deepcopy(glm)
+    hlm_filt = deepcopy(hlm)
+
+    if lCutMax is None:
+        lCutMax = lmax
+
+    if larr is not None:
+        if max(larr) > lmax:
+            print("Error! Values in filter array must be <= lmax=%d" %lmax)
+        else:
+            for ell in range(lmax+1):
+                if ell not in larr:
+                    glm_filt[ell] = 0.
+                    hlm_filt[ell] = 0.
+    else:
+        if lCutMax > lmax or lCutMin > lmax:
+            print("Error! lCutMin/lCutMax must be <= lmax = %d" %lmax)
+        else:
+            for ell in range(lCutMin):
+                    glm_filt[ell] = 0.
+                    hlm_filt[ell] = 0.
+            for ell in range(lCutMax,lmax+1):
+                    glm_filt[ell] = 0.
+                    hlm_filt[ell] = 0.
+
+    return glm_filt,hlm_filt
+
 
 def sphInt(f,g,phi,th2D,theta):
 

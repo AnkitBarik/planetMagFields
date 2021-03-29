@@ -27,7 +27,7 @@ def getBr(datDir="data/",planet="earth",r=1,info=True):
     p2D,th2D = get_grid()
 
     if planet in ["mercury","saturn"]:
-        Br = getBm0(lmax,g,p2D,th2D) * 1e-3
+        Br = getBm0(lmax,g,r,p2D,th2D) * 1e-3
         dipTheta = 0.
         dipPhi = 0.
     else:
