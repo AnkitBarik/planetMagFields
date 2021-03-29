@@ -23,16 +23,16 @@ class planet:
         self.theta = self.th2D[0,:]
         self.r = 1
 
-    def plot(self,r=1):
+    def plot(self,r=1,levels=30,cmap='RdBu_r'):
         plt.figure(figsize=(12,6.75))
 
         if r == 1:
-            plotB(self.p2D,self.th2D,self.Br,planet=self.name)
+            plotB(self.p2D,self.th2D,self.Br,planet=self.name,levels=levels,cmap=cmap)
         else:
             self.p2D, self.th2D, self.Br, self.dipTheta, self.dipPhi = \
                     getBr(datDir=self.datDir,planet=self.name,r=r,info=False)
             self.r = r
-            plotB(self.p2D,self.th2D,self.Br,r=self.r,planet=self.name)
+            plotB(self.p2D,self.th2D,self.Br,r=self.r,planet=self.name,levels=levels,cmap=cmap)
 
         plt.tight_layout()
 
@@ -51,7 +51,7 @@ class planet:
 
     ## Filtered plots
 
-    def plot_filt(self,r=1,larr=None,marr=None,lCutMin=0,lCutMax=None,mmin=0,mmax=None):
+    def plot_filt(self,r=1,larr=None,marr=None,lCutMin=0,lCutMax=None,mmin=0,mmax=None,levels=30,cmap='RdBu_r'):
 
         self.larr_filt = larr
         self.marr_filt = marr
@@ -81,7 +81,7 @@ class planet:
 
         plt.figure(figsize=(12,6.75))
 
-        plotB(self.p2D,self.th2D,self.Br_filt,r=self.r_filt,planet=self.name)
+        plotB(self.p2D,self.th2D,self.Br_filt,r=self.r_filt,planet=self.name,levels=levels,cmap=cmap)
 
         if r==1:
             radLabel = '  Surface'

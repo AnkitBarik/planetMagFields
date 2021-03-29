@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 import cartopy.crs as ccrs
 
-def plotB(p2D,th2D,B,r=1,planet="earth"):
+def plotB(p2D,th2D,B,r=1,planet="earth",levels=60,cmap='RdBu_r'):
 
     planet = planet.lower()
 
@@ -29,10 +29,10 @@ def plotB(p2D,th2D,B,r=1,planet="earth"):
 
     divnorm = colors.TwoSlopeNorm(vmin=-bmax, vcenter=0, vmax=bmax)
 
-    cs = np.linspace(-bmax,bmax,100)
+    cs = np.linspace(-bmax,bmax,levels)
 
     cont = ax.contourf(lon2D*180/np.pi,lat2D*180/np.pi,B,cs,  \
-           transform=ccrs.PlateCarree(),cmap='RdBu_r',norm=divnorm,extend='both')
+           transform=ccrs.PlateCarree(),cmap=cmap,norm=divnorm,extend='both')
 
     cbar = plt.colorbar(cont,orientation='horizontal',fraction=0.06, pad=0.04,ticks=[-bmax,0,bmax])
     cbar.ax.set_xlabel(r'Radial magnetic field ($\mu$T)',fontsize=25)
@@ -45,7 +45,7 @@ def plotB(p2D,th2D,B,r=1,planet="earth"):
 
     ax.set_title(planet.capitalize() + radLabel,fontsize=25,pad=20)
 
-def plotB_subplot(p2D,th2D,B,ax,planet="earth"):
+def plotB_subplot(p2D,th2D,B,ax,planet="earth",levels=60,cmap='RdBu_r'):
     planet = planet.lower()
 
     bmax = np.abs(B).max()
@@ -63,11 +63,11 @@ def plotB_subplot(p2D,th2D,B,ax,planet="earth"):
     th2D -= np.pi/2
     th2D = -th2D
 
-    cs = np.linspace(-bmax,bmax,100)
+    cs = np.linspace(-bmax,bmax,levels)
     divnorm = colors.TwoSlopeNorm(vmin=-bmax, vcenter=0, vmax=bmax)
 
     cont = ax.contourf(p2D*180/np.pi,th2D*180/np.pi,B,cs,  \
-           transform=ccrs.PlateCarree(),cmap='RdBu_r',norm=divnorm,extend='both')
+           transform=ccrs.PlateCarree(),cmap=cmap,norm=divnorm,extend='both')
 
     cbar = plt.colorbar(cont,orientation='horizontal',fraction=0.06, pad=0.04,ticks=[-bmax,0,bmax])
     #cbar.ax.set_xlabel(r'Radial magnetic field ($\mu$T)',fontsize=15)
