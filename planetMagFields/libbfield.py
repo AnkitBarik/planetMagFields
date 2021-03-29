@@ -44,7 +44,7 @@ def getBr(datDir="data/",planet="earth",r=1,info=True):
 
     return p2D, th2D, Br, dipTheta, dipPhi
 
-def plotAllFields(datDir="data/",r=1.0):
+def plotAllFields(datDir="data/",r=1.0,levels=30,cmap='RdBu_r'):
 
     print("")
     print('|=========|======|=======|')
@@ -60,7 +60,7 @@ def plotAllFields(datDir="data/",r=1.0):
         else:
             ax = plt.subplot(3,3,k+1,projection=ccrs.Mollweide())
 
-        plotB_subplot(p2D,th2D,Br,ax,planet=planet)
+        plotB_subplot(p2D,th2D,Br,ax,planet=planet,levels=levels,cmap=cmap)
 
         if planet in ["mercury","saturn"]:
             print(('|%-8s | %-4.1f | %-5.1f |' %(planet.capitalize(),dipTheta, dipPhi)))

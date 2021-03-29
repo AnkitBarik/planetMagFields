@@ -4,6 +4,8 @@
 from planetMagFields.libbfield import *
 import sys
 
+levels=30
+cmap='RdBu_r'
 
 if len(sys.argv) == 3:
     planet = str(sys.argv[1]).lower()
@@ -21,7 +23,7 @@ else:
     r=1.
 
 if planet == 'all':
-    plotAllFields(datDir='./planetMagFields/data/',r=r)
+    plotAllFields(datDir='./planetMagFields/data/',r=r,levels=levels,cmap=cmap)
     plt.tight_layout()
     plt.subplots_adjust(top=0.895,
                         bottom=0.035,
@@ -30,7 +32,7 @@ if planet == 'all':
                         hspace=0.38,
                         wspace=0.109)
 else:
-    plotMagField(planet=planet,r=r,datDir='./planetMagFields/data/')
+    plotMagField(planet=planet,r=r,datDir='./planetMagFields/data/',levels=levels,cmap=cmap)
     plt.tight_layout()
 
 plt.show()
