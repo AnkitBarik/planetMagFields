@@ -47,7 +47,7 @@ p.plot(r=1)
 
 produces the info mentioned above first and then the following plot of Earth's magnetic field
 
-<img src="planetMagFields/images/earth_surface.png" width="500">
+<img src="planetMagFields/images/2d/earth2d.png" width="500">
 
 while
 
@@ -203,7 +203,7 @@ Mercury : [Anderson et al. 2012](https://doi.org/10.1029/2012JE004159)
 
 Earth   : [IGRF 13](https://www.ngdc.noaa.gov/IAGA/vmod/igrf.html)
 
-Jupiter : [JRM09, Connerny et al. 2018](https://doi.org/10.1002/2018GL077312)
+Jupiter : [JRM09, Connerney et al. 2018](https://doi.org/10.1002/2018GL077312)
 
 Saturn  : [Cassini 11+, Cao et al. 2020](https://doi.org/10.1016/j.icarus.2019.113541)
 
