@@ -54,7 +54,7 @@ while
 ```python
 from planetMagFields import *
 p = planet(name='jupiter',datDir='planetMagFields/data/')
-p.plot(r=0.8)
+p.plot(r=0.85)
 ```
 produces the following info about Jupiter and then plot that follows
 
@@ -65,7 +65,9 @@ l_max = 10
 Dipole tilt (degrees) = 10.307870
 ```
 
-<img src="planetMagFields/images/jupiter_r08.png" width="500">
+<img src="planetMagFields/images/jupiter_r085.png" width="500">
+
+This can be compared with Fig. 1 g from [Moore et al. 2018](https://doi.org/10.1038/s41586-018-0468-5)
 
 ## `planet.writeVtsFile`
 
@@ -100,7 +102,7 @@ p.plot_filt(r=0.75,lCutMin=4)
 
 <img src="planetMagFields/images/saturn_lgeq4_2d.png" width="500">
 
-Compare this with Fig. 20 from [Cao et al. 2020](https://doi.org/10.1016/j.icarus.2019.113541)
+Compare this with Fig. 20 B from [Cao et al. 2020](https://doi.org/10.1016/j.icarus.2019.113541)
 
 ## Jupiter's surface field restricted to degrees 1,2,3 and order 3
 
