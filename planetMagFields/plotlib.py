@@ -4,7 +4,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
-import cartopy.crs as ccrs
 
 def hammer2cart(ttheta, pphi, colat=False):
     """
@@ -26,7 +25,7 @@ def hammer2cart(ttheta, pphi, colat=False):
              /np.sqrt(1.+np.sin(ttheta)*np.sin(pphi/2.))
     return xx, yy
 
-def plotB(p2D,th2D,B,r=1,planet="earth",levels=60,cmap='RdBu_r',proj='Hammer'):
+def plotB(p2D,th2D,B,r=1,planet="earth",levels=60,cmap='RdBu_r',proj='moll'):
 
     planet = planet.lower()
 
@@ -45,6 +44,11 @@ def plotB(p2D,th2D,B,r=1,planet="earth",levels=60,cmap='RdBu_r',proj='Hammer'):
     lon2D = p2D - np.pi
     lat2D = np.pi/2 - th2D
 
+    try:
+        import cartopy.crs as ccrs
+    except:
+        print("cartopy library not available, using Hammer projection")
+        proj = 'hammer'
 
     if proj.lower() == 'hammer':
         ax = plt.axes()
@@ -77,7 +81,7 @@ def plotB(p2D,th2D,B,r=1,planet="earth",levels=60,cmap='RdBu_r',proj='Hammer'):
     ax.axis('equal')
     ax.axis('off')
 
-def plotB_subplot(p2D,th2D,B,ax,planet="earth",levels=60,cmap='RdBu_r',proj='Hammer'):
+def plotB_subplot(p2D,th2D,B,ax,planet="earth",levels=60,cmap='RdBu_r',proj='moll'):
     planet = planet.lower()
 
     bmax = np.abs(B).max()
@@ -94,6 +98,12 @@ def plotB_subplot(p2D,th2D,B,ax,planet="earth",levels=60,cmap='RdBu_r',proj='Ham
 
     cs = np.linspace(-bmax,bmax,levels)
     divnorm = colors.TwoSlopeNorm(vmin=-bmax, vcenter=0, vmax=bmax)
+
+    try:
+        import cartopy.crs as ccrs
+    except:
+        print("cartopy library not available, using Hammer projection")
+        proj = 'hammer'
 
     proj = proj.lower()
 

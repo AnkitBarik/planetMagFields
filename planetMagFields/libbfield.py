@@ -44,7 +44,7 @@ def getBr(datDir="data/",planet="earth",r=1,info=True):
 
     return p2D, th2D, Br, dipTheta, dipPhi
 
-def plotAllFields(datDir="data/",r=1.0,levels=30,cmap='RdBu_r',proj='Hammer'):
+def plotAllFields(datDir="data/",r=1.0,levels=30,cmap='RdBu_r',proj='moll'):
 
     print("")
     print('|=========|======|=======|')
@@ -82,7 +82,7 @@ def plotAllFields(datDir="data/",r=1.0,levels=30,cmap='RdBu_r',proj='Hammer'):
 
 
 
-def plotMagField(datDir="data/",planet="earth",r=1,levels=30,proj='hammer',cmap='RdBu_r'):
+def plotMagField(datDir="data/",planet="earth",r=1,levels=30,proj='moll',cmap='RdBu_r'):
 
     p2D, th2D, Br, dum1,dum2 = getBr(datDir=datDir,planet=planet,r=r)
     plt.figure(figsize=(12,6.75))

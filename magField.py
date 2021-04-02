@@ -6,7 +6,7 @@ import sys
 
 levels=30
 cmap='RdBu_r'
-proj = 'hammer'
+proj = 'moll'
 r = 1
 
 if len(sys.argv) > 4:
