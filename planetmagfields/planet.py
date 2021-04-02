@@ -9,7 +9,7 @@ from .plotlib import plotB
 
 class planet:
 
-    def __init__(self,name='earth',datDir='./planetMagFields/data/'):
+    def __init__(self,name='earth',datDir='./planetmagfields/data/'):
 
         self.name   = name.lower()
         self.datDir = datDir
