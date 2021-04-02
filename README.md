@@ -1,8 +1,11 @@
 # planetMagFields
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
-Routines to visualize magnetic fields of planets in our solar system, in both 2D and 3D.
-Makes use of the [SHTns](https://bitbucket.org/nschaeff/shtns), [cartopy](https://scitools.org.uk/cartopy/docs/latest/) and [PyEVTK](https://github.com/paulo-herrera/PyEVTK) libraries.
+Routines to visualize magnetic fields of planets in our solar system, in both 2D and 3D. For 2D plots, the default projection is Hammer, and no external libraries are needed. The following external libraries are used for a few different functions:
+
+ - For projections other than Hammer: [cartopy](https://scitools.org.uk/cartopy/docs/latest/) library
+ - Potential extrapolation: [SHTns](https://bitbucket.org/nschaeff/shtns) library
+ - Writing vts files for 3D visualisation: [PyEVTK](https://github.com/paulo-herrera/PyEVTK) library
 
 # The `planet` class
 
@@ -34,7 +37,7 @@ variables associated with the planet such as:
 
 as well as the functions:
 
-## `planet.plot(r=1)`
+## `planet.plot()`
 
 This function plots a 2D surface plot of the radial magnetic field at radius `r` given in terms of the surface radius.
 For example,
@@ -42,7 +45,7 @@ For example,
 ```python
 from planetMagFields import *
 p = planet(name='earth',datDir='planetMagFields/data/')
-p.plot(r=1)
+p.plot(r=1,proj='moll')
 ```
 
 produces the info mentioned above first and then the following plot of Earth's magnetic field
@@ -54,7 +57,7 @@ while
 ```python
 from planetMagFields import *
 p = planet(name='jupiter',datDir='planetMagFields/data/')
-p.plot(r=0.85)
+p.plot(r=0.85,proj='moll')
 ```
 produces the following info about Jupiter and then plot that follows
 
@@ -97,7 +100,7 @@ below with examples, assuming the user is in the repository directory.
 ```python
 from planetMagFields import *
 p = planet(name='saturn')
-p.plot_filt(r=0.75,lCutMin=4)
+p.plot_filt(r=0.75,lCutMin=4,proj='moll')
 ```
 
 <img src="planetMagFields/images/saturn_lgeq4_2d.png" width="500">
@@ -109,7 +112,7 @@ Compare this with Fig. 20 B from [Cao et al. 2020](https://doi.org/10.1016/j.ica
 ```python
 from planetMagFields import *
 p = planet(name='jupiter')
-p.plot_filt(r=1,larr=[1,2,3],marr=[3])
+p.plot_filt(r=1,larr=[1,2,3],marr=[3],proj='moll')
 ```
 
 <img src="planetMagFields/images/jupiter_l123m3_2d.png" width="500">
@@ -119,7 +122,7 @@ p.plot_filt(r=1,larr=[1,2,3],marr=[3])
 ```python
 from planetMagFields import *
 p = planet(name='earth')
-p.plot_filt(r=1,lCutMin=5,mmin=4)
+p.plot_filt(r=1,lCutMin=5,mmin=4,proj='moll')
 ```
 
 <img src="planetMagFields/images/earth_lgeq5mgeq4_2d.png" width="500">
@@ -143,7 +146,7 @@ brout, btout, bpout = potextra.extrapot(p.lmax,1.,p.Br,rout)
 # Quickplot using the `magField` script:
 
 ```
-$ ./magField <planet> <radius>
+$ ./magField <planet> <radius> <projection>
 ```
 
 This will plot the radial magnetic field of a planet (any of the names from the list
@@ -151,19 +154,19 @@ below, case insensitive) at a radius given in terms of the surface radius. The d
 is the surface field. For example,
 
 ```
-$ ./magField earth
+$ ./magField earth moll
 ```
 
 displays the same information as above about Earth's field and produces the surface field of Earth while
 
 ```
-$ ./magField jupiter 0.8
+$ ./magField jupiter 0.85 moll
 ```
 
 produces the same plot of Jupiter's field as shown before.
 
 ```
-$ ./magField all <radius>
+$ ./magField all <radius> <projection>
 ```
 
 would produce a table of information about dipole tilt for each planet and magnetic field maps of all different planets at the given radius in a single figure.
@@ -171,7 +174,7 @@ would produce a table of information about dipole tilt for each planet and magne
 For example: 
 
 ```
-$ ./magField all 0.9
+$ ./magField all 0.9 moll
 ```
 
 would give
