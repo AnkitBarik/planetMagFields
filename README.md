@@ -7,6 +7,8 @@ Routines to visualize magnetic fields of planets in our solar system, in both 2D
  - Potential extrapolation: [SHTns](https://bitbucket.org/nschaeff/shtns) library
  - Writing vts files for 3D visualisation: [PyEVTK](https://github.com/paulo-herrera/PyEVTK) library
 
+All the plots below use the Mollweide projection specified with the keyword `'moll'`.
+
 # The `planet` class
 
 This gives access to all the relevant properties of a planet and has methods to plot
@@ -48,7 +50,7 @@ p = planet(name='earth',datDir='planetMagFields/data/')
 p.plot(r=1,proj='moll')
 ```
 
-produces the info mentioned above first and then the following plot of Earth's magnetic field
+produces the info mentioned above first and then the following plot of Earth's magnetic field using a Mollweide projection
 
 <img src="planetMagFields/images/2d/earth2d.png" width="500">
 
