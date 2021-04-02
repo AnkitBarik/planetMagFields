@@ -44,7 +44,7 @@ def getBr(datDir="data/",planet="earth",r=1,info=True):
 
     return p2D, th2D, Br, dipTheta, dipPhi
 
-def plotAllFields(datDir="data/",r=1.0,levels=30,cmap='RdBu_r'):
+def plotAllFields(datDir="data/",r=1.0,levels=30,cmap='RdBu_r',proj='Hammer'):
 
     print("")
     print('|=========|======|=======|')
@@ -56,11 +56,16 @@ def plotAllFields(datDir="data/",r=1.0,levels=30,cmap='RdBu_r'):
         p2D,th2D,Br,dipTheta,dipPhi = getBr(datDir=datDir,planet=planet,r=r,info=False)
 
         if planet == "ganymede":
-            ax = plt.subplot(3,3,8,projection=ccrs.Mollweide())
+            nplot = 8
         else:
-            ax = plt.subplot(3,3,k+1,projection=ccrs.Mollweide())
+            nplot = k+1
 
-        plotB_subplot(p2D,th2D,Br,ax,planet=planet,levels=levels,cmap=cmap)
+        if proj.lower() == 'moll':
+            ax = plt.subplot(3,3,nplot,projection=ccrs.Mollweide())
+        elif proj.lower() == 'hammer':
+            ax = plt.subplot(3,3,nplot)
+
+        plotB_subplot(p2D,th2D,Br,ax,planet=planet,levels=levels,cmap=cmap,proj=proj)
 
         if planet in ["mercury","saturn"]:
             print(('|%-8s | %-4.1f | %-5.1f |' %(planet.capitalize(),dipTheta, dipPhi)))
@@ -77,8 +82,8 @@ def plotAllFields(datDir="data/",r=1.0,levels=30,cmap='RdBu_r'):
 
 
 
-def plotMagField(datDir="data/",planet="earth",r=1):
+def plotMagField(datDir="data/",planet="earth",r=1,levels=30,proj='hammer',cmap='RdBu_r'):
 
     p2D, th2D, Br, dum1,dum2 = getBr(datDir=datDir,planet=planet,r=r)
     plt.figure(figsize=(12,6.75))
-    plotB(p2D,th2D,Br,planet=planet)
+    plotB(p2D,th2D,Br,planet=planet,levels=levels,proj=proj,cmap=cmap)
