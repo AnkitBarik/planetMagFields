@@ -14,8 +14,8 @@ This gives access to all the relevant properties of a planet and has methods to 
 the field and write a `vts` file for 3D visualization. Usage:
 
 ```python
-from planetMagFields import *
-p = planet(name='earth',datDir='planetMagFields/data/')
+from planetmagfields import *
+p = planet(name='earth',datDir='planetmagfields/data/')
 ```
 
 This displays the some information about the planet
@@ -44,20 +44,20 @@ This function plots a 2D surface plot of the radial magnetic field at radius `r`
 For example,
 
 ```python
-from planetMagFields import *
-p = planet(name='earth',datDir='planetMagFields/data/')
+from planetmagfields import *
+p = planet(name='earth',datDir='planetmagfields/data/')
 p.plot(r=1,proj='moll')
 ```
 
 produces the info mentioned above first and then the following plot of Earth's magnetic field using a Mollweide projection
 
-<img src="planetMagFields/images/2d/earth2d.png" width="500">
+<img src="planetmagfields/images/2d/earth2d.png" width="500">
 
 while
 
 ```python
-from planetMagFields import *
-p = planet(name='jupiter',datDir='planetMagFields/data/')
+from planetmagfields import *
+p = planet(name='jupiter',datDir='planetmagfields/data/')
 p.plot(r=0.85,proj='moll')
 ```
 produces the following info about Jupiter and then plot that follows
@@ -69,7 +69,7 @@ l_max = 10
 Dipole tilt (degrees) = 10.307870
 ```
 
-<img src="planetMagFields/images/jupiter_r085.png" width="500">
+<img src="planetmagfields/images/jupiter_r085.png" width="500">
 
 This can be compared with Fig. 1 g from [Moore et al. 2018](https://doi.org/10.1038/s41586-018-0468-5)
 
@@ -88,7 +88,7 @@ where,
 
 Example of a 3D image produced using Paraview for Neptune's field, extrapolated till 5 times the surface radius.
 
-<img src="planetMagFields/images/3d/neptune3d.png" width="500">
+<img src="planetmagfields/images/3d/neptune3d.png" width="500">
 
 # Field filtering using `planet.plot_filt`
 
@@ -99,34 +99,34 @@ below with examples, assuming the user is in the repository directory.
 ## Saturn's small-scale magnetic field at a depth of 0.75 planetary radius ( degree > 3 )
 
 ```python
-from planetMagFields import *
+from planetmagfields import *
 p = planet(name='saturn')
 p.plot_filt(r=0.75,lCutMin=4,proj='moll')
 ```
 
-<img src="planetMagFields/images/saturn_lgeq4_2d.png" width="500">
+<img src="planetmagfields/images/saturn_lgeq4_2d.png" width="500">
 
 Compare this with Fig. 20 B from [Cao et al. 2020](https://doi.org/10.1016/j.icarus.2019.113541)
 
 ## Jupiter's surface field restricted to degrees 1,2,3 and order 3
 
 ```python
-from planetMagFields import *
+from planetmagfields import *
 p = planet(name='jupiter')
 p.plot_filt(r=1,larr=[1,2,3],marr=[3],proj='moll')
 ```
 
-<img src="planetMagFields/images/jupiter_l123m3_2d.png" width="500">
+<img src="planetmagfields/images/jupiter_l123m3_2d.png" width="500">
 
 ## Earth's smaller scale surface field for degree > 4 and order > 3
 
 ```python
-from planetMagFields import *
+from planetmagfields import *
 p = planet(name='earth')
 p.plot_filt(r=1,lCutMin=5,mmin=4,proj='moll')
 ```
 
-<img src="planetMagFields/images/earth_lgeq5mgeq4_2d.png" width="500">
+<img src="planetmagfields/images/earth_lgeq5mgeq4_2d.png" width="500">
 
 # Potential extrapolation
 
@@ -136,7 +136,7 @@ Usage example:
 
 ```python
 import numpy as np
-from planetMagFields import *
+from planetmagfields import *
 p = planet('saturn')
 ratio_out = 5 # Ratio (> 1) in terms of surface radius to which to extrapolate
 nrout = 32 # Number of grid points in radius between 1 and ratio_out
@@ -172,7 +172,7 @@ $ ./magField all <radius> <projection>
 
 would produce a table of information about dipole tilt for each planet and magnetic field maps of all different planets at the given radius in a single figure.
 
-For example: 
+For example:
 
 ```
 $ ./magField all 0.9 moll
@@ -196,7 +196,7 @@ would give
 
 followed by the following plot
 
-![All fields r=0.9](planetMagFields/images/magField_all_09.png)
+![All fields r=0.9](planetmagfields/images/magField_all_09.png)
 
 # Spherical harmonic normalization and Condon-Shortley phase
 
