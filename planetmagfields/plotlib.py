@@ -54,7 +54,7 @@ def plotB(p2D,th2D,B,r=1,planet="earth",levels=60,cmap='RdBu_r',proj='moll'):
         ax = plt.axes()
         xx,yy = hammer2cart(lat2D,lon2D)
         cont = ax.contourf(xx,yy,B,cs,cmap=cmap,norm=divnorm,extend='both')
-    else: 
+    else:
         if proj.lower() == 'moll':
             projection = ccrs.Mollweide()
         else:
@@ -123,3 +123,22 @@ def plotB_subplot(p2D,th2D,B,ax,planet="earth",levels=60,cmap='RdBu_r',proj='mol
     ax.set_title(planet.capitalize(),fontsize=20)
     ax.axis('equal')
     ax.axis('off')
+
+def plot_spec(l,E,r,planet):
+
+    plt.semilogy(l[1:],E[1:],'-o',lw=1.2,color='#449c99',mfc='#347b79',mec='#347b79',ms=8)
+    plt.xlabel(r'$l$',fontsize=30)
+    plt.ylabel(r'$R_l$ (nT$^2$)',fontsize=30)
+    plt.xticks(l)
+
+    plt.tick_params(which='major',labelsize=15,length=10)
+    plt.tick_params(which='minor',length=5)
+
+    plt.grid(True,alpha=0.5)
+
+    if r==1:
+        radLabel = '  Surface'
+    else:
+        radLabel = r'  $r/r_{\rm surface}=%.2f$' %r
+
+    plt.title('Lowes spectrum, '+ planet.capitalize() + radLabel,fontsize=20,pad=10)

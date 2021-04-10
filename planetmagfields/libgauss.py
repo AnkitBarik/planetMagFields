@@ -204,6 +204,21 @@ def getBm0(lmax,g,r,p2D,th2D):
 
     return Br
 
+def get_spec(glm,hlm,idx,lmax,planet='earth',r=1):
+    E = np.zeros(lmax+1)
+
+    if planet in ['mercury','saturn']:
+        for l in range(1,lmax+1):
+            E[l] = (l+1) * r**(-2*l-4) *(np.abs(glm[l])**2 + np.abs(hlm[l])**2)
+        emag_10 = E[1]
+    else:
+        for l in range(1,lmax+1):
+            for m in range(l+1):
+                E[l] += (l+1) * r**(-2*l-4) *(np.abs(glm[idx[l,m]])**2 + np.abs(hlm[idx[l,m]])**2)
+
+        emag_10 = 2 * r**(-2*l-4)* np.abs(glm[idx[1,0]])**2
+    return E, emag_10
+
 def filt_Gauss(glm,hlm,lmax,idx,larr=None,marr=None,lCutMin=0,lCutMax=None,mmin=0,mmax=None):
 
     glm_filt = deepcopy(glm)

@@ -3,9 +3,9 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-from .libgauss import get_data, filt_Gauss, filt_Gaussm0,getB, getBm0
+from .libgauss import get_data, filt_Gauss, filt_Gaussm0,getB, getBm0, get_spec
 from .libbfield import getBr
-from .plotlib import plotB
+from .plotlib import plotB, plot_spec
 
 class planet:
 
@@ -113,3 +113,16 @@ class planet:
 
         plt.title(self.name.capitalize() + radLabel + elllabel,fontsize=25,pad=20)
         plt.tight_layout()
+
+
+    def spec(self,r=1,iplot=True):
+        self.emag_spec, emag_10 = get_spec(self.glm,self.hlm,self.idx,self.lmax,planet=self.name,r=r)
+        l = np.arange(self.lmax+1)
+
+        self.dip_tot = self.emag_spec[1]/sum(self.emag_spec)
+        self.dipolarity = emag_10/sum(self.emag_spec)
+        if iplot:
+            plt.figure(figsize=(7,7))
+            plot_spec(l,self.emag_spec,r,self.name)
+            plt.tight_layout()
+            plt.show()
