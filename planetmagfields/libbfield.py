@@ -38,7 +38,7 @@ def getBr(datDir="data/",planet="earth",r=1,info=True):
 
     if info:
         print(("Planet: %s" %planet.capitalize()))
-        print(("Depth (fraction of surface radius) = %.2f" %r))
+        #print(("Depth (fraction of surface radius) = %.2f" %r))
         print(("l_max = %d" %lmax))
         print(("Dipole tilt (degrees) = %f" %dipTheta))
 
