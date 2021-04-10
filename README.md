@@ -22,7 +22,6 @@ This displays the some information about the planet
 
 ```
 Planet: Earth
-Depth (fraction of surface radius) = 1.00
 l_max = 13
 Dipole tilt (degrees) = -9.410531
 ```
@@ -64,7 +63,6 @@ produces the following info about Jupiter and then plot that follows
 
 ```
 Planet: Jupiter
-Depth (fraction of surface radius) = 1.00
 l_max = 10
 Dipole tilt (degrees) = 10.307870
 ```
@@ -73,7 +71,39 @@ Dipole tilt (degrees) = 10.307870
 
 This can be compared with Fig. 1 g from [Moore et al. 2018](https://doi.org/10.1038/s41586-018-0468-5)
 
-## `planet.writeVtsFile`
+## `planet.spec()`
+
+This function computes the Lowes spectrum of a planet at a given radius. It adds an array `p.emag_spec` which contains the energy at different spherical harmonic degrees and two variables `p.dipolarity` and `p.dip_tot` which provide the fraction of energies in the axial dipole and the total dipole with respect to the total energy at all degrees. Usage example:
+
+```python
+from planetmagfields import *
+p = planet(name='jupiter')
+p.spec()
+```
+
+will provide variables
+
+```python
+In [8]: p.dipolarity
+Out[8]: 0.7472047129875864
+
+In [9]: p.dip_tot
+Out[9]: 0.7719205112704368
+
+In [10]: p.emag_spec
+Out[10]:
+array([0.00000000e+00, 3.47735422e+11, 2.36340423e+10, 2.12851278e+10,
+       1.75661779e+10, 1.92219842e+10, 9.91200756e+09, 3.34535475e+09,
+       3.95317971e+09, 2.59333412e+09, 1.23423769e+09])
+```
+
+and will produce Jupiter's surface spectrum:
+
+<img src="planetmagfields/images/spec/jupiter_spec.png" width="500">
+
+The plotting can be suppressed setting the logical `p.spec(iplot=False)`.
+
+## `planet.writeVtsFile()`
 
 This function writes a vts file that can be used to produce 3D visualizations of field lines with Paraview/VisIt. Usage:
 
