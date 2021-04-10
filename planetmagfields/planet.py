@@ -6,12 +6,19 @@ import matplotlib.pyplot as plt
 from .libgauss import get_data, filt_Gauss, filt_Gaussm0,getB, getBm0, get_spec
 from .libbfield import getBr
 from .plotlib import plotB, plot_spec
+import sys
+
+planetlist = ["mercury","earth","jupiter","saturn","uranus","neptune","ganymede"]
 
 class planet:
 
     def __init__(self,name='earth',datDir='./planetmagfields/data/'):
 
         self.name   = name.lower()
+        if self.name not in planetlist:
+            print("Planet must be one of the following!")
+            print(planetlist)
+
         self.datDir = datDir
         self.glm, self.hlm, self.lmax, self.idx = \
                 get_data(self.datDir,planet=self.name)
