@@ -255,11 +255,11 @@ In [5]: for k,proj in enumerate(projlist):
    ...:     close()
 ```
 
-`In[3]` produces the plot of Jupiter's field already shown above. `In[5]` produces the following figures
+`In[3]` produces the plot of Jupiter's field already shown above. `In[5]` produces the following figures with the Mercator,Robinson,Stereographic and AzimuthalEquidistant projections, respectively.
 
-<img src="planetmagfields/images/proj_examples/jup_r0_85Mercator.png" width="250">  <img src="planetmagfields/images/proj_examples/jup_r0_85Robinson.png" width="250">
+<img src="planetmagfields/images/proj_examples/jup_r0_85Mercator.png" width="400">  <img src="planetmagfields/images/proj_examples/jup_r0_85Robinson.png" width="400">
 
-<img src="planetmagfields/images/proj_examples/jup_r0_85Stereographic.png" width="250">  <img src="planetmagfields/images/proj_examples/jup_r0_85AzimuthalEquidistant.png" width="250">
+<img src="planetmagfields/images/proj_examples/jup_r0_85Stereographic.png" width="400">  <img src="planetmagfields/images/proj_examples/jup_r0_85AzimuthalEquidistant.png" width="400">
 
 
 
