@@ -58,7 +58,7 @@ class planet:
 
     ## Filtered plots
 
-    def plot_filt(self,r=1,larr=None,marr=None,lCutMin=0,lCutMax=None,mmin=0,mmax=None,levels=30,cmap='RdBu_r',proj='hammer'):
+    def plot_filt(self,r=1,larr=None,marr=None,lCutMin=0,lCutMax=None,mmin=0,mmax=None,levels=30,cmap='RdBu_r',proj='Mollweide'):
 
         self.larr_filt = larr
         self.marr_filt = marr
