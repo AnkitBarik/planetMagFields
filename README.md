@@ -237,6 +237,31 @@ Only the data for Earth uses a Condon-Shortley phase, the others do not.
 
 By default, the plot function tries to use the Mollweide projection. However, using the power of the [cartopy](https://scitools.org.uk/cartopy/docs/latest/) library, any projection from [this list](https://scitools.org.uk/cartopy/docs/latest/crs/projections.html) is supported. In the absence of the cartopy library, the 2D plots fall back to the internally written Hammer projection. Examples of Jupiter's radial magnetic field at r=0.85 with different projections are shown below:
 
+```python
+In [1]: from planetmagfields import *
+
+In [2]: p = planet(name='jupiter')
+Planet: Jupiter
+l_max = 10
+Dipole tilt (degrees) = 10.307870
+
+In [3]: p.plot(r=0.85)
+
+In [4]: projlist=['Mercator','Robinson','Stereographic','AzimuthalEquidistant']
+
+In [5]: for k,proj in enumerate(projlist):
+   ...:     p.plot(r=0.85,proj=proj)
+   ...:     savefig('jup_r0_85'+proj+'.png',dpi=150,bbox_inches='tight')
+   ...:     close()
+```
+
+`In[3]` produces the plot of Jupiter's field already shown above. `In[5]` produces the following figures
+
+<img src="planetmagfields/images/proj_examples/jup_r0_85Mercator.png" width="250">  <img src="planetmagfields/images/proj_examples/jup_r0_85Robinson.png" width="250">
+
+<img src="planetmagfields/images/proj_examples/jup_r0_85Stereographic.png" width="250">  <img src="planetmagfields/images/proj_examples/jup_r0_85AzimuthalEquidistant.png" width="250">
+
+
 
 
 # Data sources
