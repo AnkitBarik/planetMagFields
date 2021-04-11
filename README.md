@@ -261,7 +261,7 @@ In [5]: for k,proj in enumerate(projlist):
 
 <img src="planetmagfields/images/proj_examples/jup_r0_85Stereographic.png" width="400">  <img src="planetmagfields/images/proj_examples/jup_r0_85AzimuthalEquidistant.png" width="400">
 
-Note that this also works with the `magField.py` script for quick plotting. Examples:
+This also works with the `magField.py` script for quick plotting. Examples:
 
 ```bash
 ./magField.py earth 0.9 Robinson
@@ -272,6 +272,11 @@ or even with plots of all planets together
 ```bash
 ./magField.py all 0.9 Robinson
 ```
+
+Note that I have chosen to keep the projection information out of the plot titles to prevent too much text. I trust the user would know which projection they want.
+
+❗ | The Orthographic projection often does not create correct plots, be cautious while using it 
+:---: | :---
 
 # Data sources
 
