@@ -30,7 +30,7 @@ class planet:
         self.theta = self.th2D[0,:]
         self.r = 1
 
-    def plot(self,r=1,levels=30,cmap='RdBu_r',proj='Hammer'):
+    def plot(self,r=1,levels=30,cmap='RdBu_r',proj='Mollweide'):
         plt.figure(figsize=(12,6.75))
 
         if r == 1:

@@ -44,7 +44,7 @@ def getBr(datDir="data/",planet="earth",r=1,info=True):
 
     return p2D, th2D, Br, dipTheta, dipPhi
 
-def plotAllFields(datDir="data/",r=1.0,levels=30,cmap='RdBu_r',proj='moll'):
+def plotAllFields(datDir="data/",r=1.0,levels=30,cmap='RdBu_r',proj='Mollweide'):
 
     print("")
     print('|=========|======|=======|')
@@ -60,10 +60,11 @@ def plotAllFields(datDir="data/",r=1.0,levels=30,cmap='RdBu_r',proj='moll'):
         else:
             nplot = k+1
 
-        if proj.lower() == 'moll':
-            ax = plt.subplot(3,3,nplot,projection=ccrs.Mollweide())
-        elif proj.lower() == 'hammer':
+        if proj.lower() == 'hammer':
             ax = plt.subplot(3,3,nplot)
+        else:
+            projection = eval('ccrs.'+proj+'()')
+            ax = plt.subplot(3,3,nplot,projection=projection)
 
         plotB_subplot(p2D,th2D,Br,ax,planet=planet,levels=levels,cmap=cmap,proj=proj)
 

@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from planetMagFields.libbfield import *
+from planetmagfields.libbfield import *
 import sys
 
 levels=30
 cmap='RdBu_r'
-proj = 'moll'
+proj = 'Mollweide'
 r = 1
 
 if len(sys.argv) > 4:
@@ -15,13 +15,13 @@ if len(sys.argv) > 4:
 elif len(sys.argv) == 4:
     planet = str(sys.argv[1]).lower()
     r      = np.float32(sys.argv[2])
-    proj   = str(sys.argv[3]).lower()
+    proj   = str(sys.argv[3])
 elif len(sys.argv) == 3:
     planet = str(sys.argv[1]).lower()
     try:
         r      = np.float32(sys.argv[2])
     except:
-        proj   = str(sys.argv[2]).lower()
+        proj   = str(sys.argv[2])
 elif len(sys.argv) == 2:
     print("Radius not specified, using surface\n")
     planet = str(sys.argv[1]).lower()

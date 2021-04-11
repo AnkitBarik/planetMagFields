@@ -25,7 +25,7 @@ def hammer2cart(ttheta, pphi, colat=False):
              /np.sqrt(1.+np.sin(ttheta)*np.sin(pphi/2.))
     return xx, yy
 
-def plotB(p2D,th2D,B,r=1,planet="earth",levels=60,cmap='RdBu_r',proj='moll'):
+def plotB(p2D,th2D,B,r=1,planet="earth",levels=60,cmap='RdBu_r',proj='Mollweide'):
 
     planet = planet.lower()
 
@@ -55,10 +55,7 @@ def plotB(p2D,th2D,B,r=1,planet="earth",levels=60,cmap='RdBu_r',proj='moll'):
         xx,yy = hammer2cart(lat2D,lon2D)
         cont = ax.contourf(xx,yy,B,cs,cmap=cmap,norm=divnorm,extend='both')
     else:
-        if proj.lower() == 'moll':
-            projection = ccrs.Mollweide()
-        else:
-            projection = eval('ccrs.'+proj)
+        projection = eval('ccrs.'+proj+'()')
 
         ax = plt.axes(projection=projection)
 
@@ -81,7 +78,7 @@ def plotB(p2D,th2D,B,r=1,planet="earth",levels=60,cmap='RdBu_r',proj='moll'):
     ax.axis('equal')
     ax.axis('off')
 
-def plotB_subplot(p2D,th2D,B,ax,planet="earth",levels=60,cmap='RdBu_r',proj='moll'):
+def plotB_subplot(p2D,th2D,B,ax,planet="earth",levels=60,cmap='RdBu_r',proj='Mollweide'):
     planet = planet.lower()
 
     bmax = np.abs(B).max()
@@ -105,9 +102,7 @@ def plotB_subplot(p2D,th2D,B,ax,planet="earth",levels=60,cmap='RdBu_r',proj='mol
         print("cartopy library not available, using Hammer projection")
         proj = 'hammer'
 
-    proj = proj.lower()
-
-    if proj == 'hammer':
+    if proj.lower() == 'hammer':
         xx,yy = hammer2cart(th2D,p2D)
         cont = ax.contourf(xx,yy,B,cs,cmap=cmap,norm=divnorm,extend='both')
     else:
