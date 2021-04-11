@@ -174,10 +174,10 @@ rout = np.linspace(1,ratio_out,nrout)
 brout, btout, bpout = potextra.extrapot(p.lmax,1.,p.Br,rout)
 ```
 
-# Quickplot using the `magField` script:
+# Quickplot using the `magField.py` script:
 
 ```
-$ ./magField <planet> <radius> <projection>
+$ ./magField.py <planet> <radius> <projection>
 ```
 
 This will plot the radial magnetic field of a planet (any of the names from the list
@@ -185,19 +185,19 @@ below, case insensitive) at a radius given in terms of the surface radius. The d
 is the surface field. For example,
 
 ```
-$ ./magField earth moll
+$ ./magField.py earth Mollweide
 ```
 
 displays the same information as above about Earth's field and produces the surface field of Earth while
 
 ```
-$ ./magField jupiter 0.85 moll
+$ ./magField.py jupiter 0.85 Mollweide
 ```
 
 produces the same plot of Jupiter's field as shown before.
 
 ```
-$ ./magField all <radius> <projection>
+$ ./magField.py all <radius> <projection>
 ```
 
 would produce a table of information about dipole tilt for each planet and magnetic field maps of all different planets at the given radius in a single figure.
@@ -205,7 +205,7 @@ would produce a table of information about dipole tilt for each planet and magne
 For example:
 
 ```
-$ ./magField all 0.9 moll
+$ ./magField all 0.9 Mollweide
 ```
 
 would give
@@ -255,14 +255,23 @@ In [5]: for k,proj in enumerate(projlist):
    ...:     close()
 ```
 
-`In[3]` produces the plot of Jupiter's field already shown above. `In[5]` produces the following figures with the Mercator,Robinson,Stereographic and AzimuthalEquidistant projections, respectively.
+`In[3]` produces the plot of Jupiter's field already shown above. `In[5]` produces the following figures with the Mercator, Robinson, Stereographic and AzimuthalEquidistant projections, respectively.
 
 <img src="planetmagfields/images/proj_examples/jup_r0_85Mercator.png" width="400">  <img src="planetmagfields/images/proj_examples/jup_r0_85Robinson.png" width="400">
 
 <img src="planetmagfields/images/proj_examples/jup_r0_85Stereographic.png" width="400">  <img src="planetmagfields/images/proj_examples/jup_r0_85AzimuthalEquidistant.png" width="400">
 
+Note that this also works with the `magField.py` script for quick plotting. Examples:
 
+```bash
+./magField.py earth 0.9 Robinson
+```
 
+or even with plots of all planets together
+
+```bash
+./magField.py all 0.9 Robinson
+```
 
 # Data sources
 
