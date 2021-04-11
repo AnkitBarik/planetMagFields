@@ -45,7 +45,7 @@ For example,
 ```python
 from planetmagfields import *
 p = planet(name='earth',datDir='planetmagfields/data/')
-p.plot(r=1,proj='moll')
+p.plot(r=1,proj='Mollweide')
 ```
 
 produces the info mentioned above first and then the following plot of Earth's magnetic field using a Mollweide projection
@@ -57,7 +57,7 @@ while
 ```python
 from planetmagfields import *
 p = planet(name='jupiter',datDir='planetmagfields/data/')
-p.plot(r=0.85,proj='moll')
+p.plot(r=0.85,proj='Mollweide')
 ```
 produces the following info about Jupiter and then plot that follows
 
@@ -232,6 +232,12 @@ followed by the following plot
 
 All the Gauss coefficients in the collected data are Schmidt semi-normalized.
 Only the data for Earth uses a Condon-Shortley phase, the others do not.
+
+# Projections
+
+By default, the plot function tries to use the Mollweide projection. However, using the power of the [cartopy](https://scitools.org.uk/cartopy/docs/latest/) library, any projection from [this list](https://scitools.org.uk/cartopy/docs/latest/crs/projections.html) is supported. In the absence of the cartopy library, the 2D plots fall back to the internally written Hammer projection. Examples of Jupiter's radial magnetic field at r=0.85 with different projections are shown below:
+
+
 
 # Data sources
 
