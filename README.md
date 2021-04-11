@@ -131,7 +131,7 @@ below with examples, assuming the user is in the repository directory.
 ```python
 from planetmagfields import *
 p = planet(name='saturn')
-p.plot_filt(r=0.75,lCutMin=4,proj='moll')
+p.plot_filt(r=0.75,lCutMin=4,proj='Mollweide')
 ```
 
 <img src="planetmagfields/images/saturn_lgeq4_2d.png" width="500">
@@ -143,7 +143,7 @@ Compare this with Fig. 20 B from [Cao et al. 2020](https://doi.org/10.1016/j.ica
 ```python
 from planetmagfields import *
 p = planet(name='jupiter')
-p.plot_filt(r=1,larr=[1,2,3],marr=[3],proj='moll')
+p.plot_filt(r=1,larr=[1,2,3],marr=[3],proj='Mollweide')
 ```
 
 <img src="planetmagfields/images/jupiter_l123m3_2d.png" width="500">
@@ -153,7 +153,7 @@ p.plot_filt(r=1,larr=[1,2,3],marr=[3],proj='moll')
 ```python
 from planetmagfields import *
 p = planet(name='earth')
-p.plot_filt(r=1,lCutMin=5,mmin=4,proj='moll')
+p.plot_filt(r=1,lCutMin=5,mmin=4,proj='Mollweide')
 ```
 
 <img src="planetmagfields/images/earth_lgeq5mgeq4_2d.png" width="500">
