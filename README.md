@@ -1,10 +1,9 @@
 # planetMagFields
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
-Routines to visualize magnetic fields of planets in our solar system, in both 2D and 3D. For 2D plots, the routines use a Mollweide projection by default using the [cartopy](https://scitools.org.uk/cartopy/docs/latest/) library, but in the absence of it, it falls back to the internal Hammer projection.
+Routines to easily access information about magnetic fields of planets in our solar system and visualize them in both 2D and 3D. These require [NumPy](https://numpy.org/), [Matplotlib](https://matplotlib.org/) and [SciPy](https://www.scipy.org/) (pronounced "Sigh Pie"). Other than that, the following external libraries are used for a few different functions:
 
-The following external libraries are used for a few different functions:
-
+ - 2D plotting for map projections other than Hammer : [Cartopy](https://scitools.org.uk/cartopy/docs/latest/) library ( see more under [Projections](#projections) )
  - Potential extrapolation: [SHTns](https://bitbucket.org/nschaeff/shtns) library
  - Writing vts files for 3D visualisation: [PyEVTK](https://github.com/paulo-herrera/PyEVTK) library
 
