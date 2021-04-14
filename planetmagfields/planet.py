@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from .libgauss import get_data, filt_Gauss, filt_Gaussm0,getB, getBm0, get_spec
 from .libbfield import getBr
-from .plotlib import plotB, plot_spec
+from .plotlib import plotB, plotSurf, plot_spec
 import sys
 
 planetlist = ["mercury","earth","jupiter","saturn","uranus","neptune","ganymede"]
@@ -34,13 +34,32 @@ class planet:
         plt.figure(figsize=(12,6.75))
 
         if r == 1:
-            plotB(self.p2D,self.th2D,self.Br,planet=self.name,levels=levels,cmap=cmap,proj=proj)
+            ax,cbar = plotSurf(self.p2D,self.th2D,self.Br,levels=levels,cmap=cmap,proj=proj)
         else:
             self.p2D, self.th2D, self.Br, self.dipTheta, self.dipPhi = \
                     getBr(datDir=self.datDir,planet=self.name,r=r,info=False)
             self.r = r
-            plotB(self.p2D,self.th2D,self.Br,r=self.r,planet=self.name,levels=levels,cmap=cmap,proj=proj)
+            ax,cbar = plotSurf(self.p2D,self.th2D,self.Br,levels=levels,cmap=cmap,proj=proj)
 
+        cbar.ax.set_xlabel(r'Radial magnetic field ($\mu$T)',fontsize=25)
+        cbar.ax.tick_params(labelsize=20)
+
+        if r==1:
+            radLabel = '  Surface'
+        else:
+            radLabel = r'  $r/r_{\rm surface}=%.2f$' %r
+
+        if proj.lower() != 'hammer' and self.name == 'earth':
+            ax.coastlines()
+
+        ax.set_title(planet.capitalize() + radLabel,fontsize=25,pad=20)
+
+        if r==1:
+            radLabel = '  Surface'
+        else:
+            radLabel = r'  $r/r_{\rm surface}=%.2f$' %r
+
+        ax.set_title(planet.capitalize() + radLabel,fontsize=25,pad=20)
         plt.tight_layout()
 
     def writeVtsFile(self,potExtra=False,ratio_out=2,nrout=32):
@@ -88,7 +107,7 @@ class planet:
 
         plt.figure(figsize=(12,6.75))
 
-        plotB(self.p2D,self.th2D,self.Br_filt,r=self.r_filt,planet=self.name,levels=levels,cmap=cmap,proj=proj)
+        ax,cbar = plotSurf(self.p2D,self.th2D,self.Br_filt,levels=levels,cmap=cmap,proj=proj)
 
         if r==1:
             radLabel = '  Surface'
@@ -118,7 +137,12 @@ class planet:
             elif self.mmax_filt < self.lmax:
                 elllabel += r', $m \leq %d$' %self.mmax_filt
 
-        plt.title(self.name.capitalize() + radLabel + elllabel,fontsize=25,pad=20)
+        cbar.ax.set_xlabel(r'Radial magnetic field ($\mu$T)',fontsize=25)
+        cbar.ax.tick_params(labelsize=20)
+
+        if proj.lower() != 'hammer' and self.name == 'earth':
+            ax.coastlines()
+        ax.set_title(self.name.capitalize() + radLabel + elllabel,fontsize=25,pad=20)
         plt.tight_layout()
 
 

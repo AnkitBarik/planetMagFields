@@ -25,9 +25,7 @@ def hammer2cart(ttheta, pphi, colat=False):
              /np.sqrt(1.+np.sin(ttheta)*np.sin(pphi/2.))
     return xx, yy
 
-def plotB(p2D,th2D,B,r=1,planet="earth",levels=60,cmap='RdBu_r',proj='Mollweide'):
-
-    planet = planet.lower()
+def plotSurf(p2D,th2D,B,levels=60,cmap='RdBu_r',proj='Mollweide'):
 
     bmax = np.abs(B).max()
     digits = int(np.log10(bmax)) + 1
@@ -59,15 +57,26 @@ def plotB(p2D,th2D,B,r=1,planet="earth",levels=60,cmap='RdBu_r',proj='Mollweide'
 
         ax = plt.axes(projection=projection)
 
-        if planet == "earth":
-            ax.coastlines()
-
         cont = ax.contourf(lon2D*180/np.pi,lat2D*180/np.pi,B,cs,  \
             transform=ccrs.PlateCarree(),cmap=cmap,norm=divnorm,extend='both')
 
     cbar = plt.colorbar(cont,orientation='horizontal',fraction=0.06, pad=0.04,ticks=[-bmax,0,bmax])
+
+    ax.axis('equal')
+    ax.axis('off')
+
+    return ax, cbar
+
+def plotB(p2D,th2D,B,r=1,planet="earth",levels=60,cmap='RdBu_r',proj='Mollweide'):
+
+    planet = planet.lower()
+
+    ax,cbar = plotSurf(p2D,th2D,B,levels=levels,cmap=cmap,proj=proj)
     cbar.ax.set_xlabel(r'Radial magnetic field ($\mu$T)',fontsize=25)
     cbar.ax.tick_params(labelsize=20)
+
+    if proj.lower() != 'hammer' and planet == 'earth':
+        ax.coastlines()
 
     if r==1:
         radLabel = '  Surface'
@@ -75,8 +84,6 @@ def plotB(p2D,th2D,B,r=1,planet="earth",levels=60,cmap='RdBu_r',proj='Mollweide'
         radLabel = r'  $r/r_{\rm surface}=%.2f$' %r
 
     ax.set_title(planet.capitalize() + radLabel,fontsize=25,pad=20)
-    ax.axis('equal')
-    ax.axis('off')
 
 def plotB_subplot(p2D,th2D,B,ax,planet="earth",levels=60,cmap='RdBu_r',proj='Mollweide'):
     planet = planet.lower()
