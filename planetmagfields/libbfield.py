@@ -62,6 +62,7 @@ def plotAllFields(datDir="data/",r=1.0,levels=30,cmap='RdBu_r',proj='Mollweide')
         if proj.lower() == 'hammer':
             ax = plt.subplot(3,3,nplot)
         else:
+            import cartopy.crs as ccrs
             projection = eval('ccrs.'+proj+'()')
             ax = plt.subplot(3,3,nplot,projection=projection)
 
