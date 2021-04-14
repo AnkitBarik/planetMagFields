@@ -5,7 +5,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from .libgauss import get_data,gen_idx,get_grid,getB,getBm0
 from .plotlib import *
-import cartopy.crs as ccrs
 import sys
 
 planetlist = ["mercury","earth","jupiter","saturn","uranus","neptune","ganymede"]
@@ -87,4 +86,4 @@ def plotMagField(datDir="data/",planet="earth",r=1,levels=30,proj='moll',cmap='R
 
     p2D, th2D, Br, dum1,dum2 = getBr(datDir=datDir,planet=planet,r=r)
     plt.figure(figsize=(12,6.75))
-    plotB(p2D,th2D,Br,planet=planet,levels=levels,proj=proj,cmap=cmap)
+    plotB(p2D,th2D,Br,planet=planet,levels=levels,proj=proj,cmap=cmap,r=r)

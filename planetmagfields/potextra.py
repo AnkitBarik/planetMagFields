@@ -2,8 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-import shtns
-
 
 def extrapot(lmax,rcmb,brcmb,rout):
 
@@ -14,6 +12,12 @@ def extrapot(lmax,rcmb,brcmb,rout):
 
     lmax = int(nphi/3)
     mmax = lmax
+
+    try:
+        import shtns
+    except ImportError:
+        print("Potential extrapolation requires the SHTns library")
+        print("It can be obtained here: https://bitbucket.org/nschaeff/shtns")
 
     norm=shtns.sht_orthonormal | shtns.SHT_NO_CS_PHASE
 
