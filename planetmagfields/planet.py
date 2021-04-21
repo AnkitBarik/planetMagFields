@@ -52,14 +52,12 @@ class planet:
         if proj.lower() != 'hammer' and self.name == 'earth':
             ax.coastlines()
 
-        ax.set_title(planet.capitalize() + radLabel,fontsize=25,pad=20)
-
         if r==1:
             radLabel = '  Surface'
         else:
             radLabel = r'  $r/r_{\rm surface}=%.2f$' %r
 
-        ax.set_title(planet.capitalize() + radLabel,fontsize=25,pad=20)
+        ax.set_title(self.name.capitalize() + radLabel,fontsize=25,pad=20)
         plt.tight_layout()
 
     def writeVtsFile(self,potExtra=False,ratio_out=2,nrout=32):
