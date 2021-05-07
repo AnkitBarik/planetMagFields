@@ -33,6 +33,24 @@ variables associated with the planet such as:
  - `p.Br` : computed radial magnetic field at surface
  - `p.dipTheta` : dipole tilt with respect to the rotation axis
  - `p.dipPhi` : dipole longitude ( in case zero longitude is known, applicable to Earth )
+ - `p.idx` : indices to get values of Gauss coefficients
+
+Example:
+
+```python
+In [1]: from planetmagfields import *
+
+In [2]: p = planet(name='jupiter')
+Planet: Jupiter
+l_max = 10
+Dipole tilt (degrees) = 10.307870
+
+In [3]: p.glm[p.idx[2,0]]
+Out[3]: 11670.4
+
+In [4]: p.hlm[p.idx[4,2]]
+Out[4]: 27811.2
+```
 
 as well as the functions:
 
