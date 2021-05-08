@@ -45,10 +45,10 @@ Planet: Jupiter
 l_max = 10
 Dipole tilt (degrees) = 10.307870
 
-In [3]: p.glm[p.idx[2,0]]
+In [3]: p.glm[p.idx[2,0]]      # g20
 Out[3]: 11670.4
 
-In [4]: p.hlm[p.idx[4,2]]
+In [4]: p.hlm[p.idx[4,2]]      # h42
 Out[4]: 27811.2
 ```
 
