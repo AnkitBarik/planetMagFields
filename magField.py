@@ -31,7 +31,7 @@ else:
     r=1.
 
 if planet == 'all':
-    plotAllFields(datDir='./planetMagFields/data/',r=r,levels=levels,cmap=cmap,proj=proj)
+    plotAllFields(datDir='./planetmagfields/data/',r=r,levels=levels,cmap=cmap,proj=proj)
     plt.tight_layout()
     plt.subplots_adjust(top=0.895,
                         bottom=0.035,
@@ -40,7 +40,7 @@ if planet == 'all':
                         hspace=0.38,
                         wspace=0.109)
 else:
-    plotMagField(planet=planet,r=r,datDir='./planetMagFields/data/',levels=levels,cmap=cmap,proj=proj)
+    plotMagField(planet=planet,r=r,datDir='./planetmagfields/data/',levels=levels,cmap=cmap,proj=proj)
     plt.tight_layout()
 
 plt.show()
