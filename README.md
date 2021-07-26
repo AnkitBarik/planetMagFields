@@ -299,7 +299,7 @@ Note that I have chosen to keep the projection information out of the plot title
 
 Mercury : [Anderson et al. 2012](https://doi.org/10.1029/2012JE004159)
 
-Earth   : [IGRF 13](https://www.ngdc.noaa.gov/IAGA/vmod/igrf.html)
+Earth   : [IGRF 13](https://www.ngdc.noaa.gov/IAGA/vmod/igrf.html), [Alken et al. 2021](https://doi.org/10.1186/s40623-020-01288-x)
 
 Jupiter : [JRM09, Connerney et al. 2018](https://doi.org/10.1002/2018GL077312)
 
