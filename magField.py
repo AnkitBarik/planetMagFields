@@ -4,7 +4,7 @@
 from planetmagfields.libbfield import *
 import sys
 
-levels=30
+levels=20
 cmap='RdBu_r'
 proj = 'Mollweide'
 r = 1

@@ -183,6 +183,10 @@ def getB(lmax,glm,hlm,idx,r,p2D,th2D,planet="earth"):
                 fac_m = 1.
             else:
                 fac_m = (-1)**m
+
+            if m != 0:
+                fac_m *= np.sqrt(2)
+
             fac = fac_m * (l+1) * r**(-l-2) * np.sqrt((4.*np.pi)/(2*l+1))
 
             G = glm[idx[l,m]] * np.real(ylm)
