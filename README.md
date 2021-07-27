@@ -1,5 +1,5 @@
 # planetMagFields
-[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0) [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4706157.svg)](https://doi.org/10.5281/zenodo.4706157)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0) [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5140421.svg)](https://doi.org/10.5281/zenodo.5140421)
 
 Routines to easily access information about magnetic fields of planets in our solar system and visualize them in both 2D and 3D. These require [NumPy](https://numpy.org/), [Matplotlib](https://matplotlib.org/) and [SciPy](https://www.scipy.org/) (pronounced "Sigh Pie"). Other than that, the following external libraries are used for a few different functions:
 
