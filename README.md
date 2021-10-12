@@ -310,3 +310,7 @@ Uranus  : [Connerny et al. 1987](https://doi.org/10.1029/JA092iA13p15329)
 Neptune : [Connerny et al. 1991](https://doi.org/10.1029/91JA01165)
 
 Ganymede: [Kivelson et al. 2002](https://doi.org/10.1006/icar.2002.6834)
+
+# Acknowledgements
+
+I would like to thank [@reguang](https://github.com/reguang) for motivating me to create this package. I thank [Jon Aurnou](https://epss.ucla.edu/people/faculty/543/) for testing it out and pointing out runtime errors. Lastly, I would like to thank [Thomas Gastine](https://github.com/tgastine) for comparing the plots with real data and pointing out a normalization error which has been fixed.
