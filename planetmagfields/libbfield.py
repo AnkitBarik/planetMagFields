@@ -5,11 +5,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 from .libgauss import get_data,gen_idx,get_grid,getB,getBm0
 from .plotlib import *
+from .utils import planetlist, stdDatDir
+
 import sys
 
-planetlist = ["mercury","earth","jupiter","saturn","uranus","neptune","ganymede"]
 
-def getBr(datDir="data/",planet="earth",r=1,info=True):
+
+def getBr(datDir=stdDatDir,planet="earth",r=1,info=True):
 
     if planet not in planetlist:
         print("Planet must be one of the following!")
@@ -43,7 +45,7 @@ def getBr(datDir="data/",planet="earth",r=1,info=True):
 
     return p2D, th2D, Br, dipTheta, dipPhi
 
-def plotAllFields(datDir="data/",r=1.0,levels=30,cmap='RdBu_r',proj='Mollweide'):
+def plotAllFields(datDir=stdDatDir,r=1.0,levels=30,cmap='RdBu_r',proj='Mollweide'):
 
     print("")
     print('|=========|======|=======|')
@@ -83,7 +85,7 @@ def plotAllFields(datDir="data/",r=1.0,levels=30,cmap='RdBu_r',proj='Mollweide')
 
 
 
-def plotMagField(datDir="data/",planet="earth",r=1,levels=30,proj='moll',cmap='RdBu_r'):
+def plotMagField(datDir=stdDatDir,planet="earth",r=1,levels=30,proj='moll',cmap='RdBu_r'):
 
     p2D, th2D, Br, dum1,dum2 = getBr(datDir=datDir,planet=planet,r=r)
     plt.figure(figsize=(12,6.75))

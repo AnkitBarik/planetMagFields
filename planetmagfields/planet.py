@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
+import os
 import numpy as np
 import matplotlib.pyplot as plt
 from .libgauss import get_data, filt_Gauss, filt_Gaussm0,getB, getBm0, get_spec
 from .libbfield import getBr
 from .plotlib import plotB, plotSurf, plot_spec
+from .utils import stdDatDir, planetlist
 import sys
 
-planetlist = ["mercury","earth","jupiter","saturn","uranus","neptune","ganymede"]
 
 class planet:
 
-    def __init__(self,name='earth',datDir='./planetmagfields/data/'):
+    def __init__(self,name='earth',datDir=stdDatDir):
 
         self.name   = name.lower()
         if self.name not in planetlist:
