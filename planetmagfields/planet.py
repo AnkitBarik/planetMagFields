@@ -11,7 +11,7 @@ from .utils import stdDatDir, planetlist
 
 class planet:
 
-    def __init__(self,name='earth',datDir=stdDatDir):
+    def __init__(self,name='earth',r=1,datDir=stdDatDir,info=True):
 
         self.name   = name.lower()
         if self.name not in planetlist:
@@ -23,11 +23,11 @@ class planet:
                 get_data(self.datDir,planet=self.name)
 
         self.p2D, self.th2D, self.Br, self.dipTheta, self.dipPhi = \
-                getBr(self,r=1,info=True)
+                getBr(self,r=r,info=info)
 
         self.phi = self.p2D[:,0]
         self.theta = self.th2D[0,:]
-        self.r = 1
+        self.r = r
 
     def plot(self,r=1,levels=30,cmap='RdBu_r',proj='Mollweide'):
         plt.figure(figsize=(12,6.75))

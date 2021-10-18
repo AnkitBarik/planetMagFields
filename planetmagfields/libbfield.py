@@ -53,8 +53,7 @@ def plotAllFields(datDir=stdDatDir,r=1.0,levels=30,cmap='RdBu_r',proj='Mollweide
     plt.figure(figsize=(12,12))
 
     for k, name in enumerate(planetlist):
-        planet = Planet(name=name)
-        p2D,th2D,Br,dipTheta,dipPhi = getBr(planet=planet,r=r,info=False)
+        planet = Planet(name=name,r=r,info=False)
 
         if name == "ganymede":
             nplot = 8
@@ -68,12 +67,19 @@ def plotAllFields(datDir=stdDatDir,r=1.0,levels=30,cmap='RdBu_r',proj='Mollweide
             projection = eval('ccrs.'+proj+'()')
             ax = plt.subplot(3,3,nplot,projection=projection)
 
-        plotB_subplot(p2D,th2D,Br,ax,planet=name,levels=levels,cmap=cmap,proj=proj)
+        plotB_subplot(planet.p2D,
+                      planet.th2D,
+                      planet.Br,
+                      ax,
+                      planet=name,
+                      levels=levels,
+                      cmap=cmap,
+                      proj=proj)
 
-        if planet in ["mercury","saturn"]:
-            print(('|%-8s | %-4.1f | %-5.1f |' %(name.capitalize(),dipTheta, dipPhi)))
+        if name in ["mercury","saturn"]:
+            print(('|%-8s | %-4.1f | %-5.1f |' %(name.capitalize(),planet.dipTheta, planet.dipPhi)))
         else:
-            print(('|%-8s | %-3.1f | %-5.1f |' %(name.capitalize(),dipTheta, dipPhi)))
+            print(('|%-8s | %-3.1f | %-5.1f |' %(name.capitalize(),planet.dipTheta, planet.dipPhi)))
 
     print('|---------|------|-------|')
 
@@ -87,6 +93,9 @@ def plotMagField(name,r=1,levels=30,proj='moll',cmap='RdBu_r'):
     from .planet import planet as Planet
 
     planet = Planet(name)
-    p2D, th2D, Br, dum1,dum2 = getBr(planet=planet,r=r)
     plt.figure(figsize=(12,6.75))
-    plotB(p2D,th2D,Br,planet=planet.name,levels=levels,proj=proj,cmap=cmap,r=r)
+    plotB(planet.p2D,
+          planet.th2D,
+          planet.Br,
+          planet=planet.name,
+          levels=levels,proj=proj,cmap=cmap,r=planet.r)
