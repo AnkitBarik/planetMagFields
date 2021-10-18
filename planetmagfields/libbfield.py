@@ -3,14 +3,13 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-from .planet import planet as Planet
 from .libgauss import get_grid,getB,getBm0
 from .plotlib import *
+
 from .utils import planetlist, stdDatDir
 
 
 def getBr(planet, r=1, info=True):
-
     p2D,th2D = get_grid()
 
     if planet.name in ["mercury", "saturn"]:
@@ -31,8 +30,9 @@ def getBr(planet, r=1, info=True):
                   th2D,
                   planet=planet.name) * 1e-3
 
-        dipTheta = np.arctan(np.sqrt(g[idx[1,1]]**2 + h[idx[1,1]]**2)/g[idx[1,0]]) * 180./np.pi
-        dipPhi = np.arctan(h[idx[1,1]]/g[idx[1,1]]) * 180./np.pi
+        dipTheta = np.arctan(np.sqrt(planet.glm[planet.idx[1,1]]**2 + planet.hlm[planet.idx[1,1]]**2)
+                                    /planet.glm[planet.idx[1,0]]) * 180./np.pi
+        dipPhi = np.arctan(planet.hlm[planet.idx[1,1]]/planet.glm[planet.idx[1,1]]) * 180./np.pi
 
     if info:
         print(("Planet: %s" %planet.name.capitalize()))
@@ -42,8 +42,9 @@ def getBr(planet, r=1, info=True):
 
     return p2D, th2D, Br, dipTheta, dipPhi
 
-
 def plotAllFields(datDir=stdDatDir,r=1.0,levels=30,cmap='RdBu_r',proj='Mollweide'):
+
+    from .planet import planet as Planet
 
     print("")
     print('|=========|======|=======|')
@@ -51,6 +52,7 @@ def plotAllFields(datDir=stdDatDir,r=1.0,levels=30,cmap='RdBu_r',proj='Mollweide
     print('|=========|======|=======|')
 
     plt.figure(figsize=(12,12))
+
     for k, name in enumerate(planetlist):
         planet = Planet(name=name)
         p2D,th2D,Br,dipTheta,dipPhi = getBr(planet=planet,r=r,info=False)
@@ -83,6 +85,8 @@ def plotAllFields(datDir=stdDatDir,r=1.0,levels=30,cmap='RdBu_r',proj='Mollweide
 
 
 def plotMagField(name,r=1,levels=30,proj='moll',cmap='RdBu_r'):
+    from .planet import planet as Planet
+
     planet = Planet(name)
     p2D, th2D, Br, dum1,dum2 = getBr(planet=planet,r=r)
     plt.figure(figsize=(12,6.75))
