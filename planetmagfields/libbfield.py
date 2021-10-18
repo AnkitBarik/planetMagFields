@@ -5,7 +5,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from .libgauss import get_grid,getB,getBm0
 from .plotlib import *
-
 from .utils import planetlist, stdDatDir
 
 
@@ -72,9 +71,9 @@ def plotAllFields(datDir=stdDatDir,r=1.0,levels=30,cmap='RdBu_r',proj='Mollweide
         plotB_subplot(p2D,th2D,Br,ax,planet=name,levels=levels,cmap=cmap,proj=proj)
 
         if planet in ["mercury","saturn"]:
-            print(('|%-8s | %-4.1f | %-5.1f |' %(planet.capitalize(),dipTheta, dipPhi)))
+            print(('|%-8s | %-4.1f | %-5.1f |' %(name.capitalize(),dipTheta, dipPhi)))
         else:
-            print(('|%-8s | %-3.1f | %-5.1f |' %(planet.capitalize(),dipTheta, dipPhi)))
+            print(('|%-8s | %-3.1f | %-5.1f |' %(name.capitalize(),dipTheta, dipPhi)))
 
     print('|---------|------|-------|')
 
@@ -90,4 +89,4 @@ def plotMagField(name,r=1,levels=30,proj='moll',cmap='RdBu_r'):
     planet = Planet(name)
     p2D, th2D, Br, dum1,dum2 = getBr(planet=planet,r=r)
     plt.figure(figsize=(12,6.75))
-    plotB(p2D,th2D,Br,planet=planet,levels=levels,proj=proj,cmap=cmap,r=r)
+    plotB(p2D,th2D,Br,planet=planet.name,levels=levels,proj=proj,cmap=cmap,r=r)

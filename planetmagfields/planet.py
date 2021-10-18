@@ -5,9 +5,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from .libgauss import get_data, filt_Gauss, filt_Gaussm0,getB, getBm0, get_spec
 from .libbfield import getBr
-from .plotlib import plotB, plotSurf, plot_spec
+from .plotlib import plotSurf, plot_spec
 from .utils import stdDatDir, planetlist
-import sys
 
 
 class planet:
@@ -24,7 +23,7 @@ class planet:
                 get_data(self.datDir,planet=self.name)
 
         self.p2D, self.th2D, self.Br, self.dipTheta, self.dipPhi = \
-                getBr(datDir=self.datDir,planet=self.name,r=1,info=True)
+                getBr(self,r=1,info=True)
 
         self.phi = self.p2D[:,0]
         self.theta = self.th2D[0,:]

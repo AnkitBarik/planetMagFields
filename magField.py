@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from planetmagfields.libbfield import *
+import numpy as np
 import sys
 
 levels=20
@@ -40,7 +41,7 @@ if planet == 'all':
                         hspace=0.38,
                         wspace=0.109)
 else:
-    plotMagField(planet=planet,r=r,datDir='./planetmagfields/data/',levels=levels,cmap=cmap,proj=proj)
+    plotMagField(name=planet,r=r,levels=levels,cmap=cmap,proj=proj)
     plt.tight_layout()
 
 plt.show()
