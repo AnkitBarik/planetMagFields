@@ -8,8 +8,9 @@ from .plotlib import *
 from .utils import planetlist, stdDatDir
 
 
-def getBr(planet, r=1, info=True):
-    p2D,th2D = get_grid()
+def getBr(planet, r=1, nphi=256, ntheta=128, info=True):
+
+    p2D,th2D = get_grid(nphi=nphi,ntheta=ntheta)
 
     if planet.name in ["mercury", "saturn"]:
         Br = getBm0(planet.lmax,

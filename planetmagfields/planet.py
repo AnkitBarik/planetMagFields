@@ -11,9 +11,12 @@ from .utils import stdDatDir, planetlist
 
 class planet:
 
-    def __init__(self,name='earth',r=1,datDir=stdDatDir,info=True):
+    def __init__(self,name='earth',r=1,nphi=256,datDir=stdDatDir,info=True):
 
         self.name   = name.lower()
+        self.nphi   = nphi
+        self.ntheta = nphi//2
+
         if self.name not in planetlist:
             print("Planet must be one of the following!")
             print(planetlist)
@@ -23,7 +26,10 @@ class planet:
                 get_data(self.datDir,planet=self.name)
 
         self.p2D, self.th2D, self.Br, self.dipTheta, self.dipPhi = \
-                getBr(self,r=r,info=info)
+                getBr(self,r=r,
+                    nphi=self.nphi,
+                    ntheta=self.ntheta,
+                    info=info)
 
         self.phi = self.p2D[:,0]
         self.theta = self.th2D[0,:]
