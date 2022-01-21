@@ -104,8 +104,7 @@ def writeVts(name,br,btheta,bphi,r,theta,phi):
             gridToVTK = evtk.hl.gridToVTK
     except:
         try:
-            import pyevtk
-            gridToVTK = pyevtk.hl.gridToVTK
+            from pyevtk.hl import gridToVTK
         except:
             print("This requires the use of evtk library!")
             print("You can get it from https://github.com/paulo-herrera/PyEVTK")
