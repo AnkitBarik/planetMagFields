@@ -252,7 +252,7 @@ Only the data for Earth uses a Condon-Shortley phase, the others do not.
 
 # Projections
 
-By default, the plot function tries to use the Mollweide projection. However, using the power of the [cartopy](https://scitools.org.uk/cartopy/docs/latest/) library, any projection from [this list](https://scitools.org.uk/cartopy/docs/latest/crs/projections.html) is supported. In the absence of the cartopy library, the 2D plots fall back to the internally written Hammer projection. Examples of Jupiter's radial magnetic field at r=0.85 with different projections are shown below:
+By default, the plot function tries to use the Mollweide projection. However, using the power of the [cartopy](https://scitools.org.uk/cartopy/docs/latest/) library, any projection from [this list](https://scitools.org.uk/cartopy/docs/v0.15/crs/projections.html) is supported. In the absence of the cartopy library, the 2D plots fall back to the internally written Hammer projection. Examples of Jupiter's radial magnetic field at r=0.85 with different projections are shown below:
 
 ```python
 In [1]: from planetmagfields import *
