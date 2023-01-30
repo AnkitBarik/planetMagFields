@@ -42,7 +42,7 @@ class planet:
             ax,cbar = plotSurf(self.p2D,self.th2D,self.Br,levels=levels,cmap=cmap,proj=proj)
         else:
             self.p2D, self.th2D, self.Br, self.dipTheta, self.dipPhi = \
-                    getBr(datDir=self.datDir,planet=self.name,r=r,info=False)
+                    getBr(planet=self,r=r,info=False)
             self.r = r
             ax,cbar = plotSurf(self.p2D,self.th2D,self.Br,levels=levels,cmap=cmap,proj=proj)
 
