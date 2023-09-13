@@ -11,6 +11,17 @@ def hammer2cart(ttheta, pphi, colat=False):
     default plotting. Copied from MagIC python plotting script:
 
     https://github.com/magic-sph/magic/blob/master/python/magic/plotlib.py
+
+    Parameters
+    ----------
+    ttheta : (2,) array_like
+        2D array defining latitude or co-latitude (theta).
+        This ranges from 0 to pi and has a shape (nphi,ntheta)
+    pphi : (2,) array_like
+        2D array defining longitude (phi)
+        This ranges from 0 to 2*pi and has a shape (nphi,ntheta)
+    colat : Boolean
+        Flag defining whether ttheta is colatitude (True) or latitude(False)
     """
 
     if not colat: # for lat and phi \in [-pi, pi]
@@ -26,6 +37,35 @@ def hammer2cart(ttheta, pphi, colat=False):
     return xx, yy
 
 def plotSurf(p2D,th2D,B,levels=60,cmap='RdBu_r',proj='Mollweide'):
+    """
+    Plots magnetic field on a surface defined by 2D arrays
+    of longitude and co-latitude.
+
+    Parameters
+    ----------
+    p2D : (2,) array_like
+        2D array defining longitude (phi)
+        This ranges from 0 to 2*pi and has a shape (nphi,ntheta)
+    th2D : (2,) array_like
+        2D array defining co-latitude (theta)
+        This ranges from 0 to pi and has a shape (nphi,ntheta)
+    B : (2,) array_like
+        This defines the data to plot corresponding to the grid defined by p2D
+        and th2D, usually radial magnetic field
+    levels : int
+        Number of contour levels
+    cmap : str, optional
+        Colormap for plotting contours, by default RdBu_r
+    proj : str, optional
+        Map projection for plotting. Supports all projections used by cartopy,
+        by default Mollweide
+
+    Returns
+    -------
+    ax : matplotlib.axes instance
+        This is the axes handle of the plot
+    cbar : colorbar handle
+    """
 
     bmax = np.abs(B).max()
     digits = int(np.log10(bmax)) + 1
@@ -67,26 +107,39 @@ def plotSurf(p2D,th2D,B,levels=60,cmap='RdBu_r',proj='Mollweide'):
 
     return ax, cbar
 
-def plotB(p2D,th2D,B,r=1,planet="earth",levels=60,cmap='RdBu_r',proj='Mollweide'):
+def plotB_subplot(ax,p2D,th2D,B,planetname="earth",levels=60,cmap='RdBu_r',proj='Mollweide'):
+    """
+    Plots subplot of magnetic field on a surface defined by 2D arrays
+    of longitude and co-latitude. The subplot is defined by the axes handle ax.
 
-    planet = planet.lower()
+    Parameters
+    ----------
+    ax :  matplotlib.axes instance
+        Axes of the subplot
+    p2D : (2,) array_like
+        2D array defining longitude (phi)
+        This ranges from 0 to 2*pi and has a shape (nphi,ntheta)
+    th2D : (2,) array_like
+        2D array defining co-latitude (theta)
+        This ranges from 0 to pi and has a shape (nphi,ntheta)
+    B : (2,) array_like
+        This defines the data to plot corresponding to the grid defined by p2D
+        and th2D, usually radial magnetic field
+    planetname : str
+        Name of the planet
+    levels : int
+        Number of contour levels
+    cmap : str, optional
+        Colormap for plotting contours, by default RdBu_r
+    proj : str, optional
+        Map projection for plotting. Supports all projections used by cartopy,
+        by default Mollweide
 
-    ax,cbar = plotSurf(p2D,th2D,B,levels=levels,cmap=cmap,proj=proj)
-    cbar.ax.set_xlabel(r'Radial magnetic field ($\mu$T)',fontsize=25)
-    cbar.ax.tick_params(labelsize=20)
-
-    if proj.lower() != 'hammer' and planet == 'earth':
-        ax.coastlines()
-
-    if r==1:
-        radLabel = '  Surface'
-    else:
-        radLabel = r'  $r/r_{\rm surface}=%.2f$' %r
-
-    ax.set_title(planet.capitalize() + radLabel,fontsize=25,pad=20)
-
-def plotB_subplot(p2D,th2D,B,ax,planet="earth",levels=60,cmap='RdBu_r',proj='Mollweide'):
-    planet = planet.lower()
+    Returns
+    -------
+    None
+    """
+    planetname = planetname.lower()
 
     bmax = np.abs(B).max()
     digits = int(np.log10(bmax)) + 1
@@ -113,7 +166,7 @@ def plotB_subplot(p2D,th2D,B,ax,planet="earth",levels=60,cmap='RdBu_r',proj='Mol
         xx,yy = hammer2cart(th2D,p2D)
         cont = ax.contourf(xx,yy,B,cs,cmap=cmap,norm=divnorm,extend='both')
     else:
-        if planet == "earth":
+        if planetname == "earth":
             ax.coastlines()
 
         cont = ax.contourf(p2D*180/np.pi,th2D*180/np.pi,B,cs,  \
@@ -122,11 +175,29 @@ def plotB_subplot(p2D,th2D,B,ax,planet="earth",levels=60,cmap='RdBu_r',proj='Mol
     cbar = plt.colorbar(cont,orientation='horizontal',fraction=0.06, pad=0.04,ticks=[-bmax,0,bmax])
     cbar.ax.tick_params(labelsize=15)
 
-    ax.set_title(planet.capitalize(),fontsize=20)
+    ax.set_title(planetname.capitalize(),fontsize=20)
     ax.axis('equal')
     ax.axis('off')
 
-def plot_spec(l,E,r,planet):
+def plot_spec(l,E,r,planetname):
+    """
+    Plots Lowes spectrum of a planet.
+
+    Parameters
+    ----------
+    l : int array
+        Array of spherical harmonic degrees from 0 to planet.lmax
+    E : array_like
+        Array of magnetic energy in each spherical harmonic degree
+    r : float
+        Radial level of spectrum, r=1 is the planet's surface
+    planetname : str
+        Name of the planet
+
+    Returns
+    -------
+    None
+    """
 
     plt.semilogy(l[1:],E[1:],'-o',lw=1.2,color='#449c99',mfc='#347b79',mec='#347b79',ms=8)
     plt.xlabel(r'$l$',fontsize=30)
@@ -143,4 +214,4 @@ def plot_spec(l,E,r,planet):
     else:
         radLabel = r'  $r/r_{\rm surface}=%.2f$' %r
 
-    plt.title('Lowes spectrum, '+ planet.capitalize() + radLabel,fontsize=20,pad=10)
+    plt.title('Lowes spectrum, '+ planetname.capitalize() + radLabel,fontsize=20,pad=10)

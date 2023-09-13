@@ -9,9 +9,38 @@ from .plotlib import plotSurf, plot_spec
 from .utils import stdDatDir, planetlist
 
 
-class planet:
+class Planet:
+    """
+    Planet class
 
-    def __init__(self,name='earth',r=1,nphi=256,datDir=stdDatDir,info=True):
+    The Planet class contains all information about a planet. It contains
+    arrays of Gauss coefficients, glm and hlm, the maximum spherical harmonic
+    degree lmax to which data is available, and also computes and stores the
+    (optionally filtered) radial magnetic field at a surface and the Lowes
+    spectrum.
+    """
+
+    def __init__(self,name='earth',r=1.0,nphi=256,datDir=stdDatDir,info=True):
+        """
+        Initialization of the Planet class.
+
+        Parameters
+        ----------
+        name : str, optional
+            Name of the planet, by default 'earth'
+        r : float, optional
+            Radial level to compute and plot field on, scaled by the planetary
+            radius, by default 1.0
+        nphi : int, optional
+            Number of points in longitude, number of points in colatitude
+            are automatically set to half this number, by default 256
+        datDir : str, optional
+            Data directory, where the Gauss coefficient data is present,
+            named as <planetname>.dat, the standard directory is ./data,
+            by default stdDatDir
+        info : bool, optional
+            If True, prints some information about the planet, by default True
+        """
 
         self.name   = name.lower()
         self.nphi   = nphi
@@ -22,20 +51,38 @@ class planet:
             print(planetlist)
 
         self.datDir = datDir
-        self.glm, self.hlm, self.lmax, self.idx = \
-                get_data(self.datDir,planet=self.name)
+        self.glm, self.hlm, self.lmax, self.idx = get_data(self.datDir,
+                                                           planetname=self.name)
 
-        self.p2D, self.th2D, self.Br, self.dipTheta, self.dipPhi = \
-                getBr(self,r=r,
-                    nphi=self.nphi,
-                    ntheta=self.ntheta,
-                    info=info)
+        self.p2D, self.th2D, self.Br, self.dipTheta, self.dipPhi = getBr(self,r=r,
+                                                                        nphi=self.nphi,
+                                                                        ntheta=self.ntheta,
+                                                                        info=info)
 
         self.phi = self.p2D[:,0]
         self.theta = self.th2D[0,:]
         self.r = r
 
-    def plot(self,r=1,levels=30,cmap='RdBu_r',proj='Mollweide'):
+    def plot(self,r=1.0,levels=30,cmap='RdBu_r',proj='Mollweide'):
+        """
+        Plots the radial magnetic field of a planet at a radial surface.
+
+        Parameters
+        ----------
+        r : float, optional
+            Radial surface for plot, by default 1
+        levels : int, optional
+            Number of contour levels, by default 30
+        cmap : str, optional
+            Colormap for contours, by default 'RdBu_r'
+        proj : str, optional
+            Map projection, by default 'Mollweide'
+
+        Returns
+        -------
+        None
+        """
+
         plt.figure(figsize=(12,6.75))
 
         if r == 1:
@@ -66,21 +113,73 @@ class planet:
         plt.tight_layout()
 
     def writeVtsFile(self,potExtra=False,ratio_out=2,nrout=32):
-            from .potextra import extrapot, writeVts
+        """
+        Writes a .vts file for 3D visualization. Uses the SHTns library
+        for potential extrapolation and the pyevtk library for writing
+        the vts file.
 
-            rout = np.linspace(1,ratio_out,nrout)
-            if potExtra:
-                brout, btout, bpout = extrapot(self.lmax,1.,self.Br,rout)
-            else:
-                brout = self.Br
-                btout = np.zeros_like(self.Br)
-                bpout = np.zeros_like(self.Br)
+        Parameters
+        ----------
+        potExtra : bool, optional
+            Whether to use potential extrapolation, by default False
+        ratio_out : int, optional
+            Radial level to which the magnetic field needs to be upward
+            continued, scaled to planetary radius, by default 2
+        nrout : int, optional
+            Number of radial grid levels, by default 32
 
-            writeVts(self.name,brout,btout,bpout,rout,self.theta,self.phi)
+        Returns
+        -------
+        None
+        """
+        from .potextra import extrapot, writeVts
+
+        rout = np.linspace(1,ratio_out,nrout)
+        if potExtra:
+            brout, btout, bpout = extrapot(self.lmax,1.,self.Br,rout)
+        else:
+            brout = self.Br
+            btout = np.zeros_like(self.Br)
+            bpout = np.zeros_like(self.Br)
+
+        writeVts(self.name,brout,btout,bpout,rout,self.theta,self.phi)
 
     ## Filtered plots
 
-    def plot_filt(self,r=1,larr=None,marr=None,lCutMin=0,lCutMax=None,mmin=0,mmax=None,levels=30,cmap='RdBu_r',proj='Mollweide'):
+    def plot_filt(self,r=1.0,larr=None,marr=None,lCutMin=0,lCutMax=None,mmin=0,mmax=None,levels=30,cmap='RdBu_r',proj='Mollweide'):
+        """
+        Plots a filtered radial magnetic field at a radial level. Filters can be
+        set using specific values of degree and order of spherical harmonics given
+        through the arrays larr and marr or by providing a range using lCutMin,
+        lCutMax and mmin, mmax.
+
+        Parameters
+        ----------
+        r : float, optional
+            Radial level for plot, scaled to planetary radius, by default 1
+        larr : array_like, optional
+            Array of spherical harmonic degrees, if None, uses lmax, by default None
+        marr : array_like, optional
+            Array of spherical harmonic orders, if None, uses lmax, by default None
+        lCutMin : int, optional
+            Minimum spherical harmonic degree to retain, by default 0
+        lCutMax : int, optional
+            Maximum spherical harmonic degree to retain, if None, uses lmax, by default None
+        mmin : int, optional
+            Minimum spherical harmonic order to retain, by default 0
+        mmax : int, optional
+            Maximum spherical harmonic degree to retain, if None, uses lmax, by default None
+        levels : int, optional
+            Number of contour levels, by default 30
+        cmap : str, optional
+            Colormap for contours, by default 'RdBu_r'
+        proj : str, optional
+            Map projection, by default 'Mollweide'
+
+        Returns
+        -------
+        None
+        """
 
         self.larr_filt = larr
         self.marr_filt = marr
@@ -106,7 +205,7 @@ class planet:
                 filt_Gauss(self.glm,self.hlm,self.lmax,self.idx,larr=self.larr_filt,\
                     marr=self.marr_filt,lCutMin=self.lCutMin,lCutMax=self.lCutMax,mmin=self.mmin_filt,mmax=self.mmax_filt)
 
-            self.Br_filt = 1e-3*getB(self.lmax,self.glm_filt,self.hlm_filt,self.idx,self.r_filt,self.p2D,self.th2D,planet=self.name)
+            self.Br_filt = 1e-3*getB(self.lmax,self.glm_filt,self.hlm_filt,self.idx,self.r_filt,self.p2D,self.th2D,planetname=self.name)
 
         plt.figure(figsize=(12,6.75))
 
@@ -118,7 +217,7 @@ class planet:
             radLabel = r'  $r/r_{\rm surface}=%.2f$' %r
 
         if self.larr_filt is not None:
-            elllabel = r', $l = %s$' %np.str(self.larr_filt)
+            elllabel = r', $l = %s$' %str(self.larr_filt)
         else:
             if self.lCutMin > 0:
                 if self.lCutMax < self.lmax:
@@ -130,7 +229,7 @@ class planet:
                 elllabel = r', $l \leq %d$' %self.lCutMax
 
         if self.marr_filt is not None:
-            elllabel += r', $m = %s$' %np.str(self.marr_filt)
+            elllabel += r', $m = %s$' %str(self.marr_filt)
         else:
             if self.mmin_filt > 0:
                 if self.mmax_filt < self.lmax:
@@ -149,8 +248,25 @@ class planet:
         plt.tight_layout()
 
 
-    def spec(self,r=1,iplot=True):
-        self.emag_spec, emag_10 = get_spec(self.glm,self.hlm,self.idx,self.lmax,planet=self.name,r=r)
+    def spec(self,r=1.0,iplot=True):
+        """
+        General plot of Lowes spectrum of a planet at a radial level, scaled
+        to planetary radius. Also computes dipolarity (energy of axial dipole)
+        to total and total dipolarity (dipTot, energy of total dipole to total
+        magnetic energy)
+
+        Parameters
+        ----------
+        r : float, optional
+            Radial level scaled to planetary radius, by default 1.0
+        iplot : bool, optional
+            If True, generates a plot, by default True
+
+        Returns
+        -------
+        None
+        """
+        self.emag_spec, emag_10 = get_spec(self.glm,self.hlm,self.idx,self.lmax,planetname=self.name,r=r)
         l = np.arange(self.lmax+1)
 
         self.dip_tot = self.emag_spec[1]/sum(self.emag_spec)

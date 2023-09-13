@@ -1,35 +1,38 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from planetmagfields.libbfield import *
-import numpy as np
-import sys
+import matplotlib.pyplot as plt
+import argparse
+from planetmagfields.libbfield import plotAllFields
+import planetmagfields.planet as Planet
 
-levels=20
-cmap='RdBu_r'
-proj = 'Mollweide'
-r = 1
 
-if len(sys.argv) > 4:
-    print("Too many arguments, exiting ...\n")
-    sys.exit()
-elif len(sys.argv) == 4:
-    planet = str(sys.argv[1]).lower()
-    r      = np.float32(sys.argv[2])
-    proj   = str(sys.argv[3])
-elif len(sys.argv) == 3:
-    planet = str(sys.argv[1]).lower()
-    try:
-        r      = np.float32(sys.argv[2])
-    except:
-        proj   = str(sys.argv[2])
-elif len(sys.argv) == 2:
-    print("Radius not specified, using surface\n")
-    planet = str(sys.argv[1]).lower()
-else:
-    print("Planet or radius not specified, plotting for Earth's surface\n")
-    planet="earth"
-    r=1.
+parser=argparse.ArgumentParser(
+    description='''Script for easy plotting of planetary magnetic field.''')
+
+parser.add_argument('-p','--planet',type=str,default='earth',
+                    help='Planet name (default : earth)',
+                    dest='planet')
+parser.add_argument('-r','--radius',type=float,default=1,
+                    help='Radial level scaled to planetary radius (default : 1)',
+                    dest='r')
+parser.add_argument('-c','--cmap',type=str,default='RdBu_r',
+                    help='Colormap of plot (default : RdBu_r)',
+                    dest='cmap')
+parser.add_argument('-l','--levels',type=int,default=20,
+                    help='Number of contour levels (default : 20)',
+                    dest='levels')
+parser.add_argument('-m','--mapproj',type=str,default='Mollweide',
+                    help='Type of map projection (default : Mollweide)',
+                    dest='proj')
+
+args=parser.parse_args()
+
+planet = args.planet
+r      = args.r
+cmap   = args.cmap
+levels = args.levels
+proj   = args.proj
 
 if planet == 'all':
     plotAllFields(datDir='./planetmagfields/data/',r=r,levels=levels,cmap=cmap,proj=proj)
@@ -41,7 +44,7 @@ if planet == 'all':
                         hspace=0.38,
                         wspace=0.109)
 else:
-    plotMagField(name=planet,r=r,levels=levels,cmap=cmap,proj=proj)
-    plt.tight_layout()
+    pl = Planet(name=planet,r=r)
+    pl.plot(r=r,levels=levels,cmap=cmap,proj=proj)
 
 plt.show()

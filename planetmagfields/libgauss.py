@@ -7,9 +7,19 @@ from copy import deepcopy
 
 def gen_idx(lmax):
 
-    '''
+    """
     Generate index to convert from (l,m) to [idx]
-    '''
+
+    Parameters
+    ----------
+    lmax : int
+        This defines the maximum spherical harmonic degree
+
+    Returns
+    -------
+    idx : int
+        Array index of the spherical harmonic (l,m)
+    """
 
     idx = np.zeros([lmax+1,lmax+1])
     count = 0
@@ -22,11 +32,37 @@ def gen_idx(lmax):
 
     return np.int32(idx)
 
-def get_data(datDir,planet="earth"):
+def get_data(datDir,planetname="earth"):
+    """
+    Reads data file for a planet and rearranges to create arrays of Gauss coefficients,
+    glm and hlm.
 
-    datfile = datDir + planet + '.dat'
+    Parameters
+    ----------
+    datDir : str
+        Directory where the data file is present. Files are assumed to be named
+        as <planetname>.dat, e.g.: earth.dat, jupiter.dat etc.
+    planetname : str
+        Name of the planet
 
-    if planet == "earth":
+    Returns
+    -------
+    glm : array_like
+        Coefficients of real part of spherical harmonics (often called glm in
+        literature)
+    hlm : array_like
+        Coefficients of imaginary part of spherical harmonics (often called hlm in
+        literature)
+    lmax : int
+        Maximum spherical harmonic degree
+    idx : int array
+        Array of indices that correspond to an (l,m) combination. For example,
+        g(0,0) -> 0, g(1,0) -> 1, g(1,1) -> 2 etc.
+    """
+
+    datfile = datDir + planetname + '.dat'
+
+    if planetname == "earth":
         datfile = datDir + 'IGRF13.dat'
         dat = np.loadtxt(datfile,usecols=[1,2,-2])
         gh  = np.genfromtxt(datfile,usecols=[0],dtype='str')
@@ -45,13 +81,13 @@ def get_data(datDir,planet="earth"):
 
         lmax = np.int32(gl.max())
 
-    elif planet in ["mercury","saturn"]:
+    elif planetname in ["mercury","saturn"]:
         dat = np.loadtxt(datfile,usecols=[3])
         g   = dat.flatten()
         lmax = len(g)
         h = np.zeros_like(g)
 
-    elif planet == "jupiter":
+    elif planetname == "jupiter":
         dat = np.loadtxt(datfile)
         l_dat = dat[:,-2]
         ghlm = dat[:,1]
@@ -76,7 +112,7 @@ def get_data(datDir,planet="earth"):
         g  = np.concatenate(g)
         h  = np.concatenate(h)
 
-    elif planet in ['uranus','neptune','ganymede']:
+    elif planetname in ['uranus','neptune','ganymede']:
         dat = np.loadtxt(datfile,usecols=[1,2,3])
         gh  = np.genfromtxt(datfile,usecols=[0],dtype='str')
 
@@ -95,17 +131,36 @@ def get_data(datDir,planet="earth"):
 
     # Insert (0,0) -> 0 for less confusion
 
-    g = np.insert(g,0,0.)
-    h = np.insert(h,0,0.)
+    glm = np.insert(g,0,0.)
+    hlm = np.insert(h,0,0.)
 
-    if planet in ['mercury','saturn']:
+    if planetname in ['mercury','saturn']:
         idx = np.arange(lmax+1)
     else:
         idx = gen_idx(lmax)
 
-    return g,h,lmax,idx
+    return glm,hlm,lmax,idx
 
 def get_grid(nphi=256,ntheta=128):
+    """
+    Generates 2D grid of longitude and co-latitude. The longitude grid is equally
+    spaced, the co-latitude grid uses the zeros of Legendre polynomial with degree
+    ntheta.
+
+    Parameters
+    ----------
+    nphi : int, optional
+        Number of points in longitude, by default 256
+    ntheta : int, optional
+        Number of poitns in co-latitude, by default 128
+
+    Returns
+    -------
+    p2D : (2,) array_like
+        Longitude at every point on a (longitude,co-latitude) grid
+    th2D : (2,) array_like
+        Co-latitude at every point on a (longitude,co-latitude) grid
+    """
 
     phi    = np.linspace(0.,2*np.pi,nphi)
     x,w    = sp.roots_legendre(ntheta)
@@ -124,10 +179,25 @@ def get_grid(nphi=256,ntheta=128):
 
 def gen_arr(lmax, l1,m1,mode='g'):
 
-    '''
-    Generate Gauss coefficient array for testing
-    purposes
-    '''
+    """
+    Generate Gauss coefficient arrays for testing
+    purposes. Coefficients are given a value of 1 or 0.
+
+    Parameters
+    ----------
+    lmax : int
+        Maximum spherical harmonic degree for truncation
+
+    l1 : int array
+        Array of spherical harmonic degrees to produce coefficients
+        for.
+    m1 : int array
+        Array of spherical harmonic orders to produce coefficients
+        for.
+    mode : str
+        Can be 'g','h' or 'gh'. This controls which coefficients are generated,
+        only glm,hlm or both.
+    """
 
     idx = np.zeros([lmax+1,lmax+1])
     lArr = []
@@ -168,7 +238,39 @@ def gen_arr(lmax, l1,m1,mode='g'):
 
     return glm, hlm, lArr, mArr, idx
 
-def getB(lmax,glm,hlm,idx,r,p2D,th2D,planet="earth"):
+def getB(lmax,glm,hlm,idx,r,p2D,th2D,planetname="earth"):
+    """
+    This function computes the radial magnetic field from arrays of Gauss
+    coefficients glm and hlm. It uses scipy's sph_harm function for spherical
+    harmonics.
+
+    Parameters
+    ----------
+    lmax : int
+        Maximum degree of spherical harmonic
+    glm : array_like
+        Gauss coefficients of cos(m*phi)
+    hlm : array_like
+        Gauss coefficients of sin(m*phi)
+    idx : int array
+        Array of indices that correspond to an (l,m) combination. For example,
+        g(0,0) -> 0, g(1,0) -> 1, g(1,1) -> 2 etc.
+    r : float
+        Radial level scaled to planetary surface
+    p2D : (2,) array_like
+        2D array defining longitude (phi).
+        This ranges from 0 to 2*pi and has a shape (nphi,ntheta)
+    th2D : (2,) array_like
+        2D array defining co-latitude (theta).
+        This ranges from 0 to pi and has a shape (nphi,ntheta)
+    planet : str, optional
+        Name of the planet, by default "earth"
+
+    Returns
+    -------
+    Br : (2,) array_like
+        Radial magnetic field on the grid defined by p2D and th2D
+    """
 
     Br = np.zeros_like(p2D)
 
@@ -179,7 +281,7 @@ def getB(lmax,glm,hlm,idx,r,p2D,th2D,planet="earth"):
             # Include Condon-Shortley Phase for Earth but not other planets
             # Scipy sph_harm has the phase included by default
 
-            if planet in ["earth"]:
+            if planetname in ["earth"]:
                 fac_m = 1.
             else:
                 fac_m = (-1)**m
@@ -196,7 +298,33 @@ def getB(lmax,glm,hlm,idx,r,p2D,th2D,planet="earth"):
 
     return Br
 
-def getBm0(lmax,g,r,p2D,th2D):
+def getBm0(lmax,glm,r,p2D,th2D):
+    """
+    This function computes the radial magnetic field from arrays of Gauss
+    coefficients glm when the maximum spherical harmonic order is m=0.
+    Useful for planets like Mercury and Saturn. It uses scipy's sph_harm
+    function for spherical harmonics.
+
+    Parameters
+    ----------
+    lmax : int
+        Maximum degree of spherical harmonic
+    glm : array_like
+        Gauss coefficients of cos(m*phi)
+    r : float
+        Radial level scaled to planetary surface
+    p2D : (2,) array_like
+        2D array defining longitude (phi).
+        This ranges from 0 to 2*pi and has a shape (nphi,ntheta)
+    th2D : (2,) array_like
+        2D array defining co-latitude (theta).
+        This ranges from 0 to pi and has a shape (nphi,ntheta)
+
+    Returns
+    -------
+    Br : (2,) array_like
+        Radial magnetic field on the grid defined by p2D and th2D
+    """
 
     Br = np.zeros_like(p2D)
 
@@ -204,14 +332,42 @@ def getBm0(lmax,g,r,p2D,th2D):
         ylm = sp.sph_harm(0, l, p2D, th2D)
         fac = (l + 1) * r**(-l-2) * np.sqrt((4.*np.pi)/(2*l+1))
 
-        Br += fac * g[l] * np.real(ylm)
+        Br += fac * glm[l] * np.real(ylm)
 
     return Br
 
-def get_spec(glm,hlm,idx,lmax,planet='earth',r=1):
+def get_spec(glm,hlm,idx,lmax,planetname='earth',r=1.0):
+    """
+    Computes Lowes spectrum of a planet with Gauss coefficients glm and hlm at
+    a radial level r, scaled to the planetary radius.
+
+    Parameters
+    ----------
+    glm : array_like
+        Gauss coefficients of cos(m*phi)
+    hlm : array_like
+        Gauss coefficients of sin(m*phi)
+    idx : int array
+        Array of indices that correspond to an (l,m) combination. For example,
+        g(0,0) -> 0, g(1,0) -> 1, g(1,1) -> 2 etc.
+    lmax : int
+        Maximum degree of spherical harmonic
+    planetname : str, optional
+        Name of the planet, by default "earth", by default 'earth'
+    r : float, optional
+        Radial level scaled to planetary surface, by default 1
+
+    Returns
+    -------
+    E : array_like
+        Magnetic energy in spherical harmonic degrees
+    emag_10 : float
+        Magnetic energy in dipole
+    """
+
     E = np.zeros(lmax+1)
 
-    if planet in ['mercury','saturn']:
+    if planetname in ['mercury','saturn']:
         for l in range(1,lmax+1):
             E[l] = (l+1) * r**(-2*l-4) *(np.abs(glm[l])**2 + np.abs(hlm[l])**2)
         emag_10 = E[1]
@@ -224,6 +380,45 @@ def get_spec(glm,hlm,idx,lmax,planet='earth',r=1):
     return E, emag_10
 
 def filt_Gauss(glm,hlm,lmax,idx,larr=None,marr=None,lCutMin=0,lCutMax=None,mmin=0,mmax=None):
+    """
+    Filters Gauss coefficients by using either a fixed array of spherical harmonic
+    degrees or orders or a minimum or maximum degree or order. Coefficients are either
+    restricted to degree and order values defined by larr and marr or range defined
+    by lCutMin, lCutMax and mmin, mmax, respectively.
+
+    Parameters
+    ----------
+    glm : array_like
+        Gauss coefficients of cos(m*phi)
+    hlm : array_like
+        Gauss coefficients of sin(m*phi)
+    idx : int array
+        Array of indices that correspond to an (l,m) combination. For example,
+        g(0,0) -> 0, g(1,0) -> 1, g(1,1) -> 2 etc.
+    lmax : int
+        Maximum degree of spherical harmonic
+    larr : int array, optional
+        Array of desired spherical harmonic degrees, by default None
+    marr : int array, optional
+        Array of desired spherical harmonic orders, by default None
+    lCutMin : int, optional
+        Minimum spherical harmonic degree to retain, by default 0
+    lCutMax : int, optional
+        Maximum spherical harmonic degree to retain, by default None
+        If None, then lmax is used
+    mmin : int, optional
+        Minimum spherical harmonic order to retain, by default 0
+    mmax : int, optional
+        Maximum spherical harmonic order to retain, by default None
+        If None, lmax is used
+
+    Returns
+    -------
+    glm_filt : array_like
+        Array of filtered Gauss coefficients of cos(m*phi)
+    hlm_filt : array_like
+        Array of filtered Gauss coefficients of sin(m*phi)
+    """
 
     glm_filt = deepcopy(glm)
     hlm_filt = deepcopy(hlm)
@@ -274,6 +469,32 @@ def filt_Gauss(glm,hlm,lmax,idx,larr=None,marr=None,lCutMin=0,lCutMax=None,mmin=
     return glm_filt,hlm_filt
 
 def filt_Gaussm0(glm,hlm,lmax,larr=None,lCutMin=0,lCutMax=None):
+    """
+    Filters Gauss coefficients when maximum order of Gauss coefficients is mmax=0.
+    Uses either a fixed array of spherical harmonic degrees or a minimum or
+    maximum degree. Coefficients are either restricted to degreevalues defined by
+    larr or range defined by lCutMin, lCutMax.
+
+    Parameters
+    ----------
+    glm : _type_
+        _description_
+    hlm : _type_
+        _description_
+    lmax : _type_
+        _description_
+    larr : _type_, optional
+        _description_, by default None
+    lCutMin : int, optional
+        _description_, by default 0
+    lCutMax : _type_, optional
+        _description_, by default None
+
+    Returns
+    -------
+    _type_
+        _description_
+    """
 
     glm_filt = deepcopy(glm)
     hlm_filt = deepcopy(hlm)
@@ -304,18 +525,64 @@ def filt_Gaussm0(glm,hlm,lmax,larr=None,lCutMin=0,lCutMax=None):
 
 
 def sphInt(f,g,phi,th2D,theta):
+    """
+    Utility function for integrating a product of 2D arrays defined
+    on a spherical surface.
 
-    thetaInt = np.trapz(f * g * np.sin(th2D),theta,axis=1)
-    phiInt = np.trapz(thetaInt,phi)
+    Parameters
+    ----------
+    f : (2,) array_like
+        Defined on a (longitude,co-latitude) grid
+    g : (2,) array_like
+        Defined on a (longitude,co-latitude) grid
+    phi : array_like
+        Longitude
+    th2D : (2,) array_like
+        Co-latitude defined on (longitude,co-latitude) grid
+    theta : array_like
+        Co-latitude
+
+    Returns
+    -------
+    phiInt : float
+        f*g integrated over the spherical surface defined by (phi, theta)
+    """
+    from scipy.integrate import simpson
+
+    thetaInt = simpson(f * g * np.sin(th2D),theta,axis=1)
+    phiInt = simpson(thetaInt,phi)
 
     return phiInt
 
 
 def getGauss(lmax,Br,r,phi,theta,th2D,p2D):
+    """
+    Get Gauss coefficients from a surface field.
 
-    '''
-    Get Gauss coefficients from a surface field
-    '''
+    Parameters
+    ----------
+    lmax : int
+        Maximum degree of spherical harmonic
+    Br : (2,) array_like
+        Radial magnetic field defined on (phi,theta) grid
+    r : float
+        Radial level (planetary radius = 1)
+    phi : array_like
+        Longitude
+    theta : array_like
+        Co-latitude
+    th2D : (2,) array_like
+        Co-latitude defined on (longitude,co-latitude) grid
+    p2D : (2,) array_like
+        Longitude defined on (longitude,co-latitude) grid
+
+    Returns
+    -------
+    glm : array_like
+        Gauss coefficients of cos(m*phi)
+    hlm : array_like
+        Gauss coefficients of sin(m*phi)
+    """
     glm = []
     hlm = []
 
