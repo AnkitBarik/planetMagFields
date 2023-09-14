@@ -7,14 +7,14 @@ Routines to easily access information about magnetic fields of planets in our so
  - Potential extrapolation: [SHTns](https://bitbucket.org/nschaeff/shtns) library
  - Writing vts files for 3D visualisation: [PyEVTK](https://github.com/paulo-herrera/PyEVTK) library
 
-# The `planet` class
+# The `Planet` class
 
 This gives access to all the relevant properties of a planet and has methods to plot
 the field and write a `vts` file for 3D visualization. Usage:
 
 ```python
 from planetmagfields import *
-p = planet(name='earth',datDir='planetmagfields/data/')
+p = Planet(name='earth',datDir='planetmagfields/data/')
 ```
 
 This displays the some information about the planet
@@ -40,7 +40,7 @@ Example:
 ```python
 In [1]: from planetmagfields import *
 
-In [2]: p = planet(name='jupiter')
+In [2]: p = Planet(name='jupiter')
 Planet: Jupiter
 l_max = 10
 Dipole tilt (degrees) = 10.307870
@@ -54,14 +54,14 @@ Out[4]: 27811.2
 
 as well as the functions:
 
-## `planet.plot()`
+## `Planet.plot()`
 
 This function plots a 2D surface plot of the radial magnetic field at radius `r` given in terms of the surface radius.
 For example,
 
 ```python
 from planetmagfields import *
-p = planet(name='earth',datDir='planetmagfields/data/')
+p = Planet(name='earth',datDir='planetmagfields/data/')
 p.plot(r=1,proj='Mollweide')
 ```
 
@@ -73,7 +73,7 @@ while
 
 ```python
 from planetmagfields import *
-p = planet(name='jupiter',datDir='planetmagfields/data/')
+p = Planet(name='jupiter',datDir='planetmagfields/data/')
 p.plot(r=0.85,proj='Mollweide')
 ```
 produces the following info about Jupiter and then plot that follows
@@ -88,13 +88,13 @@ Dipole tilt (degrees) = 10.307870
 
 This can be compared with Fig. 1 g from [Moore et al. 2018](https://doi.org/10.1038/s41586-018-0468-5)
 
-## `planet.spec()`
+## `Planet.spec()`
 
 This function computes the Lowes spectrum of a planet at a given radius. It adds an array `p.emag_spec` which contains the energy at different spherical harmonic degrees and two variables `p.dipolarity` and `p.dip_tot` which provide the fraction of energies in the axial dipole and the total dipole with respect to the total energy at all degrees. Usage example:
 
 ```python
 from planetmagfields import *
-p = planet(name='jupiter')
+p = Planet(name='jupiter')
 p.spec()
 ```
 
@@ -120,7 +120,7 @@ and will produce Jupiter's surface spectrum:
 
 The plotting can be suppressed setting the logical `p.spec(iplot=False)`.
 
-## `planet.writeVtsFile()`
+## `Planet.writeVtsFile()`
 
 This function writes a vts file that can be used to produce 3D visualizations of field lines with Paraview/VisIt. Usage:
 
@@ -137,7 +137,7 @@ Example of a 3D image produced using Paraview for Neptune's field, extrapolated 
 
 <img src="planetmagfields/images/3d/neptune3d.png" width="500">
 
-# Field filtering using `planet.plot_filt`
+# Field filtering using `Planet.plot_filt`
 
 The `planet` class also provides a function for producing a filtered view of the radial magnetic field using the function `plot_filt`.
 This function can take in either an arbitrary array of spherical harmonic degrees and orders or cut-off values. This is illustrated
@@ -147,7 +147,7 @@ below with examples, assuming the user is in the repository directory.
 
 ```python
 from planetmagfields import *
-p = planet(name='saturn')
+p = Planet(name='saturn')
 p.plot_filt(r=0.75,lCutMin=4,proj='Mollweide')
 ```
 
@@ -159,7 +159,7 @@ Compare this with Fig. 20 B from [Cao et al. 2020](https://doi.org/10.1016/j.ica
 
 ```python
 from planetmagfields import *
-p = planet(name='jupiter')
+p = Planet(name='jupiter')
 p.plot_filt(r=1,larr=[1,2,3],marr=[3],proj='Mollweide')
 ```
 
@@ -169,7 +169,7 @@ p.plot_filt(r=1,larr=[1,2,3],marr=[3],proj='Mollweide')
 
 ```python
 from planetmagfields import *
-p = planet(name='earth')
+p = Planet(name='earth')
 p.plot_filt(r=1,lCutMin=5,mmin=4,proj='Mollweide')
 ```
 
@@ -184,7 +184,7 @@ Usage example:
 ```python
 import numpy as np
 from planetmagfields import *
-p = planet('saturn')
+p = Planet('saturn')
 ratio_out = 5 # Ratio (> 1) in terms of surface radius to which to extrapolate
 nrout = 32 # Number of grid points in radius between 1 and ratio_out
 rout = np.linspace(1,ratio_out,nrout)
@@ -257,7 +257,7 @@ By default, the plot function tries to use the Mollweide projection. However, us
 ```python
 In [1]: from planetmagfields import *
 
-In [2]: p = planet(name='jupiter')
+In [2]: p = Planet(name='jupiter')
 Planet: Jupiter
 l_max = 10
 Dipole tilt (degrees) = 10.307870
