@@ -7,9 +7,8 @@ tags:
   - visualization
 authors:
   - name: Ankit Barik
-    orcid: 0000-0000-0000-0000
-    equal-contrib: true
-    affiliation: 1 # (Multiple affiliations must be quoted)
+    orcid: 0000-0001-5747-669X
+    affiliation: 1
 affiliations:
  - name: Department of Earth and Planetary Sciences, Johns Hopkins University, USA
    index: 1
