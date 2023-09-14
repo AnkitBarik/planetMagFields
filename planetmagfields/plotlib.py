@@ -14,10 +14,10 @@ def hammer2cart(ttheta, pphi, colat=False):
 
     Parameters
     ----------
-    ttheta : (2,) array_like
+    ttheta : ndarray(float, ndim=2)
         2D array defining latitude or co-latitude (theta).
         This ranges from 0 to pi and has a shape (nphi,ntheta)
-    pphi : (2,) array_like
+    pphi : ndarray(float, ndim=2)
         2D array defining longitude (phi)
         This ranges from 0 to 2*pi and has a shape (nphi,ntheta)
     colat : Boolean
@@ -43,13 +43,13 @@ def plotSurf(p2D,th2D,B,levels=60,cmap='RdBu_r',proj='Mollweide'):
 
     Parameters
     ----------
-    p2D : (2,) array_like
+    p2D : ndarray(float, ndim=2)
         2D array defining longitude (phi)
         This ranges from 0 to 2*pi and has a shape (nphi,ntheta)
-    th2D : (2,) array_like
+    th2D : ndarray(float, ndim=2)
         2D array defining co-latitude (theta)
         This ranges from 0 to pi and has a shape (nphi,ntheta)
-    B : (2,) array_like
+    B : ndarray(float, ndim=2)
         This defines the data to plot corresponding to the grid defined by p2D
         and th2D, usually radial magnetic field
     levels : int
@@ -116,13 +116,13 @@ def plotB_subplot(ax,p2D,th2D,B,planetname="earth",levels=60,cmap='RdBu_r',proj=
     ----------
     ax :  matplotlib.axes instance
         Axes of the subplot
-    p2D : (2,) array_like
+    p2D : ndarray(float, ndim=2)
         2D array defining longitude (phi)
         This ranges from 0 to 2*pi and has a shape (nphi,ntheta)
-    th2D : (2,) array_like
+    th2D : ndarray(float, ndim=2)
         2D array defining co-latitude (theta)
         This ranges from 0 to pi and has a shape (nphi,ntheta)
-    B : (2,) array_like
+    B : ndarray(float, ndim=2)
         This defines the data to plot corresponding to the grid defined by p2D
         and th2D, usually radial magnetic field
     planetname : str

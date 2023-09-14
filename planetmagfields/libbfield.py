@@ -28,11 +28,11 @@ def getBr(planet, r=1.0, nphi=256, ntheta=128, info=True):
 
     Returns
     -------
-    p2D : (2,) array_like
+    p2D : ndarray(float, ndim=2)
         Longitude at every point on a (longitude,co-latitude) grid
-    th2D : (2,) array_like
+    th2D : ndarray(float, ndim=2)
         Co-latitude at every point on a (longitude,co-latitude) grid
-    Br : (2,) array_like
+    Br : ndarray(float, ndim=2)
         Radial magnetic field at every point on a (longitude,co-latitude) grid
     dipTheta : float
         Dipole tilt co-latitude in degrees

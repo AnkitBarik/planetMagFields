@@ -156,9 +156,9 @@ def get_grid(nphi=256,ntheta=128):
 
     Returns
     -------
-    p2D : (2,) array_like
+    p2D : ndarray(float, ndim=2)
         Longitude at every point on a (longitude,co-latitude) grid
-    th2D : (2,) array_like
+    th2D : ndarray(float, ndim=2)
         Co-latitude at every point on a (longitude,co-latitude) grid
     """
 
@@ -257,10 +257,10 @@ def getB(lmax,glm,hlm,idx,r,p2D,th2D,planetname="earth"):
         g(0,0) -> 0, g(1,0) -> 1, g(1,1) -> 2 etc.
     r : float
         Radial level scaled to planetary surface
-    p2D : (2,) array_like
+    p2D : ndarray(float, ndim=2)
         2D array defining longitude (phi).
         This ranges from 0 to 2*pi and has a shape (nphi,ntheta)
-    th2D : (2,) array_like
+    th2D : ndarray(float, ndim=2)
         2D array defining co-latitude (theta).
         This ranges from 0 to pi and has a shape (nphi,ntheta)
     planet : str, optional
@@ -268,7 +268,7 @@ def getB(lmax,glm,hlm,idx,r,p2D,th2D,planetname="earth"):
 
     Returns
     -------
-    Br : (2,) array_like
+    Br : ndarray(float, ndim=2)
         Radial magnetic field on the grid defined by p2D and th2D
     """
 
@@ -313,16 +313,16 @@ def getBm0(lmax,glm,r,p2D,th2D):
         Gauss coefficients of cos(m*phi)
     r : float
         Radial level scaled to planetary surface
-    p2D : (2,) array_like
+    p2D : ndarray(float, ndim=2)
         2D array defining longitude (phi).
         This ranges from 0 to 2*pi and has a shape (nphi,ntheta)
-    th2D : (2,) array_like
+    th2D : ndarray(float, ndim=2)
         2D array defining co-latitude (theta).
         This ranges from 0 to pi and has a shape (nphi,ntheta)
 
     Returns
     -------
-    Br : (2,) array_like
+    Br : ndarray(float, ndim=2)
         Radial magnetic field on the grid defined by p2D and th2D
     """
 
@@ -531,13 +531,13 @@ def sphInt(f,g,phi,th2D,theta):
 
     Parameters
     ----------
-    f : (2,) array_like
+    f : ndarray(float, ndim=2)
         Defined on a (longitude,co-latitude) grid
-    g : (2,) array_like
+    g : ndarray(float, ndim=2)
         Defined on a (longitude,co-latitude) grid
     phi : array_like
         Longitude
-    th2D : (2,) array_like
+    th2D : ndarray(float, ndim=2)
         Co-latitude defined on (longitude,co-latitude) grid
     theta : array_like
         Co-latitude
@@ -563,7 +563,7 @@ def getGauss(lmax,Br,r,phi,theta,th2D,p2D):
     ----------
     lmax : int
         Maximum degree of spherical harmonic
-    Br : (2,) array_like
+    Br : ndarray(float, ndim=2)
         Radial magnetic field defined on (phi,theta) grid
     r : float
         Radial level (planetary radius = 1)
@@ -571,9 +571,9 @@ def getGauss(lmax,Br,r,phi,theta,th2D,p2D):
         Longitude
     theta : array_like
         Co-latitude
-    th2D : (2,) array_like
+    th2D : ndarray(float, ndim=2)
         Co-latitude defined on (longitude,co-latitude) grid
-    p2D : (2,) array_like
+    p2D : ndarray(float, ndim=2)
         Longitude defined on (longitude,co-latitude) grid
 
     Returns

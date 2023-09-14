@@ -114,9 +114,9 @@ class Planet:
 
     def writeVtsFile(self,potExtra=False,ratio_out=2,nrout=32):
         """
-        Writes a .vts file for 3D visualization. Uses the SHTns library
-        for potential extrapolation and the pyevtk library for writing
-        the vts file.
+        Writes an unstructured vtk (.vts) file for 3D visualization. Uses the
+        SHTns library for potential extrapolation and the pyevtk library for
+        writing the vtk file.
 
         Parameters
         ----------

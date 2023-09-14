@@ -3,14 +3,42 @@
 
 import numpy as np
 
-def extrapot(lmax,rcmb,brcmb,rout):
+def extrapot(rcmb,brcmb,rout,lmax=None):
+    """
+    This function extrapolates a potential field to an array of desired radial
+    levels. It uses the SHTns library (https://bitbucket.org/nschaeff/shtns)
+    for spherical harmonic transforms.
+
+    Parameters
+    ----------
+    rcmb : float
+        Radius at which the magnetic field is measured or defined
+    brcmb : ndarray(float, ndim=2)
+        2D array of radial magnetic field defined on a grid of longitude and
+        co-latitude
+    rout : array_like
+        Array of radial levels to which the field should be extrapolated
+    lmax : int, optional
+        Maximum spherical harmonic degree, if None, automatically chosen
+        from the grid, by default None
+
+    Returns
+    -------
+    brout : ndarray(float, ndim=3)
+        3D array of extrapolated radial magnetic field, shape : (nphi,ntheta,nr)
+    btout : ndarray(float, ndim=3)
+        3D array of extrapolated co-latitudinal magnetic field, shape : (nphi,ntheta,nr)
+    bpout : ndarray(float, ndim=3)
+        3D array of extrapolated azimuthal magnetic field, shape : (nphi,ntheta,nr)
+    """
 
     nphi, ntheta = brcmb.shape
     nrout = len(rout)
 
     polar_opt = 1e-10
 
-    lmax = int(nphi/3)
+    if lmax is None:
+        lmax = int(nphi/3)
     mmax = lmax
 
     try:
@@ -56,6 +84,36 @@ def extrapot(lmax,rcmb,brcmb,rout):
     return brout, btout, bpout
 
 def get_grid(r,theta,phi):
+    """
+    Produces a 3D grid for storing values of extrapolated field. Used in producing
+    vtk file for 3D visualization.
+
+    Parameters
+    ----------
+    r : array_like
+        Array of radial levels
+    theta : array_like
+        Array of colatitudes, ranging from 0 to pi
+    phi : array_like
+        Array of longitudes, ranging from 0 to 2*pi
+
+    Returns
+    -------
+    r3D : ndarray(float, ndim=3)
+        3D array of radius values at each grid point, shape (nphi,ntheta,nr)
+    th3D : ndarray(float, ndim=3)
+        3D array of colatitude values at each grid point, shape (nphi,ntheta,nr)
+    p3D : ndarray(float, ndim=3)
+        3D array of longitude values at each grid point, shape (nphi,ntheta,nr)
+    x : ndarray(float, ndim=3)
+        3D array of Cartesian x values at each grid point, shape (nphi,ntheta,nr)
+    y : ndarray(float, ndim=3)
+        3D array of Cartesian y values at each grid point, shape (nphi,ntheta,nr)
+    z : ndarray(float, ndim=3)
+        3D array of Cartesian z values at each grid point, shape (nphi,ntheta,nr)
+    s : ndarray(float, ndim=3)
+        3D array of cylindrical radius values at each grid point, shape (nphi,ntheta,nr)
+    """
 
     nr,ntheta,nphi = len(r),len(theta),len(phi)
 
@@ -77,7 +135,35 @@ def get_grid(r,theta,phi):
 
     return r3D,th3D,p3D, x,y,z, s
 
-def get_cart(vr,vt,vp,r3D,th3D,p3D):
+def get_cart(vr,vt,vp,th3D,p3D):
+    """
+    Converts a set of vector components in spherical coordinate system
+    to Cartesian. All components, both at input and output have shape
+    (nphi,ntheta,nr), number of points in longitude, colatitude and radial
+    directions, respectively.
+
+    Parameters
+    ----------
+    vr : ndarray(float, ndim=3)
+        3D array of radial component of vector
+    vt : ndarray(float, ndim=3)
+        3D array of colatitude component of vector
+    vp : ndarray(float, ndim=3)
+        3D array of azimuthal component of vector
+    th3D : ndarray(float, ndim=3)
+        3D array of colatitude values on the grid
+    p3D : ndarray(float, ndim=3)
+        3D array of longitude values on the grid
+
+    Returns
+    -------
+    vx : ndarray(float, ndim=3)
+        3D array of vector component in Cartesian x direction
+    vy : ndarray(float, ndim=3)
+        3D array of vector component in Cartesian x direction
+    vz : ndarray(float, ndim=3)
+        3D array of vector component in Cartesian x direction
+    """
 
     vs = vr * np.sin(th3D) + vt * np.cos(th3D)
     vz = vr * np.cos(th3D) - vt * np.sin(th3D)
@@ -88,12 +174,36 @@ def get_cart(vr,vt,vp,r3D,th3D,p3D):
     return vx,vy,vz
 
 def writeVts(name,br,btheta,bphi,r,theta,phi):
+    """
+    Writes an unstructured vtk file for 3D visualization.
+
+    Parameters
+    ----------
+    name : str
+        Name of the file
+    br : ndarray(float, ndim=3)
+        3D array of radial component of vector
+    btheta : ndarray(float, ndim=3)
+        3D array of colatitudinal component of vector
+    bphi : ndarray(float, ndim=3)
+        3D array of azimuthal component of vector
+    r : array_like
+        Array of radial levels
+    theta : array_like
+        Array of colatitudes
+    phi : array_like
+        Array of longitudes
+
+    Returns
+    -------
+    None
+    """
 
     r3D,th3D,p3D, x,y,z, s = get_grid(r,theta,phi)
 
     print("grid shape=",th3D.shape)
 
-    bx,by,bz = get_cart(br, btheta, bphi,r3D,th3D,p3D)
+    bx,by,bz = get_cart(br, btheta, bphi,th3D,p3D)
 
     try:
         try: # Version 2 changed naming convention of functions
@@ -119,3 +229,4 @@ def writeVts(name,br,btheta,bphi,r,theta,phi):
                                           "Radial mag field":br,
                                           "Mag Field":(bx, by,bz)})
 
+    print("Output written to %s!" %name)
