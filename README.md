@@ -194,27 +194,48 @@ brout, btout, bpout = potextra.extrapot(p.lmax,1.,p.Br,rout)
 # Quickplot using the `magField.py` script:
 
 ```
-$ ./magField.py <planet> <radius> <projection>
+$ ./magField.py [-h] [-p PLANET] [-r R] [-c CMAP] [-l LEVELS] [-m PROJ]
 ```
 
 This will plot the radial magnetic field of a planet (any of the names from the list
-below, case insensitive) at a radius given in terms of the surface radius. The default
-is the surface field. For example,
+below, case insensitive) at a radius given in terms of the surface radius with a given
+map projection. The default is the surface field. More details are available through
+the help.
 
 ```
-$ ./magField.py earth Mollweide
+ $ ./magField.py --help
+usage: magField.py [-h] [-p PLANET] [-r R] [-c CMAP] [-l LEVELS] [-m PROJ]
+
+Script for easy plotting of planetary magnetic field.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -p PLANET, --planet PLANET
+                        Planet name (default : earth)
+  -r R, --radius R      Radial level scaled to planetary radius (default : 1)
+  -c CMAP, --cmap CMAP  Colormap of plot (default : RdBu_r)
+  -l LEVELS, --levels LEVELS
+                        Number of contour levels (default : 20)
+  -m PROJ, --mapproj PROJ
+                        Type of map projection (default : Mollweide)
+```
+
+For example,
+
+```
+$ ./magField.py -p earth -m Mollweide
 ```
 
 displays the same information as above about Earth's field and produces the surface field of Earth while
 
 ```
-$ ./magField.py jupiter 0.85 Mollweide
+$ ./magField.py -p jupiter -r 0.85 -m Mollweide
 ```
 
 produces the same plot of Jupiter's field as shown before.
 
 ```
-$ ./magField.py all <radius> <projection>
+$ ./magField.py -p all -r <radius> -m <projection>
 ```
 
 would produce a table of information about dipole tilt for each planet and magnetic field maps of all different planets at the given radius in a single figure.
@@ -222,7 +243,7 @@ would produce a table of information about dipole tilt for each planet and magne
 For example:
 
 ```
-$ ./magField all 0.9 Mollweide
+$ ./magField.py -p all -r 0.9 -m Mollweide
 ```
 
 would give
@@ -281,16 +302,16 @@ In [5]: for k,proj in enumerate(projlist):
 This also works with the `magField.py` script for quick plotting. Examples:
 
 ```bash
-./magField.py earth 0.9 Robinson
+./magField.py -p earth -r 0.9 -m Robinson
 ```
 
 or even with plots of all planets together
 
 ```bash
-./magField.py all 0.9 Robinson
+./magField.py -p all -r 0.9 -m Robinson
 ```
 
-Note that I have chosen to keep the projection information out of the plot titles to prevent too much text.
+Note that the projection information is kept out of the plot titles to prevent too much text.
 
 ❗ | The Orthographic projection often does not create correct plots, be cautious while using it 
 :---: | :---
