@@ -4,7 +4,7 @@
 import matplotlib.pyplot as plt
 import argparse
 from planetmagfields.libbfield import plotAllFields
-import planetmagfields.planet as Planet
+from planetmagfields.planet import Planet
 
 
 parser=argparse.ArgumentParser(
