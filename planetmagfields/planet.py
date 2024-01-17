@@ -91,7 +91,7 @@ class Planet:
         self.theta = self.th2D[0,:]
         self.r = r
 
-    def plot(self,r=1.0,levels=30,cmap='RdBu_r',proj='Mollweide'):
+    def plot(self,r=None,levels=30,cmap='RdBu_r',proj='Mollweide'):
         """
         Plots the radial magnetic field of a planet at a radial surface.
 
@@ -113,7 +113,10 @@ class Planet:
 
         plt.figure(figsize=(12,6.75))
 
-        if r == 1:
+        if r is None:
+            r = self.r
+
+        if r == self.r:
             ax,cbar = plotSurf(self.p2D,self.th2D,self.Br,levels=levels,cmap=cmap,proj=proj)
         else:
             self.p2D, self.th2D, self.Br, self.dipTheta, self.dipPhi = \
