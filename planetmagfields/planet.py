@@ -3,7 +3,8 @@
 import os
 import numpy as np
 import matplotlib.pyplot as plt
-from .libgauss import get_data, filt_Gauss, filt_Gaussm0,getB, getBm0, get_spec
+from .libdata import get_data
+from .libgauss import filt_Gauss, filt_Gaussm0,getB, getBm0, get_spec
 from .libbfield import getBr
 from .plotlib import plotSurf, plot_spec
 from .utils import stdDatDir, planetlist
@@ -20,7 +21,8 @@ class Planet:
     spectrum.
     """
 
-    def __init__(self,name='earth',r=1.0,nphi=256,datDir=stdDatDir,info=True):
+    def __init__(self,name='earth',model=None,year=None,
+                 r=1.0,nphi=256,datDir=stdDatDir,info=True):
         """
         Initialization of the Planet class.
 
@@ -46,13 +48,39 @@ class Planet:
         self.nphi   = nphi
         self.ntheta = nphi//2
 
+        #Automatic selection of latest model
+        if model is None:
+            if self.name =='earth':
+                model = 'igrf13'
+            elif self.name =='mercury':
+                model = 'wardinski2019'
+            elif self.name == 'jupiter':
+                model = 'jrm33'
+            elif self.name == 'saturn':
+                model = 'cassini11+'
+            elif self.name == 'uranus':
+                model = 'connerny1987'
+            elif self.name == 'neptune':
+                model = 'connerny1991'
+            elif self.name == 'ganymede':
+                model = 'kivelson2002'
+
+        self.model = model
+
+        if year is None:
+            self.year = 2020
+        else:
+            self.year = year
+
         if self.name not in planetlist:
             print("Planet must be one of the following!")
             print(planetlist)
 
         self.datDir = datDir
         self.glm, self.hlm, self.lmax, self.idx = get_data(self.datDir,
-                                                           planetname=self.name)
+                                                           planetname=self.name,
+                                                           model = self.model,
+                                                           year=self.year)
 
         self.p2D, self.th2D, self.Br, self.dipTheta, self.dipPhi = getBr(self,r=r,
                                                                         nphi=self.nphi,
@@ -109,7 +137,12 @@ class Planet:
         else:
             radLabel = r'  $r/r_{\rm surface}=%.2f$' %r
 
-        ax.set_title(self.name.capitalize() + radLabel,fontsize=25,pad=20)
+        title = self.name.capitalize() + radLabel
+
+        if self.name == 'earth':
+            title = title + ', %d' %self.year
+
+        ax.set_title(title,fontsize=25,pad=20)
         plt.tight_layout()
 
     def writeVtsFile(self,potExtra=False,ratio_out=2,nrout=32):

@@ -42,7 +42,10 @@ def getBr(planet, r=1.0, nphi=256, ntheta=128, info=True):
 
     p2D,th2D = get_grid(nphi=nphi,ntheta=ntheta)
 
-    if planet.name in ["mercury", "saturn"]:
+    m0file = ( (planet.name == "mercury" and planet.model == "anderson2012")
+            or (planet.name == "saturn") )
+
+    if m0file:
         Br = getBm0(planet.lmax,
                     planet.glm,
                     r,
@@ -66,9 +69,12 @@ def getBr(planet, r=1.0, nphi=256, ntheta=128, info=True):
 
     if info:
         print(("Planet: %s" %planet.name.capitalize()))
+        print("Model: %s" %planet.model)
         #print(("Depth (fraction of surface radius) = %.2f" %r))
         print(("l_max = %d" %planet.lmax))
         print(("Dipole tilt (degrees) = %f" %dipTheta))
+        if planet.name == 'earth':
+            print("Year = %d" %planet.year)
 
     return p2D, th2D, Br, dipTheta, dipPhi
 
