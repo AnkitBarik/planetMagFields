@@ -6,13 +6,31 @@ import os
 from .libgauss import gen_idx
 
 def get_models(datDir,planetname):
+    """Prints available models for a planet.
+
+    Parameters
+    ----------
+    datDir : str
+        Directory where the data file is present. Files are assumed to be named
+        as <planetname>_<modelname>.dat,
+        e.g.: earth_igrf13.dat, jupiter_jrm09.dat etc.
+    planetname : str
+        Name of the planet
+
+    Returns
+    -------
+    models : str array
+        Array of available model names
+    """
+
     from glob import glob
     dataFiles = glob(datDir+'/'+planetname+"*.dat")
     models = []
     for k,filename in enumerate(dataFiles):
         modelname = filename.split('_')[1].split('.dat')[0]
         models.append(modelname)
-    return np.sort(models)
+    models = np.sort(models)
+    return models
 
 def get_data(datDir,planetname="earth",model=None,year=2020):
     """
@@ -23,7 +41,8 @@ def get_data(datDir,planetname="earth",model=None,year=2020):
     ----------
     datDir : str
         Directory where the data file is present. Files are assumed to be named
-        as <planetname>.dat, e.g.: earth.dat, jupiter.dat etc.
+        as <planetname>_<modelname>.dat,
+        e.g.: earth_igrf13.dat, jupiter_jrm09.dat etc.
     planetname : str
         Name of the planet
 
@@ -62,6 +81,8 @@ def get_data(datDir,planetname="earth",model=None,year=2020):
         ghlm = dat[:,0]
 
         lmax = np.int32(l_dat.max())
+        if model == 'jrm33':
+            lmax = 18
 
         g = []
         h = []
