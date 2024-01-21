@@ -1,0 +1,36 @@
+[project]
+name = "planetMagFields_ankitbarik"
+version = "1.1"
+authors = [
+  { name="Ankit Barik", email="ankit.barik@gmail.com" },
+]
+description = "Routines to easily access information about magnetic fields of planets in our solar system and visualize them in both 2D and 3D"
+readme = "README.md"
+requires-python = ">=3.7"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+    "Operating System :: OS Independent",
+]
+
+dependencies = [
+  "numpy",
+  "scipy",
+  "matplotlib"
+]
+
+[project.optional-dependencies]
+
+map = ["cartopy"]
+potextra=["shtns"]
+
+[project.urls]
+Homepage = "https://github.com/AnkitBarik/planetMagFields"
+Issues = "https://github.com/AnkitBarik/planetMagFields/issues"
+
+[build-system]
+requires = ["setuptools >= 61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools-git-versioning]
+enabled = true

@@ -26,7 +26,7 @@ name = 'planetMagFields'
 version = get_version('planetmagfields/__init__.py')
 description = '''Routines to plot magnetic fields
  of planets in our solar system '''
-copyright = '2021 Ankit Barik'
+copyright = '2023 Ankit Barik'
 
 
 setuptools.setup(
@@ -35,7 +35,6 @@ setuptools.setup(
     author='Barik, Ankit',
     author_email='abarik@jhu.edu ',
     packages=['planetmagfields'],
-    license='GPL v3',
     description=description,
     long_description=long_description,
     install_requires=[
