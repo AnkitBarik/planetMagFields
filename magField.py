@@ -26,6 +26,10 @@ parser.add_argument('-m','--mapproj',type=str,default='Mollweide',
                     help='Type of map projection (default : Mollweide)',
                     dest='proj')
 
+parser.add_argument('-o','--model',type=str,default=None,
+                    help='Model to be used, uses the latest model by default (default : None)',
+                    dest='model')
+
 args=parser.parse_args()
 
 planet = args.planet
@@ -33,6 +37,7 @@ r      = args.r
 cmap   = args.cmap
 levels = args.levels
 proj   = args.proj
+model  = args.model
 
 if planet == 'all':
     plotAllFields(datDir='./planetmagfields/data/',r=r,levels=levels,cmap=cmap,proj=proj)
@@ -44,7 +49,7 @@ if planet == 'all':
                         hspace=0.38,
                         wspace=0.109)
 else:
-    pl = Planet(name=planet,r=r)
+    pl = Planet(name=planet,r=r,model=model)
     pl.plot(r=r,levels=levels,cmap=cmap,proj=proj)
 
 plt.show()
