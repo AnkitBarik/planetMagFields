@@ -35,7 +35,7 @@ variables associated with the planet such as:
  - `p.dipPhi` : dipole longitude ( in case zero longitude is known, applicable to Earth )
  - `p.idx` : indices to get values of Gauss coefficients
  - `p.model` : the magnetic field model used. Available models can be obtained using the `get_models()`
-               function.
+               function. Selects the latest available model when unspecified.
 
 Example:
 
@@ -48,7 +48,7 @@ Model: jrm09
 l_max = 10
 Dipole tilt (degrees) = 10.307870
 
-In [3]: p.glm[p.idx[2,0]]      #g20
+In [3]: p.glm[p.idx[2,0]]      # g20
 Out[3]: 11670.4
 
 In [4]: p.hlm[p.idx[4,2]]      # h42
@@ -76,7 +76,7 @@ while
 
 ```python
 from planetmagfields import *
-p = Planet(name='jupiter',datDir='planetmagfields/data/')
+p = Planet(name='jupiter',model='jrm09',datDir='planetmagfields/data/')
 p.plot(r=0.85,proj='Mollweide')
 ```
 produces the following info about Jupiter and then plot that follows
@@ -97,7 +97,7 @@ This function computes the Lowes spectrum of a planet at a given radius. It adds
 
 ```python
 from planetmagfields import *
-p = Planet(name='jupiter')
+p = Planet(name='jupiter',model='jrm09')
 p.spec()
 ```
 
@@ -162,7 +162,7 @@ Compare this with Fig. 20 B from [Cao et al. 2020](https://doi.org/10.1016/j.ica
 
 ```python
 from planetmagfields import *
-p = Planet(name='jupiter')
+p = Planet(name='jupiter',model='jrm09')
 p.plot_filt(r=1,larr=[1,2,3],marr=[3],proj='Mollweide')
 ```
 
@@ -278,7 +278,7 @@ By default, the plot function tries to use the Mollweide projection. However, us
 ```python
 In [1]: from planetmagfields import *
 
-In [2]: p = Planet(name='jupiter')
+In [2]: p = Planet(name='jupiter',model='jrm09')
 Planet: Jupiter
 l_max = 10
 Dipole tilt (degrees) = 10.307870
