@@ -194,17 +194,8 @@ brout, btout, bpout = potextra.extrapot(p.lmax,1.,p.Br,rout)
 # Quickplot using the `magField.py` script:
 
 ```
-$ ./magField.py [-h] [-p PLANET] [-r R] [-c CMAP] [-l LEVELS] [-m PROJ]
-```
-
-This will plot the radial magnetic field of a planet (any of the names from the list
-below, case insensitive) at a radius given in terms of the surface radius with a given
-map projection. The default is the surface field. More details are available through
-the help.
-
-```
- $ ./magField.py --help
-usage: magField.py [-h] [-p PLANET] [-r R] [-c CMAP] [-l LEVELS] [-m PROJ]
+  $ ./magField.py --help
+usage: magField.py [-h] [-p PLANET] [-r R] [-c CMAP] [-l LEVELS] [-m PROJ] [-o MODEL]
 
 Script for easy plotting of planetary magnetic field.
 
@@ -218,7 +209,13 @@ optional arguments:
                         Number of contour levels (default : 20)
   -m PROJ, --mapproj PROJ
                         Type of map projection (default : Mollweide)
+  -o MODEL, --model MODEL
+                        Model to be used, uses the latest model by default (default : None)
 ```
+This will plot the radial magnetic field of a planet (any of the names from the list
+below, case insensitive) at a radius given in terms of the surface radius with a given
+map projection. The default is the surface field. More details are available through
+the help.
 
 For example,
 
@@ -229,7 +226,7 @@ $ ./magField.py -p earth -m Mollweide
 displays the same information as above about Earth's field and produces the surface field of Earth while
 
 ```
-$ ./magField.py -p jupiter -r 0.85 -m Mollweide
+$ ./magField.py -p jupiter -r 0.85 -m Mollweide -o jrm09
 ```
 
 produces the same plot of Jupiter's field as shown before.
