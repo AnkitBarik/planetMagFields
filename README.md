@@ -34,18 +34,21 @@ variables associated with the planet such as:
  - `p.dipTheta` : dipole tilt with respect to the rotation axis
  - `p.dipPhi` : dipole longitude ( in case zero longitude is known, applicable to Earth )
  - `p.idx` : indices to get values of Gauss coefficients
+ - `p.model` : the magnetic field model used. Available models can be obtained using the `get_models()`
+               function.
 
 Example:
 
 ```python
 In [1]: from planetmagfields import *
 
-In [2]: p = Planet(name='jupiter')
+In [2]: p = Planet(name='jupiter',model='jrm09')
 Planet: Jupiter
+Model: jrm09
 l_max = 10
 Dipole tilt (degrees) = 10.307870
 
-In [3]: p.glm[p.idx[2,0]]      # g20
+In [3]: p.glm[p.idx[2,0]]      #g20
 Out[3]: 11670.4
 
 In [4]: p.hlm[p.idx[4,2]]      # h42
