@@ -4,11 +4,19 @@
    contain the root `toctree` directive.
 
 Python API
-===========================================
+=============
+
+.. automodule:: planetmagfields
+   :members:
+
 
 .. autoclass:: planetmagfields.Planet
    :members:
-   :special-members:
+   :class-doc-from: class
+
+.. autofunction:: extrapot
+
+.. autofunction:: get_models
 
 .. Indices and tables
 .. ==================

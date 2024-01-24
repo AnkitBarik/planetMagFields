@@ -5,11 +5,12 @@
 
 .. _secExamples:
 
+#########################
 Features and examples
-=======================
+#########################
 
-The `Planet` class
-+++++++++++++++++++
+The :py:class:`Planet <planetmagfields.Planet>` class
+*****************************************************
 
 This gives access to all the relevant properties of a planet and has methods to plot
 the field and write a `vts` file for 3D visualization. Usage:
@@ -32,15 +33,15 @@ This displays the some information about the planet
 and gives access to
 variables associated with the planet such as:
 
- - `p.lmax` : maximum spherical harmonic degree till which data is available
- - `p.glm`, `p.hlm`: the Gauss coefficients
- - `p.Br` : computed radial magnetic field at surface
- - `p.dipTheta` : dipole tilt with respect to the rotation axis
- - `p.dipPhi` : dipole longitude ( in case zero longitude is known, applicable to Earth )
- - `p.idx` : indices to get values of Gauss coefficients
- - `p.model` : the magnetic field model used. Available models can be obtained using the `get_models()` function. Selects the latest available model when unspecified.
+  * ``p.lmax`` : maximum spherical harmonic degree till which data is available
+  * ``p.glm``, ``p.hlm``: the Gauss coefficients
+  * ``p.Br`` : computed radial magnetic field at surface
+  * ``p.dipTheta`` : dipole tilt with respect to the rotation axis
+  * ``p.dipPhi`` : dipole longitude ( in case zero longitude is known, applicable to Earth )
+  * ``p.idx`` : indices to get values of Gauss coefficients
+  * ``p.model`` : the :ref:`magnetic field model <secmodels>` used. Available models can be obtained using the :py:func:`get_models <planetmagfields.get_models>` function. Selects the latest available model when unspecified.
 
-Example using `IPython`:
+Example using ``IPython``:
 
 .. code-block:: python
 
@@ -60,3 +61,260 @@ Example using `IPython`:
 
 as well as the functions:
 
+:py:func:`Planet.plot() <planetmagfields.Planet.plot>`
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This function plots a 2D surface plot of the radial magnetic field at radius `r` given in terms of the surface radius.
+For example,
+
+.. code-block:: python
+
+   from planetmagfields import *
+   p = Planet(name='earth',datDir='planetmagfields/data/')
+   p.plot(r=1,proj='Mollweide')
+
+
+produces the info mentioned above first and then the following plot of Earth's magnetic field using a Mollweide projection
+
+.. image:: _static/images/2d/earth2d.png
+   :width: 400
+   :align: center
+
+while
+
+.. code-block:: python
+
+   from planetmagfields import *
+   p = Planet(name='jupiter',model='jrm09',datDir='planetmagfields/data/')
+   p.plot(r=0.85,proj='Mollweide')
+
+produces the following info about Jupiter and then plot that follows
+
+.. code-block:: bash
+
+   Planet: Jupiter
+   l_max = 10
+   Dipole tilt (degrees) = 10.307870
+
+
+.. image:: _static/images/jupiter_r085.png
+   :width: 400
+   :align: center
+
+This can be compared with Fig. 1 g from `Moore et al. 2018 <https://doi.org/10.1038/s41586-018-0468-5>`_ .
+
+:py:func:`Planet.spec() <planetmagfields.Planet.spec>`
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This function computes the Lowes spectrum of a planet at a given radius. It adds an array ``p.emag_spec`` which contains the energy at different spherical harmonic degrees and two variables ``p.dipolarity`` and ``p.dip_tot`` which provide the fraction of energies in the axial dipole and the total dipole with respect to the total energy at all degrees. Usage example:
+
+.. code-block:: python
+
+   from planetmagfields import *
+   p = Planet(name='jupiter',model='jrm09')
+   p.spec()
+
+
+will provide variables
+
+.. code-block:: python
+
+   In [8]: p.dipolarity
+   Out[8]: 0.7472047129875864
+
+   In [9]: p.dip_tot
+   Out[9]: 0.7719205112704368
+
+   In [10]: p.emag_spec
+   Out[10]:
+   array([0.00000000e+00, 3.47735422e+11, 2.36340423e+10, 2.12851278e+10,
+         1.75661779e+10, 1.92219842e+10, 9.91200756e+09, 3.34535475e+09,
+         3.95317971e+09, 2.59333412e+09, 1.23423769e+09])
+
+
+and will produce Jupiter's surface spectrum:
+
+.. image:: _static/images/spec/jupiter_spec.png
+   :width: 400
+   :align: center
+
+The plotting can be suppressed setting the logical `p.spec(iplot=False)`.
+
+.. _secVts:
+
+:py:func:`Planet.writeVtsFile() <planetmagfields.Planet.writeVtsFile>`
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This function writes a vts file that can be used to produce 3D visualizations of field lines with Paraview/VisIt. Usage:
+
+.. code-block:: python
+
+   p.writeVtsFile(potExtra=True, ratio_out=2, nrout=32)
+
+where,
+
+  - ``potExtra`` : bool, whether to use potential extrapolation. This uses the `SHTns <https://bitbucket.org/nschaeff/shtns>`_ library for spherical harmonic transforms.
+  - ``ratio_out``: float, radius till which the field would be extrapolated in terms of the surface radius
+  - ``nrout``: radial resolution for extrapolation
+
+Example of a 3D image produced using `Paraview <https://www.paraview.org/>`_ for Neptune's field, extrapolated till 5 times the surface radius is given below.
+
+.. image:: _static/images/3d/neptune3d.png
+   :width: 400
+   :align: center
+
+Field filtering using :py:func:`Planet.plot_filt <planetmagfields.Planet.plot_filt>`
+************************************************************************************
+
+The ``planet`` class also provides a function for producing a filtered view of the radial magnetic field using the function ``plot_filt``.
+This function can take in either an arbitrary array of spherical harmonic degrees and orders or cut-off values. This is illustrated
+below with examples, assuming the user is in the repository directory.
+
+Saturn's small-scale magnetic field
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Here we plot Saturn's magnetic field at a depth of 0.75 planetary radius for spherical harmonic degrees > 3.
+
+.. code-block:: python
+
+   from planetmagfields import *
+   p = Planet(name='saturn')
+   p.plot_filt(r=0.75,lCutMin=4,proj='Mollweide')
+
+
+.. image:: _static/images/saturn_lgeq4_2d.png
+   :width: 400
+   :align: center
+
+Compare this with Fig. 20 B from `Cao et al. 2020 <https://doi.org/10.1016/j.icarus.2019.113541>`_ .
+
+Jupiter's surface field
+^^^^^^^^^^^^^^^^^^^^^^^
+Here we filter out Jupiter's surface field restricted to degrees 1,2,3 and order 3.
+
+.. code-block:: python
+
+   from planetmagfields import *
+   p = Planet(name='jupiter',model='jrm09')
+   p.plot_filt(r=1,larr=[1,2,3],marr=[3],proj='Mollweide')
+
+
+.. image:: _static/images/jupiter_l123m3_2d.png
+   :width: 400
+   :align: center
+
+Earth's smaller scale surface field
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+We filter the surface field to degrees > 4 and orders > 3.
+
+.. code-block:: python
+
+   from planetmagfields import *
+   p = Planet(name='earth')
+   p.plot_filt(r=1,lCutMin=5,mmin=4,proj='Mollweide')
+
+
+.. image:: _static/images/earth_lgeq5mgeq4_2d.png
+   :width: 400
+   :align: center
+
+.. _subsecPotExtra:
+
+Potential extrapolation
+************************
+
+The ``potextra`` module provides a method for potential extrapolation of a planet's magnetic field.
+This uses the `SHTns <https://bitbucket.org/nschaeff/shtns>`_ library for spherical harmonic transforms.
+Usage example:
+
+.. code-block:: python
+
+   import numpy as np
+   from planetmagfields import *
+   p = Planet('saturn')
+   ratio_out = 5 # Ratio (> 1) in terms of surface radius to which to extrapolate
+   nrout = 32 # Number of grid points in radius between 1 and ratio_out
+   rout = np.linspace(1,ratio_out,nrout)
+   brout, btout, bpout = potextra.extrapot(p.lmax,1.,p.Br,rout)
+
+.. _secMagFieldScript:
+
+Quickplot using the ``magField.py`` script
+********************************************
+
+.. code-block:: bash
+
+   $ ./magField.py --help
+   usage: magField.py [-h] [-p PLANET] [-r R] [-c CMAP] [-l LEVELS] [-m PROJ] [-o MODEL]
+
+   Script for easy plotting of planetary magnetic field.
+
+   optional arguments:
+   -h, --help            show this help message and exit
+   -p PLANET, --planet PLANET
+                           Planet name (default : earth)
+   -r R, --radius R      Radial level scaled to planetary radius (default : 1)
+   -c CMAP, --cmap CMAP  Colormap of plot (default : RdBu_r)
+   -l LEVELS, --levels LEVELS
+                           Number of contour levels (default : 20)
+   -m PROJ, --mapproj PROJ
+                           Type of map projection (default : Mollweide)
+   -o MODEL, --model MODEL
+                           Model to be used, uses the latest model by default (default : None)
+
+This will plot the radial magnetic field of a planet (any of the names from the list
+below, case insensitive) at a radius given in terms of the surface radius with a given
+map projection. The default is the surface field. More details are available through
+the help.
+
+For example,
+
+.. code-block:: bash
+
+   $ ./magField.py -p earth -m Mollweide
+
+displays the same information as above about Earth's field and produces the surface field of Earth while
+
+.. code-block:: bash
+
+   $ ./magField.py -p jupiter -r 0.85 -m Mollweide -o jrm09
+
+
+produces the same plot of Jupiter's field as shown before.
+
+.. code-block:: bash
+
+   $ ./magField.py -p all -r <radius> -m <projection>
+
+
+would produce a table of information about dipole tilt for each planet and magnetic field maps of all different planets at the given radius in a single figure.
+
+For example:
+
+.. code-block:: bash
+
+   $ ./magField.py -p all -r 0.9 -m Mollweide
+
+
+would give
+
+.. code-block:: bash
+
+   |=========|======|=======|
+   |Planet   | Theta| Phi   |
+   |=========|======|=======|
+   |Mercury  | 0.0  | 0.0   |
+   |Earth    | -9.4 | -72.7 |
+   |Jupiter  | 10.3 | -16.6 |
+   |Saturn   | 0.0  | 0.0   |
+   |Uranus   | 58.6 | -53.6 |
+   |Neptune  | 46.9 | -72.0 |
+   |Ganymede | -4.2 | 25.5  |
+   |---------|------|-------|
+
+
+followed by the following plot
+
+.. image:: _static/images/magField_all_09.png
+   :width: 500
+   :align: center

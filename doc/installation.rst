@@ -5,13 +5,15 @@
 
 .. _secInstall:
 
+#########################
 Installation
-=========================
+#########################
 
 `planetMagFields` can be installed in a few different ways:
 
 Using `PYTHONPATH`
-^^^^^^^^^^^^^^^^^^^^
+******************
+
 Download the package from the `GitHub repository <https://github.com/AnkitBarik/planetMagFields>`_ and it
 to `PYTHONPATH`:
 
@@ -21,7 +23,8 @@ to `PYTHONPATH`:
    $ export PYTHONPATH=$PYTHONPATH:/path/to/planetMagFields
 
 Using `setup.py`
-^^^^^^^^^^^^^^^^
+*****************
+
 You can also use `setup.py` to install `planetMagFields`:
 
 .. code-block:: bash
@@ -39,7 +42,7 @@ Or using `pip`:
    $ python3 -m pip install . --user
 
 Using `pip`
-^^^^^^^^^^^
+***********
 
 
 

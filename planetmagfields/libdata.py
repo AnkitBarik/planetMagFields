@@ -4,8 +4,9 @@
 import numpy as np
 import os
 from .libgauss import gen_idx
+from .utils import stdDatDir
 
-def get_models(datDir,planetname):
+def get_models(planetname,datDir=stdDatDir):
     """Prints available models for a planet.
 
     Parameters
