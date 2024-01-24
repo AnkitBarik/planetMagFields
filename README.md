@@ -9,7 +9,7 @@ Routines to easily access information about magnetic fields of planets in our so
 
 # Documentation
 
-The documentation is available here: [](https://ankitbarik.github.io/planetMagFields/)
+The documentation is available here: https://ankitbarik.github.io/planetMagFields/
 
 
 # Acknowledgements
