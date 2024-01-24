@@ -13,7 +13,8 @@ jobs:
       - uses: actions/setup-python@v3
       - name: Install dependencies
         run: |
-          python3 -m pip install sphinx furo
+          python3 -m pip install numpy scipy matplotlib
+          python3 -m pip install setuptools sphinx furo
       - name: Sphinx build
         run: |
           python3 setup.py install
