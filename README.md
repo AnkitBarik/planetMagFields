@@ -14,4 +14,4 @@ The documentation is available here: https://ankitbarik.github.io/planetMagField
 
 # Acknowledgements
 
-I would like to thank [Regupathi Angappan](https://github.com/reguang) for motivating me to create this package. I thank [Jon Aurnou](https://epss.ucla.edu/people/faculty/543/) for testing it out and pointing out runtime errors. Lastly, I would like to thank [Thomas Gastine](https://github.com/tgastine) for comparing the plots with real data and pointing out a normalization error which has been fixed.
+I would like to thank [Regupathi Angappan](https://github.com/reguang) for motivating me to create this package. I thank [Jon Aurnou](https://epss.ucla.edu/people/faculty/543/) for testing it out and pointing out runtime errors. I would like to thank [Thomas Gastine](https://github.com/tgastine) for comparing the plots with real data and pointing out a normalization error which has been fixed. Thanks a lot to [Arthus](https://github.com/arthus701) for adding the `setup.py`.
