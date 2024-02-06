@@ -27,7 +27,7 @@ tags:
 Long term observations and space missions have generated a wealth of data on the magnetic fields of the Earth and other solar system planets [@IGRF13;@Connerney1987;@Connerney1991;@Kivelson2002;@Anderson2012;@Cao2020;@Connerney2022]. `planetMagfields` is a Python package designed to have all the planetary magnetic field data currently available in one place and to provide an easy interface to access the data. `planetMagfields` focuses on planetary bodies that generate their own magnetic field, namely Mercury, Earth, Jupiter, Saturn, Uranus, Neptune and Ganymede. `planetMagfields` provides functions to compute as well as plot the magnetic field on the planetary surface or at a distance above or under the surface. It also provides functions to filter out the field to large or small scales as well as to produce `.vts` files to visualize the field in 3D using Paraview [@Ahrens2005;@Ayachit2015], VisIt [@visit] or similar rendering software.
 
 # Statement of need
-
+Planetary scientists studying the magnetic field of planets often need to visualize or access magnetic field data
 
 
 # Mathematics
@@ -48,7 +48,7 @@ The raw data obtained from satellites or space missions are usually inverted to 
 
 $$R_{l} = (l + 1) \sum_{m}\left( \left(g_l^m\right)^2 + \left(h_l^m\right)^2\right),$$
 
-$l$ plays the role of a wavenumber. Low degrees represent large spatial features in the field while high degrees represent small scale features. The maximum available degree $l_{max}$ of data for a particular planet depends on the quality of observations. For example, for Earth $l_{max} = 13$ because beyond that the magnetic field of magnetized rocks on the crust obscures any signal coming from the self generated field. Similarly, Jupiter's field was known only well constrained till $l_{max} = 4$ [@Connerney1998] before the Juno mission provided excellent observations of finer scale structure to extend the well constrained $l_{max}$ to 13 [@Connerney2022].
+$l$ plays the role of a wavenumber. Low degrees represent large spatial features in the field while high degrees represent small scale features. The maximum available degree $l_{max}$ of data for a particular planet depends on the quality of observations. For example, for Earth $l_{max} = 13$ because beyond that the magnetic field of magnetized rocks on the crust obscures any signal coming from the self generated field. Similarly, Jupiter's field was known only well constrained till $l_{max} = 4$ [@Connerney1998] before the Juno mission provided excellent observations of finer scale structure to extend the well constrained $l_{max}$ to 18 [@Connerney2022].
 
 # Description of the software
 
