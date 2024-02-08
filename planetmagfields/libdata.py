@@ -126,6 +126,10 @@ def get_data(datDir,planetname="earth",model=None,year=2020):
             hDat = dat[mask,:]
             h   = hDat[:,-1]
 
+            m = dat[mask,1]
+            m1Idx = np.where(m == 1.)[0]
+            h   = np.insert(h,m1Idx,0.)
+
         else: # Earth, accounting for linear SV
 
             if year > 2025:

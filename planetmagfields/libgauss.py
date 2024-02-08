@@ -32,115 +32,6 @@ def gen_idx(lmax):
 
     return np.int32(idx)
 
-def get_data(datDir,planetname="earth"):
-    """
-    Reads data file for a planet and rearranges to create arrays of Gauss coefficients,
-    glm and hlm.
-
-    Parameters
-    ----------
-    datDir : str
-        Directory where the data file is present. Files are assumed to be named
-        as <planetname>.dat, e.g.: earth.dat, jupiter.dat etc.
-    planetname : str
-        Name of the planet
-
-    Returns
-    -------
-    glm : array_like
-        Coefficients of real part of spherical harmonics (often called glm in
-        literature)
-    hlm : array_like
-        Coefficients of imaginary part of spherical harmonics (often called hlm in
-        literature)
-    lmax : int
-        Maximum spherical harmonic degree
-    idx : int array
-        Array of indices that correspond to an (l,m) combination. For example,
-        g(0,0) -> 0, g(1,0) -> 1, g(1,1) -> 2 etc.
-    """
-
-    datfile = datDir + planetname + '.dat'
-
-    if planetname == "earth":
-        datfile = datDir + 'IGRF13.dat'
-        dat = np.loadtxt(datfile,usecols=[1,2,-2])
-        gh  = np.genfromtxt(datfile,usecols=[0],dtype='str')
-
-        mask = gh == 'g'
-        gDat = dat[mask,:]
-        g   = gDat[:,-1]
-        gl  = gDat[:,0]
-
-        mask = gh == 'h'
-        hDat = dat[mask,:]
-        h   = hDat[:,-1]
-        hm  = hDat[:,1]
-        hIdx = np.where(hm == 1.)[0]
-        h   = np.insert(h,hIdx,0.)
-
-        lmax = np.int32(gl.max())
-
-    elif planetname in ["mercury","saturn"]:
-        dat = np.loadtxt(datfile,usecols=[3])
-        g   = dat.flatten()
-        lmax = len(g)
-        h = np.zeros_like(g)
-
-    elif planetname == "jupiter":
-        dat = np.loadtxt(datfile)
-        l_dat = dat[:,-2]
-        ghlm = dat[:,1]
-
-        lmax = np.int32(l_dat.max())
-
-        g = []
-        h = []
-
-        ########################
-        # Separate glm and hlm
-        ########################
-
-        for i in range(1,lmax+1):
-            mask = l_dat == i
-            n = len(l_dat[mask])
-            half = int(n/2)
-
-            g.append(ghlm[mask][:half+1])
-            h.append(np.concatenate([[0.],ghlm[mask][half+1:]]))
-
-        g  = np.concatenate(g)
-        h  = np.concatenate(h)
-
-    elif planetname in ['uranus','neptune','ganymede']:
-        dat = np.loadtxt(datfile,usecols=[1,2,3])
-        gh  = np.genfromtxt(datfile,usecols=[0],dtype='str')
-
-        mask = gh == 'g'
-        gDat = dat[mask,:]
-        g   = gDat[:,-1]
-        gl  = gDat[:,0]
-
-        mask = gh == 'h'
-        hDat = dat[mask,:]
-        h   = hDat[:,-1]
-
-        gl = np.int32(gl)
-
-        lmax = np.int32(gl.max())
-
-    # Insert (0,0) -> 0 for less confusion
-
-    glm = np.insert(g,0,0.)
-    hlm = np.insert(h,0,0.)
-
-    if planetname in ['mercury','saturn']:
-        idx = np.arange(lmax+1)
-    else:
-        idx = gen_idx(lmax)
-
-    return glm,hlm,lmax,idx
-
 def get_grid(nphi=256,ntheta=128):
     """
     Generates 2D grid of longitude and co-latitude. The longitude grid is equally
@@ -166,14 +57,16 @@ def get_grid(nphi=256,ntheta=128):
     x,w    = sp.roots_legendre(ntheta)
     theta  = np.sort(np.arccos(x))
 
-    p2D  = np.zeros([nphi, ntheta])
-    th2D = np.zeros([nphi, ntheta])
+    p2D, th2D = np.meshgrid(phi,theta,indexing='ij')
 
-    for i in range(nphi):
-        p2D[i,:] = phi[i]
+    # p2D  = np.zeros([nphi, ntheta])
+    # th2D = np.zeros([nphi, ntheta])
 
-    for j in range(ntheta):
-        th2D[:,j] = theta[j]
+    # for i in range(nphi):
+    #     p2D[i,:] = phi[i]
+
+    # for j in range(ntheta):
+    #     th2D[:,j] = theta[j]
 
     return p2D, th2D
 
