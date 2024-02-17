@@ -11,6 +11,41 @@ Routines to easily access information about magnetic fields of planets in our so
  - Potential extrapolation: [SHTns](https://bitbucket.org/nschaeff/shtns) library
  - Writing vts files for 3D visualisation: [PyEVTK](https://github.com/paulo-herrera/PyEVTK) library
 
+# Installation
+
+`planetMagFields` can be installed in a few different ways:
+
+## Using `PYTHONPATH`
+
+Download the package from the `GitHub repository <https://github.com/AnkitBarik/planetMagFields>`_ and it
+to `PYTHONPATH`:
+
+```bash
+
+$ git clone https://github.com/AnkitBarik/planetMagFields
+$ export PYTHONPATH=$PYTHONPATH:/path/to/planetMagFields
+```
+
+## Using `setup.py`
+
+You can also use `setup.py` to install `planetMagFields`:
+
+```bash
+
+$ git clone https://github.com/AnkitBarik/planetMagFields
+$ cd planetMagFields
+$ pytho3 setup.py install --user
+```
+
+Or using `pip`:
+
+```bash
+
+$ git clone https://github.com/AnkitBarik/planetMagFields
+$ cd planetMagFields
+$ python3 -m pip install . --user
+```
+
 # Documentation
 
 The documentation is available here: https://ankitbarik.github.io/planetMagFields/
