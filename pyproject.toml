@@ -1,16 +1,26 @@
 [project]
 name = "planetMagFields"
-version = "1.1"
+version = "1.2"
 authors = [
   { name="Ankit Barik", email="ankit.barik@gmail.com" },
 ]
 description = "Routines to easily access information about magnetic fields of planets in our solar system and visualize them in both 2D and 3D"
+keywords = ['Spherical Harmonics','Planetary Science','Spectra','Magnetic Field','Visualization','3D visualization']
 readme = "README.md"
 requires-python = ">=3.7"
 classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
     "Operating System :: OS Independent",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Education",
+    "Intended Audience :: Developers",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Mathematics",
+    "Topic :: Scientific/Engineering :: Physics",
+    "Topic :: Scientific/Engineering :: Visualization"
 ]
 
 dependencies = [
