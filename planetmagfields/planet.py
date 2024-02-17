@@ -77,7 +77,7 @@ class Planet:
             print(planetlist)
 
         self.datDir = datDir
-        self.glm, self.hlm, self.lmax, self.idx = get_data(self.datDir,
+        self.glm, self.hlm, self.lmax, self.idx, self.mmax = get_data(self.datDir,
                                                            planetname=self.name,
                                                            model = self.model,
                                                            year=self.year)
@@ -231,7 +231,7 @@ class Planet:
 
         self.r_filt = r
 
-        if self.name in ['mercury','saturn']:
+        if self.mmax == 0:
             self.glm_filt,self.hlm_filt =\
                     filt_Gaussm0(self.glm,self.hlm,self.lmax,larr=self.larr_filt,\
                         lCutMin=self.lCutMin,lCutMax=self.lCutMax)
@@ -302,7 +302,8 @@ class Planet:
         -------
         None
         """
-        self.emag_spec, emag_10 = get_spec(self.glm,self.hlm,self.idx,self.lmax,planetname=self.name,r=r)
+        self.emag_spec, emag_10 = get_spec(self.glm,self.hlm,self.idx,self.lmax,
+                                           self.mmax,r=r)
         l = np.arange(self.lmax+1)
 
         self.dip_tot = self.emag_spec[1]/sum(self.emag_spec)

@@ -59,15 +59,6 @@ def get_grid(nphi=256,ntheta=128):
 
     p2D, th2D = np.meshgrid(phi,theta,indexing='ij')
 
-    # p2D  = np.zeros([nphi, ntheta])
-    # th2D = np.zeros([nphi, ntheta])
-
-    # for i in range(nphi):
-    #     p2D[i,:] = phi[i]
-
-    # for j in range(ntheta):
-    #     th2D[:,j] = theta[j]
-
     return p2D, th2D
 
 def gen_arr(lmax, l1,m1,mode='g'):
@@ -229,7 +220,7 @@ def getBm0(lmax,glm,r,p2D,th2D):
 
     return Br
 
-def get_spec(glm,hlm,idx,lmax,planetname='earth',r=1.0):
+def get_spec(glm,hlm,idx,lmax,mmax,r=1.0):
     """
     Computes Lowes spectrum of a planet with Gauss coefficients glm and hlm at
     a radial level r, scaled to the planetary radius.
@@ -245,8 +236,8 @@ def get_spec(glm,hlm,idx,lmax,planetname='earth',r=1.0):
         g(0,0) -> 0, g(1,0) -> 1, g(1,1) -> 2 etc.
     lmax : int
         Maximum degree of spherical harmonic
-    planetname : str, optional
-        Name of the planet, by default "earth", by default 'earth'
+    mmax : int
+        Maximum order of spherical harmonic
     r : float, optional
         Radial level scaled to planetary surface, by default 1
 
@@ -255,12 +246,12 @@ def get_spec(glm,hlm,idx,lmax,planetname='earth',r=1.0):
     E : array_like
         Magnetic energy in spherical harmonic degrees
     emag_10 : float
-        Magnetic energy in dipole
+        Magnetic energy in the axial dipole
     """
 
     E = np.zeros(lmax+1)
 
-    if planetname in ['mercury','saturn']:
+    if mmax == 0:
         for l in range(1,lmax+1):
             E[l] = (l+1) * r**(-2*l-4) *(np.abs(glm[l])**2 + np.abs(hlm[l])**2)
         emag_10 = E[1]
@@ -365,7 +356,7 @@ def filt_Gaussm0(glm,hlm,lmax,larr=None,lCutMin=0,lCutMax=None):
     """
     Filters Gauss coefficients when maximum order of Gauss coefficients is mmax=0.
     Uses either a fixed array of spherical harmonic degrees or a minimum or
-    maximum degree. Coefficients are either restricted to degreevalues defined by
+    maximum degree. Coefficients are either restricted to degree values defined by
     larr or range defined by lCutMin, lCutMax.
 
     Parameters

@@ -4,34 +4,7 @@
 import numpy as np
 import os
 from .libgauss import gen_idx
-from .utils import stdDatDir
-
-def get_models(planetname,datDir=stdDatDir):
-    """Prints available models for a planet.
-
-    Parameters
-    ----------
-    datDir : str
-        Directory where the data file is present. Files are assumed to be named
-        as <planetname>_<modelname>.dat,
-        e.g.: earth_igrf13.dat, jupiter_jrm09.dat etc.
-    planetname : str
-        Name of the planet
-
-    Returns
-    -------
-    models : str array
-        Array of available model names
-    """
-
-    from glob import glob
-    dataFiles = glob(datDir+'/'+planetname+"*.dat")
-    models = []
-    for k,filename in enumerate(dataFiles):
-        modelname = filename.split('_')[1].split('.dat')[0]
-        models.append(modelname)
-    models = np.sort(models)
-    return models
+from .utils import get_models
 
 def get_data(datDir,planetname="earth",model=None,year=2020):
     """
@@ -57,6 +30,9 @@ def get_data(datDir,planetname="earth",model=None,year=2020):
         literature)
     lmax : int
         Maximum spherical harmonic degree
+    mmax : int
+        Maximum spherical harmonic order. This is required to distinguish cases
+        with maximum order of zero.
     idx : int array
         Array of indices that correspond to an (l,m) combination. For example,
         g(0,0) -> 0, g(1,0) -> 1, g(1,1) -> 2 etc.
@@ -73,8 +49,11 @@ def get_data(datDir,planetname="earth",model=None,year=2020):
         print(models_avail)
         print("Use get_models to get a list of models!")
 
-    m0file = ( (planetname == "mercury" and model == "anderson2012")
-            or (planetname == "saturn") )
+    if ( (planetname == "mercury" and model == "anderson2012")
+        or (planetname == "saturn") ):
+        mmax = 0
+    else:
+        mmax = None
 
     if planetname == "jupiter" and model in ['jrm09','jrm33']:
         dat = np.loadtxt(datfile,usecols=[1,-2])
@@ -103,7 +82,7 @@ def get_data(datDir,planetname="earth",model=None,year=2020):
         g  = np.concatenate(g)
         h  = np.concatenate(h)
 
-    elif m0file:
+    elif mmax == 0:
 
         dat = np.loadtxt(datfile,usecols=[3])
         g   = dat.flatten()
@@ -166,9 +145,10 @@ def get_data(datDir,planetname="earth",model=None,year=2020):
     glm = np.insert(g,0,0.)
     hlm = np.insert(h,0,0.)
 
-    if m0file:
+    if mmax == 0:
         idx = np.arange(lmax+1)
     else:
         idx = gen_idx(lmax)
+        mmax = lmax
 
-    return glm,hlm,lmax,idx
+    return glm,hlm,lmax,idx,mmax

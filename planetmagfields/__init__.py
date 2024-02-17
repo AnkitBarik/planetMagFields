@@ -3,6 +3,6 @@
 
 from .planet import Planet
 from .potextra import extrapot
-from .libdata import get_models
+from .utils import get_models
 
 __version__ = '1.2'

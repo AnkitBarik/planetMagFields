@@ -17,7 +17,7 @@ the field and write a `vts` file for 3D visualization. Usage:
 
 .. code-block:: python
 
-   from planetmagfields import *
+   from planetmagfields import Planet
    p = Planet(name='earth',datDir='planetmagfields/data/')
 
 
@@ -45,7 +45,7 @@ Example using ``IPython``:
 
 .. code-block:: python
 
-   In [1]: from planetmagfields import *
+   In [1]: from planetmagfields import Planet
 
    In [2]: p = Planet(name='jupiter',model='jrm09')
    Planet: Jupiter
@@ -69,7 +69,7 @@ For example,
 
 .. code-block:: python
 
-   from planetmagfields import *
+   from planetmagfields import Planet
    p = Planet(name='earth',datDir='planetmagfields/data/')
    p.plot(r=1,proj='Mollweide')
 
@@ -84,7 +84,7 @@ while
 
 .. code-block:: python
 
-   from planetmagfields import *
+   from planetmagfields import Planet
    p = Planet(name='jupiter',model='jrm09',datDir='planetmagfields/data/')
    p.plot(r=0.85,proj='Mollweide')
 
@@ -110,7 +110,7 @@ This function computes the Lowes spectrum of a planet at a given radius. It adds
 
 .. code-block:: python
 
-   from planetmagfields import *
+   from planetmagfields import Planet
    p = Planet(name='jupiter',model='jrm09')
    p.spec()
 
@@ -177,7 +177,7 @@ Here we plot Saturn's magnetic field at a depth of 0.75 planetary radius for sph
 
 .. code-block:: python
 
-   from planetmagfields import *
+   from planetmagfields import Planet
    p = Planet(name='saturn')
    p.plot_filt(r=0.75,lCutMin=4,proj='Mollweide')
 
@@ -194,7 +194,7 @@ Here we filter out Jupiter's surface field restricted to degrees 1,2,3 and order
 
 .. code-block:: python
 
-   from planetmagfields import *
+   from planetmagfields import Planet
    p = Planet(name='jupiter',model='jrm09')
    p.plot_filt(r=1,larr=[1,2,3],marr=[3],proj='Mollweide')
 
@@ -209,7 +209,7 @@ We filter the surface field to degrees > 4 and orders > 3.
 
 .. code-block:: python
 
-   from planetmagfields import *
+   from planetmagfields import Planet
    p = Planet(name='earth')
    p.plot_filt(r=1,lCutMin=5,mmin=4,proj='Mollweide')
 
@@ -230,7 +230,7 @@ Usage example:
 .. code-block:: python
 
    import numpy as np
-   from planetmagfields import *
+   from planetmagfields import Planet
    p = Planet('saturn')
    ratio_out = 5 # Ratio (> 1) in terms of surface radius to which to extrapolate
    nrout = 32 # Number of grid points in radius between 1 and ratio_out
