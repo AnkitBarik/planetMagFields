@@ -56,31 +56,23 @@ def get_data(datDir,planetname="earth",model=None,year=2020):
         mmax = None
 
     if planetname == "jupiter" and model in ['jrm09','jrm33']:
-        dat = np.loadtxt(datfile,usecols=[1,-2])
-        l_dat = dat[:,1]
-        ghlm = dat[:,0]
+        dat = np.loadtxt(datfile,dtype=object)
+        gh = dat[:,3]
+        l_dat = np.int32(dat[:,-2])
+        ghlm = np.float32(dat[:,1])
 
-        lmax = np.int32(l_dat.max())
+        lmax = l_dat.max()
         if model == 'jrm33':
             lmax = 18
 
-        g = []
-        h = []
+        gmask = gh == 'g'
+        hmask = gh == 'h'
+        g = ghlm[gmask]
+        h = ghlm[hmask]
 
-        ########################
-        # Separate glm and hlm
-        ########################
-
-        for i in range(1,lmax+1):
-            mask = l_dat == i
-            n = len(l_dat[mask])
-            half = int(n/2)
-
-            g.append(ghlm[mask][:half+1])
-            h.append(np.concatenate([[0.],ghlm[mask][half+1:]]))
-
-        g  = np.concatenate(g)
-        h  = np.concatenate(h)
+        m = np.int32(dat[hmask,-1])
+        m1Idx = np.where(m == 1.)[0]
+        h   = np.insert(h,m1Idx,0.)
 
     elif mmax == 0:
 
