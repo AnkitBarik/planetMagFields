@@ -27,6 +27,7 @@ def get_models(planetname,datDir=stdDatDir):
     """
 
     from glob import glob
+    planetname = planetname.lower()
     dataFiles = glob(datDir+'/'+planetname+"*.dat")
     models = []
     for k,filename in enumerate(dataFiles):
