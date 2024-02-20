@@ -1,42 +1,37 @@
 import matplotlib.pyplot as plt
-from ipywidgets import interact, interactive, fixed, interact_manual
-import IPython.display as ipd
-import ipywidgets as widgets
-from planetmagfields import *
-import ipywidgets as widgets
-from ipywidgets import interactive, VBox
+from planetmagfields import Planet, get_models, utils
 import re
 
 # Assuming get_models and Planet are defined elsewhere in your code or imported from a library
 
-def extract_planet_names_from_file() -> list:
-    """
-    Extracts the names of planets from specified .rst file within the local 'doc' directory.
+# def extract_planet_names_from_file() -> list:
+#     """
+#     Extracts the names of planets from specified .rst file within the local 'doc' directory.
 
-    This function reads the 'models.rst' file, searching for planet names using a regular expression pattern.
-    The names are expected to be in a specific format within the file, marked by asterisks and colons.
+#     This function reads the 'models.rst' file, searching for planet names using a regular expression pattern.
+#     The names are expected to be in a specific format within the file, marked by asterisks and colons.
 
-    Returns:
-        list of str: A list containing the names of the planets extracted from the file.
-    """
-    file_path = "doc/models.rst"  # Relative path from the notebook to the models.rst file
-    
-    # Read the content of the models.rst file
-    with open(file_path, 'r') as file:
-        content = file.read()
+#     Returns:
+#         list of str: A list containing the names of the planets extracted from the file.
+#     """
+#     file_path = "doc/models.rst"  # Relative path from the notebook to the models.rst file
 
-    # Regex pattern to accurately capture planet names
-    pattern = r"\*\s*\*(.*?)\*\s*:"
+#     # Read the content of the models.rst file
+#     with open(file_path, 'r') as file:
+#         content = file.read()
 
-    # Find all matches in the content
-    planet_matches = re.findall(pattern, content)
+#     # Regex pattern to accurately capture planet names
+#     pattern = r"\*\s*\*(.*?)\*\s*:"
 
-    # List to hold the names of the planets
-    planets = [planet.strip() for planet in planet_matches]
+#     # Find all matches in the content
+#     planet_matches = re.findall(pattern, content)
 
-    return planets
+#     # List to hold the names of the planets
+#     planets = [planet.strip() for planet in planet_matches]
 
-def extract_models_for_planets(planet_names: list) -> list:
+#     return planets
+
+def extract_models_for_planets() -> list:
     """
     Extracts and modifies model names for a given list of planet names.
 
@@ -51,36 +46,36 @@ def extract_models_for_planets(planet_names: list) -> list:
         list of str: A list containing all modified model names for the given planet names.
     """
     all_model_names = []  # Initialize an empty list to store all model names
-    
-    for planet_name in planet_names:
-        raw_model_names = get_models(planet_name)
-        
+
+    for planet_name in utils.planetlist:
+        model_names = get_models(planet_name)
+
         # Prepend planet name to each model name
-        modified_model_names = [f"{planet_name}_{model_name}" for model_name in raw_model_names]
-        
+        # modified_model_names = [f"{planet_name}_{model_name}" for model_name in raw_model_names]
+
         # Print all modified models for reference
-        print(planet_name, ":", modified_model_names)
-        
+        print(planet_name, ":", model_names)
+
         # Extend the all_model_names list with the modified model names
-        all_model_names.extend(modified_model_names)
-        
+        all_model_names.extend(model_names)
+
     return all_model_names
 
-def extract_only_model_names(array: list) -> list:
-    """
-    Extracts only the model names from a list of strings formatted as "planetName_modelName".
+# def extract_only_model_names(array: list) -> list:
+#     """
+#     Extracts only the model names from a list of strings formatted as "planetName_modelName".
 
-    This function processes each string in the input list, removing the planet name and underscore,
-    leaving only the model name. If a model name contains underscores, they are preserved.
+#     This function processes each string in the input list, removing the planet name and underscore,
+#     leaving only the model name. If a model name contains underscores, they are preserved.
 
-    Args:
-        array (list of str): A list of strings, each formatted as "planetName_modelName".
+#     Args:
+#         array (list of str): A list of strings, each formatted as "planetName_modelName".
 
-    Returns:
-        list of str: A list of model names with the planet names removed.
-    """
-    model_names = ['_'.join(item.split('_')[1:]) for item in array]
-    return model_names
+#     Returns:
+#         list of str: A list of model names with the planet names removed.
+#     """
+#     model_names = ['_'.join(item.split('_')[1:]) for item in array]
+#     return model_names
 
 def plot_intercat_mag_r(name: str, r: float, model: str, background: str) -> None:
     """
@@ -105,9 +100,9 @@ def plot_intercat_mag_r(name: str, r: float, model: str, background: str) -> Non
         plt.style.use('dark_background')
     else:
         plt.style.use('default')
-    
-    p = Planet(name=name, model=model, datDir='planetmagfields/data/')
-    p.plot(r=r, proj='Mollweide')
+
+    p = Planet(name=name, model=model, datDir=utils.stdDatDir)
+    p.plot(r=r)
     plt.show()
 
     p.spec(r=r)
