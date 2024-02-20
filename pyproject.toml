@@ -1,8 +1,12 @@
 [project]
 name = "planetMagFields"
-version = "1.2"
+version = "1.3"
 authors = [
   { name="Ankit Barik", email="ankit.barik@gmail.com" },
+]
+maintainers = [
+  { name="Ankit Barik", email="ankit.barik@gmail.com" },
+  { name="Regupathi Angappan", email="rangapp1@jhu.edu" },
 ]
 description = "Routines to easily access information about magnetic fields of planets in our solar system and visualize them in both 2D and 3D"
 keywords = ['Spherical Harmonics','Planetary Science','Spectra','Magnetic Field','Visualization','3D visualization']
@@ -35,7 +39,7 @@ map = ["cartopy"]
 potextra=["shtns"]
 
 [project.urls]
-Homepage = "https://github.com/AnkitBarik/planetMagFields"
+Homepage = "https://ankitbarik.github.io/planetMagFields/"
 Issues = "https://github.com/AnkitBarik/planetMagFields/issues"
 
 [build-system]
