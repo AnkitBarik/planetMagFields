@@ -2,7 +2,7 @@
 ![Build workflow](https://github.com/AnkitBarik/planetMagFields/actions/workflows/main.yml/badge.svg)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0) [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5140421.svg)](https://doi.org/10.5281/zenodo.5140421)
 
-Routines to easily access information about magnetic fields of planets in our solar system and visualize them in both 2D and 3D.
+Software to easily access and analyze information about magnetic fields of planets in our solar system and visualize them in both 2D and 3D.
 
 [Prerequisites](#prerequisites)
 
