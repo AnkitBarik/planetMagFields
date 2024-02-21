@@ -31,6 +31,7 @@ Here, :math:`g_{lm}` and :math:`h_{lm}` are called the Gauss coefficients, usual
    examples
    models
    projections
+   jupyter
    api
 
 
