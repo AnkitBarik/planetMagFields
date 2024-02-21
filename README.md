@@ -1,6 +1,7 @@
 # planetMagFields
 ![Build workflow](https://github.com/AnkitBarik/planetMagFields/actions/workflows/main.yml/badge.svg)
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/AnkitBarik/planetMagFields/HEAD?labpath=%2FExploreFieldsInteractively.ipynb)
+[![PyPI version](https://badge.fury.io/py/planetMagFields.svg)](https://badge.fury.io/py/planetMagFields)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0) [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5140421.svg)](https://doi.org/10.5281/zenodo.5140421)
 
 Software to easily access and analyze information about magnetic fields of planets in our solar system and visualize them in both 2D and 3D.
@@ -29,15 +30,12 @@ Software to easily access and analyze information about magnetic fields of plane
 
 `planetMagFields` can be installed in a few different ways:
 
-## Using `PYTHONPATH`
+## Using `pip`
 
-Download the package from the GitHub repository and add it
-to `PYTHONPATH`:
+`planetMagFields` is available on [PyPI](https://pypi.org/project/planetMagFields/) and can be installed with
 
 ```bash
-
-$ git clone https://github.com/AnkitBarik/planetMagFields
-$ export PYTHONPATH=$PYTHONPATH:/path/to/planetMagFields
+$ python3 -m pip install planetMagFields
 ```
 
 ## Using `setup.py`
@@ -58,6 +56,17 @@ Or using `pip`:
 $ git clone https://github.com/AnkitBarik/planetMagFields
 $ cd planetMagFields
 $ python3 -m pip install . --user
+```
+
+## Using `PYTHONPATH`
+
+Download the package from the GitHub repository and add it
+to `PYTHONPATH`:
+
+```bash
+
+$ git clone https://github.com/AnkitBarik/planetMagFields
+$ export PYTHONPATH=$PYTHONPATH:/path/to/planetMagFields
 ```
 
 # Features and examples
