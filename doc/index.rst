@@ -6,7 +6,9 @@
 Welcome to planetMagFields' documentation!
 ===========================================
 
-`planetMagFields` is a package that provides an easy interface to plot and analyze planetary magnetic field data. The raw data from space missions are typically inverted to obtain 'Gauss coefficients', given by:
+`planetMagFields` is a package that provides an easy interface to plot and analyze planetary magnetic field data. `planetMagFields` is free and open source and is available at https://github.com/AnkitBarik/planetMagFields .
+
+The raw data from space missions are typically inverted to obtain 'Gauss coefficients', given by:
 
 .. math::
    :label: eqGauss
