@@ -4,9 +4,19 @@
 
 Routines to easily access information about magnetic fields of planets in our solar system and visualize them in both 2D and 3D.
 
+[Prerequisites](#prerequisites)
+
+[Installation](#installation)
+
+[Features and examples](#features-and-examples)
+
+[Documentation](#documentation)
+
+[Acknowledgements](#acknowledgements)
+
 # Prerequisites
 
-`planetMagFields` requires [NumPy](https://numpy.org/), [Matplotlib](https://matplotlib.org/) and [SciPy](https://www.scipy.org/) (pronounced "Sigh Pie"). Other than that, the following external libraries are used for a few different functions:
+`planetMagFields` requires [NumPy](https://numpy.org/), [Matplotlib](https://matplotlib.org/) and [SciPy](https://www.scipy.org/). Other than that, the following external libraries are used for a few different functions:
 
  - 2D plotting for map projections other than Hammer : [Cartopy](https://scitools.org.uk/cartopy/docs/latest/) library
  - Potential extrapolation: [SHTns](https://bitbucket.org/nschaeff/shtns) library
@@ -114,7 +124,8 @@ library.
 
 # Documentation
 
-Full list of features with examples are presented in the documentation, available here: https://ankitbarik.github.io/planetMagFields/
+Full list of features with examples as well as the magnetic field models used are described in detail in the documentation,
+available here: https://ankitbarik.github.io/planetMagFields/
 
 
 # Acknowledgements
