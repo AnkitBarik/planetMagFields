@@ -27,7 +27,9 @@ tags:
 Long term observations and space missions have generated a wealth of data on the magnetic fields of the Earth and other solar system planets [@IGRF13;@Connerney1987;@Connerney1991;@Kivelson2002;@Anderson2012;@Cao2020;@Connerney2022]. `planetMagfields` is a Python package designed to have all the planetary magnetic field data currently available in one place and to provide an easy interface to access the data. `planetMagfields` focuses on planetary bodies that generate their own magnetic field, namely Mercury, Earth, Jupiter, Saturn, Uranus, Neptune and Ganymede. `planetMagfields` provides functions to compute as well as plot the magnetic field on the planetary surface or at a distance above or under the surface. It also provides functions to filter out the field to large or small scales as well as to produce `.vts` files to visualize the field in 3D using Paraview [@Ahrens2005;@Ayachit2015], VisIt [@visit] or similar rendering software. Lastly, the `planetMagfields` repository also provides a Jupyter notebook for easy interactive visualizations.
 
 # Statement of need
-Planetary scientists studying the magnetic field of planets need to constantly access, visualize, analyze and extrapolate magnetic field data.  In addition, with technological advancements in space exploration and planetary missions, we are constantly getting new data for planetary magnetic fields and hence, better field models. Though reviews of these field models are often written [@Schubert2011;@Stanley2014], there is very little software available that provides easy access to these models with a high level language and a way to easily visualize and analyze them. To the knowledge of the authors, there are a few publicly available repositories that are capable of providing access to planetary magnetic field data and tools to analyze them such as `JupiterMag` [@Wilson2023;@James2024],`KMAG` [@Khurana2020], `ChaosMagPy` [@Kloss2024] and `libinteralfield` (<https://github.com/mattkjames7/libinternalfield>). The first two of these are dedicated towards Jupiter and Saturn, respectively. `ChaosMagPy` is a python interface for the CHAOS model of the Earth's magnetic field [@Finlay2020]. Out of these, only `libinteralfield` provides software to analyze and access magnetic fields of all planets. However, it is a `C++` library which needs to be interfaced with something at a higher level to enable fast analyses and visualization.  Thus, a software package that has different magnetic field models for all different planets of the solar system in one place, as well as provides a high level API to access, analyze and visualize them is not available. `planetMagfields` is intended not only to currently fill this gap, but also to provide a central repository, to be constantly updated, as more magnetic field models become available. In addition, the easy access to visualization tools, especially through our Jupyter notebook, will provide an immensely helpful teaching tool.
+Planetary scientists studying the magnetic field of planets need to constantly access, visualize, analyze and extrapolate magnetic field data.  In addition, with technological advancements in space exploration and planetary missions, we are constantly getting new data for planetary magnetic fields and hence, better field models. Though reviews of these field models are often written [@Schubert2011;@Stanley2014], there is very little software available that provides easy access to these models with a high level language and a way to easily visualize and analyze them. To the knowledge of the authors, there are a few publicly available repositories that are capable of providing access to planetary magnetic field data and tools to analyze them such as `JupiterMag` [@Wilson2023;@James2024],`KMAG` [@Khurana2020], `ChaosMagPy` [@Kloss2024] and `libinteralfield` (<https://github.com/mattkjames7/libinternalfield>). The first two of these are dedicated towards Jupiter and Saturn, respectively. `ChaosMagPy` is a python interface for the CHAOS model of the Earth's magnetic field [@Finlay2020]. Out of these, only `libinteralfield` provides software to analyze and access magnetic fields of all planets. However, it is a `C++` library which needs to be interfaced with something at a higher level to enable fast analyses and visualization.  Thus, a software package that has different magnetic field models for all different planets of the solar system in one place, as well as provides a high level API to access, analyze and visualize them is not available. `planetMagfields` is intended not only to currently fill this gap, but also to provide a central repository, to be constantly updated, as more magnetic field models become available.
+
+In addition to the research aspect of our software, the interactive Jupyter notebook provided exemplifies the potential of computational tools in enhancing the understanding of planetary sciences. By offering an intuitive platform for the exploration of magnetic fields, it serves as a valuable educational resource, fostering a deeper appreciation for the complexities of planetary magnetic environments. The integration of code, data visualization, and structured documentation within the Jupyter notebook environment presents a novel approach to scientific exploration, making complex astrophysical concepts accessible to a broader audience. This approach not only democratizes access to complex astrophysical data but also encourages interactive learning by allowing users to manipulate data and visualize the outcomes in real-time.
 
 
 # Mathematics
@@ -74,6 +76,19 @@ The raw data obtained from satellites or space missions are usually inverted to 
 $$R_{l} = (l + 1) \sum_{m}\left( \left(g_l^m\right)^2 + \left(h_l^m\right)^2\right),$$
 
 $l$ plays the role of a wavenumber. Low degrees represent large spatial features in the field while high degrees represent small scale features. The maximum available degree $l_{max}$ of data for a particular planet depends on the quality of observations. For example, for Earth $l_{max} = 13$ because beyond that the magnetic field of magnetized rocks on the crust obscures any signal coming from the self generated field. Similarly, Jupiter's field was known only well constrained till $l_{max} = 4$ [@Connerney1998] before the Juno mission provided excellent observations of finer scale structure to extend the well constrained $l_{max}$ to 18 [@Connerney2022].
+
+# Benchmarking
+
+We benchmarked our software against two publicly available repositories : `JupiterMag` [@Wilson2023;@James2024] for Jupiter and the `CHAOS-7` [@Finlay2020;@Kloss2024] for Earth. For Jupiter, we compare the field at a depth of 85\% of planetary radius, thus testing our extrapolation capability while for Earth, we compare the field on the surface in 2016, testing our implementation of taking into account changes in the Earth's field in a linear fashion (as is done for the IGRF model, @IGRF13)  The comparisons are shown in figure \ref{fig:bench}. We also use these cases in our unit testing.
+
+\begin{figure}
+\centering
+\includegraphics[width=0.8\textwidth]{./figures/earth_bench.pdf}\vspace{20pt}
+
+\includegraphics[width=0.8\textwidth]{./figures/jup_bench.pdf}
+\caption{Benchmarking the code against publicly available repositories.}
+\label{fig:bench}
+\end{figure}
 
 # Description of the software
 
@@ -126,11 +141,31 @@ The last plot statement produces figure \ref{fig:jup85} which is the radial magn
  - *Neptune*  : @Connerney1991
  - *Ganymede* : @Kivelson2002
 
-When we new magnetic field models become available, either through newly available data or through reanalysis of existing observations, we will add them to the current repository, either ourselves or through a community effort of pull requests.
+When new magnetic field models become available, either through newly available data or through reanalysis of existing observations, we will add them to the current repository, either ourselves or through a community effort of pull requests.
 
 ## Jupyter frontend
 
-We also provide a Jupyter notebook that provides interactive access for visualizing planetary magnetic fields at various depths as well as Lowes spectra.
+We provide a Jupyter notebook that gives interactive access for visualizing the radial magnetic fields and the corresponding Lowes spectra at various depths, with different background color options. The utilization of an interactive Jupyter notebook for the exploration of planetary magnetic fields represents a significant advancement in the pedagogical and research approach to planetary magnetic fields. This notebook, leveraging the computational capabilities of the `planetMagFields` package, facilitates a hands-on, dynamic exploration of magnetic field models across various planets with present day dynamo activity in our solar system. By integrating Python code with informative markdown, the notebook offers a structured, user-friendly interface that enhances learning and exploration.
+
+The notebook is designed to guide users through the process of installing necessary dependencies, extracting available planetary data from the planetMagFields package, selecting specific planets and magnetic field models, and visualizing the radial magnetic field morphology and spectrum. Key features of the notebook include the dynamic extraction of planet names for which magnetic field models are available, the selection of specific models for detailed examination, and the interactive plotting of magnetic fields. Figure \ref{fig:jupyterscreen1} shows the list of planets and models - as new models become available and are imported into the software package, this interactive portion will be able to summarize all available models.
+
+\begin{figure}
+\centering
+\includegraphics[width=0.7\textwidth]{./figures/jupyter_screenshot1.png}
+\caption{Screenshot of the Jupyter notebook listing all available models.}
+\label{fig:jupyterscreen1}
+\end{figure}
+
+The use of Jupyter widgets (<https://ipywidgets.readthedocs.io/>) and `Matplotlib` for data manipulation and visualization provides a seamless experience with dropdown lists and a slider bar for visualizing the radial magnetic field and Lowes spectra for different planets, models and altitudes (figure \ref{fig:jupyterscreen2}).
+
+\begin{figure}
+\centering
+\includegraphics[width=0.7\textwidth]{./figures/jupyter_screenshot2.png}
+\caption{Screenshot of the interactive functions of the Jupyter notebook.}
+\label{fig:jupyterscreen2}
+\end{figure}
+
+
 
 # Documentation
 
