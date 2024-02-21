@@ -18,7 +18,7 @@ Routines to easily access information about magnetic fields of planets in our so
 
 ## Using `PYTHONPATH`
 
-Download the package from the `GitHub repository <https://github.com/AnkitBarik/planetMagFields>` and it
+Download the package from the GitHub repository and add it
 to `PYTHONPATH`:
 
 ```bash
@@ -47,9 +47,74 @@ $ cd planetMagFields
 $ python3 -m pip install . --user
 ```
 
+# Features and examples
+
+## The `Planet` class
+
+This gives access to all the relevant properties of a planet and has methods to plot
+the field and write a `vts` file for 3D visualization. Usage:
+
+```python
+from planetmagfields import Planet
+p = Planet(name='earth',datDir='planetmagfields/data/')
+```
+
+This displays the some information about the planet
+
+```bash
+Planet: Earth
+l_max = 13
+Dipole tilt (degrees) = -9.410531
+```
+
+and gives access to
+variables associated with the planet such as:
+
+  * ``p.lmax`` : maximum spherical harmonic degree till which data is available
+  * ``p.glm``, ``p.hlm``: the Gauss coefficients
+  * ``p.Br`` : computed radial magnetic field at surface
+  * ``p.dipTheta`` : dipole tilt with respect to the rotation axis
+  * ``p.dipPhi`` : dipole longitude ( in case zero longitude is known, applicable to Earth )
+  * ``p.idx`` : indices to get values of Gauss coefficients
+  * ``p.model`` : the magnetic field model used. Available models can be obtained using the `get_models` function. Selects the latest available model when unspecified.
+
+Example using ``IPython``:
+
+```python
+In [1]: from planetmagfields import Planet
+
+In [2]: p = Planet(name='jupiter',model='jrm09')
+Planet: Jupiter
+Model: jrm09
+l_max = 10
+Dipole tilt (degrees) = 10.307870
+
+In [3]: p.glm[p.idx[2,0]]      # g20
+Out[3]: 11670.4
+
+In [4]: p.hlm[p.idx[4,2]]      # h42
+Out[4]: 27811.2
+```
+
+## 2D and 3D visualizations
+
+`planetMagFields` can be used to produce both 2D and 3D visualizations of a planetary field.
+While doing so, it also provides the option of potential extrapolation using the [SHTns](https://bitbucket.org/nschaeff/shtns/)
+library. Two examples are shown below: Earth's surface field and a 3D visualization of Jupiter's field using
+[Paraview](https://www.paraview.org/). This is done by writing a `.vts` file using the [PyEVTK](https://github.com/paulo-herrera/PyEVTK)
+library.
+
+<p align="center" width="100%">
+<img src="doc/_static/images/2d/earth2d.png" width="500">
+</p>
+
+<p align="center" width="100%">
+<img src="doc/_static/images/3d/jupiter3d.png" width=500>
+</p>
+
 # Documentation
 
-The documentation is available here: https://ankitbarik.github.io/planetMagFields/
+Full list of features with examples are presented in the documentation, available here: https://ankitbarik.github.io/planetMagFields/
 
 
 # Acknowledgements
