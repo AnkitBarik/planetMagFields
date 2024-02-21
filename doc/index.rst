@@ -20,7 +20,7 @@ where :math:`V` is the magnetic scalar potential, such that the magnetic field i
 
    \vec{B} = -\nabla V .
 
-Here, :math:`g_{lm}` and :math:`h_{lm}` are called the Gauss coefficients, usually defined on a planetary surface. They are the key to extrpolating the magnetic field of a planet anywhere in regions that are free of electrical currents. All the Gauss coefficients in the collected data are `Schmidt semi-normalized <https://adsabs.harvard.edu/full/2005GeoJI.160..487W>`_. Only the data for Earth uses a `Condon-Shortley phase <https://mathworld.wolfram.com/Condon-ShortleyPhase.html>`_, the others do not. The prerequisites, installation and features are described in the pages below:
+Here, :math:`g_{lm}` and :math:`h_{lm}` are called the Gauss coefficients, usually defined on a planetary surface. They are the key to extrpolating the magnetic field of a planet anywhere in regions that are free of electrical currents. All the Gauss coefficients in the collected data are `Schmidt semi-normalized <https://adsabs.harvard.edu/full/2005GeoJI.160..487W>`_. Only the data for Earth uses a `Condon-Shortley phase <https://mathworld.wolfram.com/Condon-ShortleyPhase.html>`_, the others do not. The prerequisites, installation and features are described in the pages below. However, for easy and quick visualization, skip ahead to the :ref:`Jupyter notebook <secjup>` section.
 
 .. toctree::
    :maxdepth: 2
