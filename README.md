@@ -115,11 +115,11 @@ library. Two examples are shown below: Earth's surface field and a 3D visualizat
 library.
 
 <p align="center" width="100%">
-<img src="doc/_static/images/2d/earth2d.png" width="500">
+<img src="https://raw.githubusercontent.com/AnkitBarik/planetMagFields/main/doc/_static/images/2d/earth2d.png" width="500">
 </p>
 
 <p align="center" width="100%">
-<img src="doc/_static/images/3d/jupiter3d.png" width=500>
+<img src="https://raw.githubusercontent.com/AnkitBarik/planetMagFields/main/doc/_static/images/3d/jupiter3d.png" width=500>
 </p>
 
 # Documentation
