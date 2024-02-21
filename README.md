@@ -18,7 +18,7 @@ Routines to easily access information about magnetic fields of planets in our so
 
 ## Using `PYTHONPATH`
 
-Download the package from the `GitHub repository <https://github.com/AnkitBarik/planetMagFields>`_ and it
+Download the package from the `GitHub repository <https://github.com/AnkitBarik/planetMagFields>` and it
 to `PYTHONPATH`:
 
 ```bash
@@ -54,4 +54,4 @@ The documentation is available here: https://ankitbarik.github.io/planetMagField
 
 # Acknowledgements
 
-I would like to thank [Regupathi Angappan](https://github.com/reguang) for motivating me to create this package. I thank [Jon Aurnou](https://epss.ucla.edu/people/faculty/543/) for testing it out and pointing out runtime errors. I would like to thank [Thomas Gastine](https://github.com/tgastine) for comparing the plots with real data and pointing out a normalization error which has been fixed. Thanks a lot to [Arthus](https://github.com/arthus701) for adding the `setup.py`.
+I would like to thank [Regupathi Angappan](https://github.com/reguang) for motivating me to create this package, testing it and for writing the Jupyter notebook. I thank [Jon Aurnou](https://epss.ucla.edu/people/faculty/543/) for testing it out and pointing out runtime errors. I would like to thank [Thomas Gastine](https://github.com/tgastine) for comparing the plots with real data and pointing out a normalization error which has been fixed. Thanks a lot to [Arthus](https://github.com/arthus701) for adding the `setup.py`.
