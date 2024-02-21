@@ -11,16 +11,14 @@ Installation
 
 `planetMagFields` can be installed in a few different ways:
 
-Using `PYTHONPATH`
-******************
+Using `pip`
+***********
 
-Download the package from the `GitHub repository <https://github.com/AnkitBarik/planetMagFields>`_ and it
-to `PYTHONPATH`:
+This is probably the easiest way. `planetMagFields` is available on `PyPI <https://pypi.org/project/planetMagFields/>`_ and can be installed with
 
 .. code-block:: bash
 
-   $ git clone https://github.com/AnkitBarik/planetMagFields
-   $ export PYTHONPATH=$PYTHONPATH:/path/to/planetMagFields
+   $ python3 -m pip install planetMagFields
 
 Using `setup.py`
 *****************
@@ -31,7 +29,7 @@ You can also use `setup.py` to install `planetMagFields`:
 
    $ git clone https://github.com/AnkitBarik/planetMagFields
    $ cd planetMagFields
-   $ pytho3 setup.py install --user
+   $ python3 setup.py install --user
 
 Or using `pip`:
 
@@ -41,8 +39,16 @@ Or using `pip`:
    $ cd planetMagFields
    $ python3 -m pip install . --user
 
-Using `pip`
-***********
+Using `PYTHONPATH`
+******************
+
+Download the package from the `GitHub repository <https://github.com/AnkitBarik/planetMagFields>`_ and it
+to `PYTHONPATH`:
+
+.. code-block:: bash
+
+   $ git clone https://github.com/AnkitBarik/planetMagFields
+   $ export PYTHONPATH=$PYTHONPATH:/path/to/planetMagFields
 
 
 
