@@ -11,6 +11,8 @@ Software to easily access and analyze information about magnetic fields of plane
 
 [Features and examples](#features-and-examples)
 
+[Jupyter notebook](#jupyter-notebook)
+
 [Documentation](#documentation)
 
 [Acknowledgements](#acknowledgements)
@@ -121,6 +123,22 @@ library.
 
 <p align="center" width="100%">
 <img src="https://raw.githubusercontent.com/AnkitBarik/planetMagFields/main/doc/_static/images/3d/jupiter3d.png" width=500>
+</p>
+
+# Jupyter notebook
+
+For quick and easy visualization we include a [Jupyter](https://jupyter.org/) notebook with a binder link (see badge at the top).
+This makes use of [Jupyter widgets](https://ipywidgets.readthedocs.io/) to provide dropdown lists of planets and available magnetic
+field models for each as well as a slider for radial level, as shown below
+
+<p align="center" width="100%">
+<img src="https://raw.githubusercontent.com/AnkitBarik/planetMagFields/main/doc/_static/images/jupyter_screenshot2.png" width="500">
+</p>
+
+This plots the radial magnetic field at the chosen radial level and the corresponding magnetic field spectrum,
+
+<p align="center" width="100%">
+<img src="https://raw.githubusercontent.com/AnkitBarik/planetMagFields/main/doc/_static/images/jupyter_screenshot3.png" width="500">
 </p>
 
 # Documentation
