@@ -107,19 +107,10 @@ def get_data(datDir,planetname="earth",model=None,year=2020):
                 print("IGRF is only defined till 2025,please be careful while selecting year!")
 
             years = 1900 + 5*np.arange(dat.shape[1])
-            idx = np.argmin(np.abs(years - year))
 
-            if years[idx] < year:
-                selected_idx = idx
-            else:
-                selected_idx = idx-1
-
-            if years[selected_idx] == 2020:
-                sv = dat[:,-1]
-            else:
-                sv = (dat[:,selected_idx+1] - dat[:,selected_idx])/5
-            selected_dat = ( dat[:,selected_idx] +
-                            sv * (year - years[selected_idx]) )
+            from scipy import interpolate
+            f = interpolate.interp1d(years,dat,fill_value='extrapolate')
+            selected_dat = f(year)
 
             mask = gh == 'g'
             g = selected_dat[mask]
