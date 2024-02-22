@@ -4,12 +4,12 @@ title: >-
 authors:
   - name: Ankit Barik
     email: ankit.barik@gmail.com
-    affiliation: [1]
+    affiliation: 1
     orcid: 0000-0001-5747-669X
     corresponding: true
   - name: Regupathi Angappan
     email: rangapp1@jhu.edu
-    affiliation: [1]
+    affiliation: 1
     orcid: 0000-0002-6258-0659
 affiliations:
   - index: 1
