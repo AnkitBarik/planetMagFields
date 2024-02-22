@@ -14,7 +14,7 @@ authors:
 affiliations:
   - index: 1
     name: Johns Hopkins University
-date: 2024-02-14
+date: 22 February 2024
 bibliography: paper.bib
 tags:
   - Python
