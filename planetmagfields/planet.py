@@ -148,6 +148,19 @@ class Planet:
         ax.set_title(title,fontsize=25,pad=20)
         plt.tight_layout()
 
+
+    def extrapolate(self,rout):
+        from .potextra import get_pol_from_Gauss, extrapot
+
+        # Create poloidal potential from glm and glm
+        bpol = get_pol_from_Gauss(self.name,self.glm,self.hlm,
+                                  self.lmax,self.idx)
+
+        br,btheta,bphi = extrapot(bpol,self.idx,self.lmax,1,rout,self.nphi)
+
+        return br,btheta,bphi
+
+
     def writeVtsFile(self,potExtra=False,ratio_out=2,nrout=32):
         """
         Writes an unstructured vtk (.vts) file for 3D visualization. Uses the
@@ -172,7 +185,7 @@ class Planet:
 
         rout = np.linspace(1,ratio_out,nrout)
         if potExtra:
-            brout, btout, bpout = extrapot(self.lmax,1.,self.Br,rout)
+            brout, btout, bpout = self.extrapolate(rout)
         else:
             brout = self.Br
             btout = np.zeros_like(self.Br)

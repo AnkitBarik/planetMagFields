@@ -42,10 +42,7 @@ def getBr(planet, r=1.0, nphi=256, ntheta=128, info=True):
 
     p2D,th2D = get_grid(nphi=nphi,ntheta=ntheta)
 
-    m0file = ( (planet.name == "mercury" and planet.model == "anderson2012")
-            or (planet.name == "saturn") )
-
-    if m0file:
+    if planet.mmax == 0:
         Br = getBm0(planet.lmax,
                     planet.glm,
                     r,

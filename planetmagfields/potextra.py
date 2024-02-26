@@ -3,7 +3,29 @@
 
 import numpy as np
 
-def extrapot(rcmb,brcmb,rout,lmax=None):
+def get_pol_from_Gauss(planetname,glm,hlm,lmax,idx):
+
+    bpol = np.zeros(len(glm),dtype=np.complex128)
+
+    for l in range(1,lmax+1):
+        for m in range(l+1):
+
+            if planetname in ["earth"]:
+                fac_m = 1.
+            else:
+                fac_m = (-1)**m
+
+            if m == 0:
+                norm = np.sqrt((4*np.pi/(2*l+1)))/l
+            else:
+                norm = np.sqrt((2*np.pi/(2*l+1)))/l
+
+            bpol[idx[l,m]] = norm*fac_m*(glm[idx[l,m]] - 1j*hlm[idx[l,m]])
+
+    return bpol
+
+
+def extrapot(bpol,idx,lmax,rcmb,rout,nphi=None):
     """
     This function extrapolates a potential field to an array of desired radial
     levels. It uses the SHTns library (https://bitbucket.org/nschaeff/shtns)
@@ -32,13 +54,15 @@ def extrapot(rcmb,brcmb,rout,lmax=None):
         3D array of extrapolated azimuthal magnetic field, shape : (nphi,ntheta,nr)
     """
 
-    nphi, ntheta = brcmb.shape
+    # nphi, ntheta = brcmb.shape
     nrout = len(rout)
 
     polar_opt = 1e-10
 
-    if lmax is None:
-        lmax = int(nphi/3)
+    if nphi is None:
+        nphi   = int(max(256,lmax*3))
+    ntheta = nphi//2
+
     mmax = lmax
 
     try:
@@ -55,10 +79,18 @@ def extrapot(rcmb,brcmb,rout,lmax=None):
 
     L = sh.l * (sh.l + 1)
 
-    brlm = sh.analys(brcmb.T)
-    bpolcmb = np.zeros_like(brlm)
-    bpolcmb[1:] = rcmb**2 * brlm[1:]/L[1:]
-    btor = np.zeros_like(brlm)
+    # Take care of shtns index convention
+
+    bpolcmb = sh.spec_array()
+
+    for l in range(1,lmax+1):
+        for m in range(l+1):
+            bpolcmb[sh.idx(l,m)] = bpol[idx[l,m]]
+
+    # brlm = sh.analys(brcmb.T)
+    # bpolcmb = np.zeros_like(brlm)
+    # bpolcmb[1:] = rcmb**2 * brlm[1:]/L[1:]
+    btor = np.zeros_like(bpolcmb)
 
     brout = np.zeros([ntheta,nphi,nrout])
     btout = np.zeros([ntheta,nphi,nrout])
@@ -77,9 +109,9 @@ def extrapot(rcmb,brcmb,rout,lmax=None):
 
         btout[...,k], bpout[...,k] = sh.synth(slm,btor)
 
-    brout = np.transpose(brout,(1,0,2))
-    btout = np.transpose(btout,(1,0,2))
-    bpout = np.transpose(bpout,(1,0,2))
+    brout = np.transpose(brout,(1,0,2))*1e-3 # Convert to microteslas
+    btout = np.transpose(btout,(1,0,2))*1e-3 # Convert to microteslas
+    bpout = np.transpose(bpout,(1,0,2))*1e-3 # Convert to microteslas
 
     return brout, btout, bpout
 
