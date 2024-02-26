@@ -57,7 +57,7 @@ def extrapot(bpol,idx,lmax,rcmb,rout,nphi=None):
     # nphi, ntheta = brcmb.shape
     nrout = len(rout)
 
-    polar_opt = 1e-10
+    polar_opt = 1e-15
 
     if nphi is None:
         nphi   = int(max(256,lmax*3))
@@ -71,11 +71,10 @@ def extrapot(bpol,idx,lmax,rcmb,rout,nphi=None):
         print("Potential extrapolation requires the SHTns library")
         print("It can be obtained here: https://bitbucket.org/nschaeff/shtns")
 
-    norm=shtns.sht_orthonormal | shtns.SHT_NO_CS_PHASE
+    norm=shtns.sht_orthonormal
 
     sh = shtns.sht(lmax,mmax=mmax,norm=norm)
     ntheta, nphi = sh.set_grid(ntheta, nphi, polar_opt=polar_opt)
-
 
     L = sh.l * (sh.l + 1)
 

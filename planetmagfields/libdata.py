@@ -128,6 +128,9 @@ def get_data(datDir,planetname="earth",model=None,year=2020):
     glm = np.insert(g,0,0.)
     hlm = np.insert(h,0,0.)
 
+    # Ensure type int
+    lmax = int(lmax)
+
     if mmax == 0:
         idx = np.arange(lmax+1)
     else:
