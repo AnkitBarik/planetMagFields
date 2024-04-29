@@ -18,7 +18,7 @@ the field and write a `vts` file for 3D visualization. Usage:
 .. code-block:: python
 
    from planetmagfields import Planet
-   p = Planet(name='earth',datDir='planetmagfields/data/')
+   p = Planet(name='earth')
 
 
 This displays the some information about the planet
@@ -70,7 +70,7 @@ For example,
 .. code-block:: python
 
    from planetmagfields import Planet
-   p = Planet(name='earth',datDir='planetmagfields/data/')
+   p = Planet(name='earth')
    p.plot(r=1,proj='Mollweide')
 
 
@@ -85,7 +85,7 @@ while
 .. code-block:: python
 
    from planetmagfields import Planet
-   p = Planet(name='jupiter',model='jrm09',datDir='planetmagfields/data/')
+   p = Planet(name='jupiter',model='jrm09')
    p.plot(r=0.85,proj='Mollweide')
 
 produces the following info about Jupiter and then plot that follows
