@@ -17,6 +17,8 @@ Software to easily access and analyze information about magnetic fields of plane
 
 [Documentation](#documentation)
 
+[Code contribution and reporting issues](#code-contribution-and-reporting-issues)
+
 [Acknowledgements](#acknowledgements)
 
 # Prerequisites
@@ -156,6 +158,16 @@ This plots the radial magnetic field at the chosen radial level and the correspo
 Full list of features with examples as well as the magnetic field models used are described in detail in the documentation,
 available here: https://ankitbarik.github.io/planetMagFields/
 
+# Code contribution and reporting issues
+
+`planetMagFields` is an open source project and anyone is welcome to contribute to it. If you wish to contribute to this project, please follow the guidelines below:
+
+ - Please make sure the tests pass before opening a pull request. 
+ - Please follow Python [PEP-8](https://peps.python.org/pep-0008/) guidelines when it comes to code style.
+ - If you wish to add new data file, please name it following the convention `<planet>_<model>.dat`, where `planet` and `model` denote the names of the planet and the magnetic field model being used. See the `data` directory for examples.
+ - If you implement a new feature or data source, please update the documentation accordingly. 
+
+Please report any bugs or other issues through [GitHub Issues](https://github.com/AnkitBarik/planetMagFields/issues). 
 
 # Acknowledgements
 
