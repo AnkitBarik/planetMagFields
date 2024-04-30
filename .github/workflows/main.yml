@@ -36,6 +36,14 @@ jobs:
           sudo apt-get -y install python3-scipy python3-numpy python3-matplotlib python3-pytest
           sudo apt-get -y install python3-pip
           python3 -m pip install pyevtk
+          sudo apt-get -y install libfftw3-dev gcc g++
+          wget https://bitbucket.org/nschaeff/shtns/downloads/shtns-3.6.6.tar.gz
+          tar -xf shtns-3.6.6.tar.gz
+          cd shtns
+          ./configure --prefix=$HOME/.local --enable-python
+          make -j
+          make install
+          python3 setup.py install --user
       - name: Run test
         run: |
           cd ${{github.workspace}}/tests
