@@ -117,12 +117,12 @@ class Planet:
             r = self.r
 
         if r == self.r:
-            ax,cbar = plotSurf(self.p2D,self.th2D,self.Br,levels=levels,cmap=cmap,proj=proj)
+            ax,cbar,proj = plotSurf(self.p2D,self.th2D,self.Br,levels=levels,cmap=cmap,proj=proj)
         else:
             self.p2D, self.th2D, self.Br, self.dipTheta, self.dipPhi = \
                     getBr(planet=self,r=r,info=False)
             self.r = r
-            ax,cbar = plotSurf(self.p2D,self.th2D,self.Br,levels=levels,cmap=cmap,proj=proj)
+            ax,cbar,proj = plotSurf(self.p2D,self.th2D,self.Br,levels=levels,cmap=cmap,proj=proj)
 
         cbar.ax.set_xlabel(r'Radial magnetic field ($\mu$T)',fontsize=25)
         cbar.ax.tick_params(labelsize=20)

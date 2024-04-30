@@ -105,7 +105,7 @@ def plotSurf(p2D,th2D,B,levels=60,cmap='RdBu_r',proj='Mollweide'):
     ax.axis('equal')
     ax.axis('off')
 
-    return ax, cbar
+    return ax, cbar, proj
 
 def plotB_subplot(ax,p2D,th2D,B,planetname="earth",levels=60,cmap='RdBu_r',proj='Mollweide'):
     """
