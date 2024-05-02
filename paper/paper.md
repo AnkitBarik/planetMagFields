@@ -27,64 +27,35 @@ tags:
 Long term observations and space missions have generated a wealth of data on the magnetic fields of the Earth and other solar system planets [@IGRF13;@Connerney1987;@Connerney1991;@Kivelson2002;@Anderson2012;@Cao2020;@Connerney2022]. `planetMagfields` is a Python package designed to have all the planetary magnetic field data currently available in one place and to provide an easy interface to access the data. `planetMagfields` focuses on planetary bodies that generate their own magnetic field, namely Mercury, Earth, Jupiter, Saturn, Uranus, Neptune and Ganymede. `planetMagfields` provides functions to compute as well as plot the magnetic field on the planetary surface or at a distance above or under the surface. It also provides functions to filter out the field to large or small scales as well as to produce `.vts` files to visualize the field in 3D using Paraview [@Ahrens2005;@Ayachit2015], VisIt [@visit] or similar rendering software. Lastly, the `planetMagfields` repository also provides a Jupyter notebook for easy interactive visualizations.
 
 # Statement of need
-Planetary scientists studying the magnetic field of planets need to constantly access, visualize, analyze and extrapolate magnetic field data.  In addition, with technological advancements in space exploration and planetary missions, we are constantly getting new data for planetary magnetic fields and hence, better field models. Though reviews of these field models are often written [@Schubert2011;@Stanley2014], there is very little software available that provides easy access to these models with a high level language and a way to easily visualize and analyze them. To the knowledge of the authors, there are a few publicly available repositories that are capable of providing access to planetary magnetic field data and tools to analyze them such as `JupiterMag` [@Wilson2023;@James2024],`KMAG` [@Khurana2020], `ChaosMagPy` [@Kloss2024] and `libinteralfield` (<https://github.com/mattkjames7/libinternalfield>). The first two of these are dedicated towards Jupiter and Saturn, respectively. `ChaosMagPy` is a python interface for the CHAOS model of the Earth's magnetic field [@Finlay2020]. Out of these, only `libinteralfield` provides software to analyze and access magnetic fields of all planets. However, it is a `C++` library which needs to be interfaced with something at a higher level to enable fast analyses and visualization.  Thus, a software package that has different magnetic field models for all different planets of the solar system in one place, as well as provides a high level API to access, analyze and visualize them is not available. `planetMagfields` is intended not only to currently fill this gap, but also to provide a central repository, to be constantly updated, as more magnetic field models become available.
+Planetary scientists studying the magnetic field of planets need to constantly access, visualize, analyze and extrapolate magnetic field data.  In addition, with technological advancements in space exploration and planetary missions, we are constantly getting new data for planetary magnetic fields and hence, better field models. Though reviews of these field models are often written [@Schubert2011;@Stanley2014], there is very little software available that provides easy access to these models with a high level language and a way to easily visualize and analyze them. To the knowledge of the authors, there are a few publicly available repositories that are capable of providing access to planetary magnetic field data and tools to analyze them such as `JupiterMag` [@Wilson2023;@James2024],`KMAG` [@Khurana2020], `ChaosMagPy` [@Kloss2024], `SHTools` [@Wieczorek2018], `PlanetMag` (<https://github.com/coreyjcochrane/PlanetMag>) and `libinteralfield` (<https://github.com/mattkjames7/libinternalfield>). Out of these, only `libinteralfield` provides data and software to analyze and access magnetic fields of all planets. However, it is a `C++` library which needs to be interfaced with something at a higher level to enable fast analyses and visualization.  Thus, a software package that has different magnetic field models for all different planets of the solar system in one place, as well as provides a high level API to access, analyze and visualize them is not available. `planetMagfields` is intended not only to currently fill this gap, but also to provide a central repository, to be constantly updated, as more magnetic field models become available.
 
-In addition to the research aspect of our software, the interactive Jupyter notebook provided exemplifies the potential of computational tools in enhancing the understanding of planetary sciences. By offering an intuitive platform for the exploration of magnetic fields, it serves as a valuable educational resource, fostering a deeper appreciation for the complexities of planetary magnetic environments. The integration of code, data visualization, and structured documentation within the Jupyter notebook environment presents a novel approach to scientific exploration, making complex astrophysical concepts accessible to a broader audience. This approach not only democratizes access to complex astrophysical data but also encourages interactive learning by allowing users to manipulate data and visualize the outcomes in real-time.
-
+In addition to the research aspect of our software, the interactive Jupyter notebook serves as a valuable educational resource, fostering a deeper appreciation for the complexities of planetary magnetic environments.
 
 # Mathematics
 
-Magnetic fields in planets are generated by electric currents in a fluid region inside them through a process called dynamo action [@Jones2011;@Schubert2011;@Stanley2014]. Outside this region, in the absence of current sources, the magnetic field $\vec{B}$ can be written as the gradient of a scalar potential $V$. The potential $V$ is usually written as an expansion in orthogonal functions in spherical coordinates,
+Magnetic fields in planets are generated by electric currents in a fluid region inside them through a process called dynamo action [@Jones2011;@Schubert2011;@Stanley2014]. Outside this region, in the absence of current sources, the magnetic field $\vec{B}$ can be written as the gradient of a scalar potential, $\vec{B} = -\nabla V$. The potential $V$ is usually written as an expansion in orthogonal functions in spherical coordinates $(r,\theta,\phi)$,
 
 \begin{equation}
   V = R_p \sum_{l,m} \left(\dfrac{R_p}{r}\right)^{l+1} [g_l^m \cos(m\phi) + h_l^m \sin(m\phi)] P_l^m (\cos\theta)\, ,
   \label{eq:gaussCoeff}
 \end{equation}
 
-where, $g_l^m$ and $h_l^m$ are called the Gauss coefficients. Here, $(r,\theta,\phi)$ are spherical coordinates representing radial distance from the center of a planet, co-latitude and longitude, respectively. $R_p$ represents the radius of the planet and $P_l^m$ are associated Legendre functions of order $l$ and degree $m$, where $l$ and $m$ are integers. The above equation can be recast in terms of spherical harmonics, which is what the code uses,
+where, $g_l^m$ and $h_l^m$ are called the Gauss coefficients. $R_p$ represents the radius of the planet and $P_l^m$ are associated Legendre functions of order $l$ and degree $m$, where $l$ and $m$ are integers. The above equation can be recast in terms of spherical harmonics, which is what the code uses.
 
-\begin{equation}
-  V = R_p \sum_{l,m} \left(\dfrac{R_p}{r}\right)^{l+1} [g_l^m \mathrm{Re}(Y_l^m (\theta,\phi)) + h_l^m \mathrm{Im}(Y_l^m (\theta,\phi))]\, ,
-  \label{eq:gaussCoeffYlm}
-\end{equation}
-where, $\mathrm{Re}$ and $\mathrm{Im}$ represent real and imaginary parts of the spherical harmonic $Y_l^m (\theta,\phi)$ of order $l$ and degree $m$. The radial magnetic field is easily obtained using
-
-\begin{equation}
-  B_r(r,\theta,\phi) = -\dfrac{\partial V}{\partial r} = \sum_{l,m} (l+1) \left(\dfrac{R_p}{r}\right)^{l+2} [g_l^m \cos(m\phi) + h_l^m \sin(m\phi)] P_l^m (\cos\theta)\, .
-  \label{eq:Br}
-\end{equation}
-
-This is the most commonly visualized component of the magnetic field of a planet, since the angular representation of the potential is unaffected and thus, it readily provides a representation of the field geometry (e.g: dipole vs quadrupole). Equation \eqref{eq:gaussCoeffYlm} provides a way to extrapolate the field to any desired altitude with respect to the planetary surface, both above and below, as long as the region is outside the field generating region. For the radial part, this is done through equation \eqref{eq:Br}. However, to obtain all three components, we have to extrapolate the potential to a desired height (or depth) with \eqref{eq:gaussCoeff} and perform a spherical harmonic transform. We use the SHTns library [@shtns] for this purpose.
-
-\begin{figure}
-\centering
-  \includegraphics[width=\textwidth]{figures/gauss_illustration.pdf}
-  \caption{Illustration of the potential/radial field patterns of the first eight Gauss coefficients.}
-  \label{fig:gauss}
-\end{figure}
-
-The Gauss coefficients represent the multipole modes of a planet's magnetic field, as illustrated in figure \ref{fig:gauss}. For example, $g_1^0$ represents the axial dipole (along the rotation axis) while $g_1^1$ and $h_1^1$ represent orthogonal components of the equatorial dipole. Thus, the dipole tilt of a planet, or the angle between the dipole and the rotation axis is given by:
-
-$$\theta_{dip} = \tan^{-1}\dfrac{\sqrt{\left(g_1^1\right)^2 + \left(h_1^1\right)^2}}{g_1^0}$$
-
-while the longitude of the dipole is given by:
-
-$$\phi_{dip} = \tan^{-1}h_1^1/g_1^1$$
-
-The raw data obtained from satellites or space missions are usually inverted to obtain these Gauss coefficients. These coefficients are the key to describing the surface magnetic field of a planet as well as how that magnetic field looks like at a certain altitude from the surface. The magnetic energy content on the surface in a certain degree $l$ is given by the Lowes spectrum:
+The raw data obtained from satellites or space missions are usually inverted to obtain these Gauss coefficients which are the key to describing the surface magnetic field of a planet as well as how that field looks like at a certain altitude from the surface. The magnetic energy content on the surface in a certain degree $l$ is given by the Lowes spectrum:
 
 $$R_{l} = (l + 1) \sum_{m}\left( \left(g_l^m\right)^2 + \left(h_l^m\right)^2\right),$$
 
-$l$ plays the role of a wavenumber. Low degrees represent large spatial features in the field while high degrees represent small scale features. The maximum available degree $l_{max}$ of data for a particular planet depends on the quality of observations. For example, for Earth $l_{max} = 13$ because beyond that the magnetic field of magnetized rocks on the crust obscures any signal coming from the self generated field. Similarly, Jupiter's field was known only well constrained till $l_{max} = 4$ [@Connerney1998] before the Juno mission provided excellent observations of finer scale structure to extend the well constrained $l_{max}$ to 18 [@Connerney2022].
+$l$ plays the role of a wavenumber. Low degrees represent large spatial features in the field while high degrees represent small scale features. The maximum available degree $l_{max}$ of data for a particular planet depends on the quality of observations.
+<!--
+For example, for Earth $l_{max} = 13$ because beyond that the magnetic field of magnetized rocks on the crust obscures any signal coming from the self generated field. Similarly, Jupiter's field was known only well constrained till $l_{max} = 4$ [@Connerney1998] before the Juno mission provided excellent observations of finer scale structure to extend the well constrained $l_{max}$ to 18 [@Connerney2022]. -->
 
 # Benchmarking
 
-We benchmarked our software against two publicly available repositories : `JupiterMag` [@Wilson2023;@James2024] for Jupiter and the `CHAOS-7` [@Finlay2020;@Kloss2024] for Earth. For Jupiter, we compare the field at a depth of 85\% of planetary radius, thus testing our extrapolation capability while for Earth, we compare the field on the surface in 2016, testing our implementation of taking into account changes in the Earth's field in a linear fashion (as is done for the IGRF model, @IGRF13)  The comparisons are shown in figure \ref{fig:bench}. We also use these cases in our unit testing.
+We benchmarked our software against two publicly available repositories : `JupiterMag` [@Wilson2023;@James2024] for Jupiter and the `CHAOS-7` [@Finlay2020;@Kloss2024] for Earth. For Jupiter, we compare the field at a depth of 85\% of planetary radius, thus testing our extrapolation capability while for Earth, we compare the field on the surface in 2016, testing our implementation of taking into account changes in the Earth's field in a linear fashion (as is done for the IGRF model, @IGRF13)  The comparison for Jupiter is shown in figure \ref{fig:bench}. We also use these cases in our unit testing.
 
 \begin{figure}
 \centering
-\includegraphics[width=0.8\textwidth]{./figures/earth_bench.pdf}\vspace{20pt}
-
 \includegraphics[width=0.8\textwidth]{./figures/jup_bench.pdf}
 \caption{Benchmarking the code against publicly available repositories.}
 \label{fig:bench}
@@ -94,7 +65,7 @@ We benchmarked our software against two publicly available repositories : `Jupit
 
 ## The software package
 
-`planetMagfields` has data files containing Gauss coefficients from various inversion studies of planetary magnetic models for different planets. These coefficients are then used to obtain the magnetic field on a grid of latitude and longitude using equations \eqref{eq:gaussCoeff} and \eqref{eq:Br}. The main way of accessing the data is through the ``Planet`` class. An example is provided below using IPython [@ipython],
+`planetMagfields` has data files containing Gauss coefficients from various inversion studies of planetary magnetic models for different planets. These coefficients are then used to obtain the magnetic field on a grid of latitude and longitude using equation \eqref{eq:gaussCoeff}. The main way of accessing the data is through the ``Planet`` class. An example is provided below using IPython [@ipython],
 
   ```python
    In [1]: from planetmagfields import *
@@ -105,13 +76,7 @@ We benchmarked our software against two publicly available repositories : `Jupit
    l_max = 10
    Dipole tilt (degrees) = 10.307870
 
-   In [3]: p.glm[p.idx[2,0]]      # g20
-   Out[3]: 11670.4
-
-   In [4]: p.hlm[p.idx[4,2]]      # h42
-   Out[4]: 27811.2
-
-   In [5]: p.plot(r=0.85,proj='Mollweide')
+   In [3]: p.plot(r=0.85,proj='Mollweide')
   ```
 \begin{figure}
   \centering
@@ -145,25 +110,7 @@ When new magnetic field models become available, either through newly available 
 
 ## Jupyter frontend
 
-We provide a Jupyter notebook that gives interactive access for visualizing the radial magnetic fields and the corresponding Lowes spectra at various depths, with different background color options. The utilization of an interactive Jupyter notebook for the exploration of planetary magnetic fields represents a significant advancement in the pedagogical and research approach to planetary magnetic fields. This notebook, leveraging the computational capabilities of the `planetMagFields` package, facilitates a hands-on, dynamic exploration of magnetic field models across various planets with present day dynamo activity in our solar system. By integrating Python code with informative markdown, the notebook offers a structured, user-friendly interface that enhances learning and exploration.
-
-The notebook is designed to guide users through the process of installing necessary dependencies, extracting available planetary data from the planetMagFields package, selecting specific planets and magnetic field models, and visualizing the radial magnetic field morphology and spectrum. Key features of the notebook include the dynamic extraction of planet names for which magnetic field models are available, the selection of specific models for detailed examination, and the interactive plotting of magnetic fields. Figure \ref{fig:jupyterscreen1} shows the list of planets and models - as new models become available and are imported into the software package, this interactive portion will be able to summarize all available models.
-
-\begin{figure}
-\centering
-\includegraphics[width=0.7\textwidth]{./figures/jupyter_screenshot1.png}
-\caption{Screenshot of the Jupyter notebook listing all available models.}
-\label{fig:jupyterscreen1}
-\end{figure}
-
-The use of Jupyter widgets (<https://ipywidgets.readthedocs.io/>) and `Matplotlib` for data manipulation and visualization provides a seamless experience with dropdown lists and a slider bar for visualizing the radial magnetic field and Lowes spectra for different planets, models and altitudes (figure \ref{fig:jupyterscreen2}).
-
-\begin{figure}
-\centering
-\includegraphics[width=0.7\textwidth]{./figures/jupyter_screenshot2.png}
-\caption{Screenshot of the interactive functions of the Jupyter notebook.}
-\label{fig:jupyterscreen2}
-\end{figure}
+We provide a Jupyter notebook, along with a binder link ( <https://mybinder.org/v2/gh/AnkitBarik/planetMagFields/HEAD?labpath=%2FExploreFieldsInteractively.ipynb> ) that gives interactive access for visualizing the radial magnetic fields and the corresponding Lowes spectra at various depths, with different background color options.
 
 
 

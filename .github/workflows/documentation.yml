@@ -15,6 +15,7 @@ jobs:
         run: |
           python3 -m pip install numpy scipy matplotlib
           python3 -m pip install setuptools sphinx furo
+          python3 -m pip install sphinxcontrib-bibtex
       - name: Sphinx build
         run: |
           python3 -m pip install .

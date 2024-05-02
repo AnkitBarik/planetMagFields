@@ -38,7 +38,7 @@ A list of models and keywords for them can be obtained using the :py:func:`get_m
 
 .. code-block:: python
 
-   In [1]: from planetmagfields import *
+   In [1]: from planetmagfields import get_models
 
    In [2]: get_models("jupiter")
    Out[2]: array(['jrm09', 'jrm33', 'vip4'], dtype='<U5')
@@ -47,7 +47,7 @@ In case of Earth, a special argument ``year`` is also used to provide a year bet
 
 .. code-block:: python
 
-   In [1]: from planetmagfields import *
+   In [1]: from planetmagfields import Planet
 
    In [2]: p = Planet(name='earth',year=2009)
    Planet: Earth
