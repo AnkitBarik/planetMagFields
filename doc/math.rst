@@ -44,7 +44,7 @@ This is the most commonly visualized component of the magnetic field of a planet
    :width: 600
    :align: center
 
-The Gauss coefficients represent the multipole modes of a planet's magnetic field, as illustrated in figure \ref{fig:gauss}. For example, :math:`g_1^0` represents the axial dipole (along the rotation axis) while :math:`g_1^1` and :math:`h_1^1` represent orthogonal components of the equatorial dipole. Thus, the dipole tilt of a planet, or the angle between the dipole and the rotation axis is given by:
+The Gauss coefficients represent the multipole modes of a planet's magnetic field, as illustrated in the above figure. For example, :math:`g_1^0` represents the axial dipole (along the rotation axis) while :math:`g_1^1` and :math:`h_1^1` represent orthogonal components of the equatorial dipole. Thus, the dipole tilt of a planet, or the angle between the dipole and the rotation axis is given by:
 
 .. math::
    :label: eqThetaDip
