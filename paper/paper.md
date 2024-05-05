@@ -118,6 +118,9 @@ We provide a Jupyter notebook, along with a binder link ( <https://mybinder.org/
 
 The software has been documented using Sphinx (<https://www.sphinx-doc.org/>) and the documentation is available here: <https://ankitbarik.github.io/planetMagFields/>.
 
+# Acknowledgements
+
+We thank Thomas Gastine and Jonathan Aurnou for testing the package, reporting bugs and for feature suggestions. We also thank Maximilian Arthus Schanner for the `setup.py` script. We thank Pankaj K. Mishra and Marshall Styczinski for advising us to get the paper published in JOSS.
 
 # References
 
