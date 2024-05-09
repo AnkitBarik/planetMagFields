@@ -1,5 +1,6 @@
 # planetMagFields
 ![Build workflow](https://github.com/AnkitBarik/planetMagFields/actions/workflows/main.yml/badge.svg)
+[![DOI](https://joss.theoj.org/papers/10.21105/joss.06677/status.svg)](https://doi.org/10.21105/joss.06677)
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/AnkitBarik/planetMagFields/HEAD?labpath=%2FExploreFieldsInteractively.ipynb)
 [![PyPI version](https://badge.fury.io/py/planetMagFields.svg)](https://badge.fury.io/py/planetMagFields)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
