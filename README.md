@@ -176,6 +176,8 @@ Please report any bugs or other issues through [GitHub Issues](https://github.co
 
 If you're using `planetMagFields` for your work, please cite the [JOSS paper](https://joss.theoj.org/papers/10.21105/joss.06677#):
 
+Barik et al., (2024). planetMagFields: A Python package for analyzing and plotting planetary magnetic field data. Journal of Open Source Software, 9(97), 6677, https://doi.org/10.21105/joss.06677
+
 ```
 @article{Barik2024,
 doi = {10.21105/joss.06677},
