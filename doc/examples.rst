@@ -43,7 +43,7 @@ variables associated with the planet such as:
 
 Example using ``IPython``:
 
-.. code-block:: python
+.. code-block:: ipython
 
    In [1]: from planetmagfields import Planet
 
@@ -90,7 +90,7 @@ while
 
 produces the following info about Jupiter and then plot that follows
 
-.. code-block:: bash
+.. code-block:: console
 
    Planet: Jupiter
    l_max = 10
@@ -117,7 +117,7 @@ This function computes the Lowes spectrum of a planet at a given radius. It adds
 
 will provide variables
 
-.. code-block:: python
+.. code-block:: ipython
 
    In [8]: p.dipolarity
    Out[8]: 0.7472047129875864
@@ -242,7 +242,7 @@ Usage example:
 Quickplot using the ``magField.py`` script
 ********************************************
 
-.. code-block:: bash
+.. code-block:: console
 
    $ ./magField.py --help
    usage: magField.py [-h] [-p PLANET] [-r R] [-c CMAP] [-l LEVELS] [-m PROJ] [-o MODEL]
@@ -298,7 +298,7 @@ For example:
 
 would give
 
-.. code-block:: bash
+.. code-block:: console
 
    |=========|======|=======|
    |Planet   | Theta| Phi   |

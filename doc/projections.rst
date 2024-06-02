@@ -10,7 +10,7 @@ Map projections
 
 By default, the plot function tries to use the Mollweide projection. However, using the power of the `cartopy <https://scitools.org.uk/cartopy/docs/latest/>`_ library, any projection from `this list <https://scitools.org.uk/cartopy/docs/v0.15/crs/projections.html>`_ is supported. In the absence of the cartopy library, the 2D plots fall back to the internally written Hammer projection. Examples of Jupiter's radial magnetic field at r=0.85 with different projections are shown below:
 
-.. code-block:: python
+.. code-block:: ipython
 
   In [1]: from planetmagfields import *
 

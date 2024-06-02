@@ -26,7 +26,8 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinx.ext.coverage',
     'sphinx.ext.napoleon',
-    'sphinxcontrib.bibtex'
+    'sphinxcontrib.bibtex',
+    'sphinx_copybutton'
     ]
 bibtex_bibfiles = ['bib.bib']
 bibtex_default_style = 'unsrt'
@@ -53,3 +54,6 @@ latex_elements['preamble']=r"""
    \usepackage{amssymb}
 """
 
+copybutton_exclude = '.linenos, .gp, .go'
+copybutton_prompt_text = r">>> |\.\.\. |\$ |In \[\d*\]: | {2,5}\.\.\.: |Out\[\d*\]: | {5,8}: "
+copybutton_prompt_is_regexp = True

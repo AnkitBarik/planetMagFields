@@ -45,7 +45,7 @@ A list of models and keywords for them can be obtained using the :py:func:`get_m
 
 In case of Earth, a special argument ``year`` is also used to provide a year between 1900 to present day. This uses the IGRF13 model to compute a linear secular variation and extrapolate to the desired year. For example, the code below
 
-.. code-block:: python
+.. code-block:: ipythonconsole
 
    In [1]: from planetmagfields import Planet
 
