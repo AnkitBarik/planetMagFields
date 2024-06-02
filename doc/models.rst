@@ -36,7 +36,7 @@ We have support for different field models for planets. They are listed below:
 
 A list of models and keywords for them can be obtained using the :py:func:`get_models <planetmagfields.get_models>` function. For example:
 
-.. code-block:: python
+.. code-block:: ipython
 
    In [1]: from planetmagfields import get_models
 
@@ -45,7 +45,7 @@ A list of models and keywords for them can be obtained using the :py:func:`get_m
 
 In case of Earth, a special argument ``year`` is also used to provide a year between 1900 to present day. This uses the IGRF13 model to compute a linear secular variation and extrapolate to the desired year. For example, the code below
 
-.. code-block:: ipythonconsole
+.. code-block:: ipython
 
    In [1]: from planetmagfields import Planet
 
