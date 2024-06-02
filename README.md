@@ -20,6 +20,8 @@ Software to easily access and analyze information about magnetic fields of plane
 
 [Code contribution and reporting issues](#code-contribution-and-reporting-issues)
 
+[Citing `planetMagFields`](#citing-planetmagfields)
+
 [Acknowledgements](#acknowledgements)
 
 # Prerequisites
@@ -169,6 +171,25 @@ available here: https://ankitbarik.github.io/planetMagFields/
  - If you implement a new feature or data source, please update the documentation accordingly. 
 
 Please report any bugs or other issues through [GitHub Issues](https://github.com/AnkitBarik/planetMagFields/issues). 
+
+# Citing `planetMagFields`
+
+If you're using `planetMagFields` for your work, please cite the [JOSS paper](https://joss.theoj.org/papers/10.21105/joss.06677#):
+
+```
+@article{Barik2024,
+doi = {10.21105/joss.06677},
+url = {https://doi.org/10.21105/joss.06677},
+year = {2024},
+publisher = {The Open Journal},
+volume = {9},
+number = {97},
+pages = {6677},
+author = {Ankit Barik and Regupathi Angappan},
+title = {planetMagFields: A Python package for analyzing and plotting planetary magnetic field data},
+journal = {Journal of Open Source Software}
+}
+```
 
 # Acknowledgements
 
