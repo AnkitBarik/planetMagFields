@@ -185,7 +185,7 @@ publisher = {The Open Journal},
 volume = {9},
 number = {97},
 pages = {6677},
-author = {Ankit Barik and Regupathi Angappan},
+author = {Barik, Ankit and Angappan, Regupathi},
 title = {planetMagFields: A Python package for analyzing and plotting planetary magnetic field data},
 journal = {Journal of Open Source Software}
 }
