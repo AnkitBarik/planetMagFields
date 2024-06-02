@@ -43,7 +43,7 @@ variables associated with the planet such as:
 
 Example using ``IPython``:
 
-.. code-block:: ipython
+.. code-block:: python
 
    In [1]: from planetmagfields import Planet
 
@@ -117,7 +117,7 @@ This function computes the Lowes spectrum of a planet at a given radius. It adds
 
 will provide variables
 
-.. code-block:: ipython
+.. code-block:: python
 
    In [8]: p.dipolarity
    Out[8]: 0.7472047129875864
