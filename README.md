@@ -178,18 +178,18 @@ If you're using `planetMagFields` for your work, please cite the [JOSS paper](ht
 
 Barik et al., (2024). planetMagFields: A Python package for analyzing and plotting planetary magnetic field data. Journal of Open Source Software, 9(97), 6677, https://doi.org/10.21105/joss.06677
 
-```
+```bibtex
 @article{Barik2024,
-doi = {10.21105/joss.06677},
-url = {https://doi.org/10.21105/joss.06677},
-year = {2024},
-publisher = {The Open Journal},
-volume = {9},
-number = {97},
-pages = {6677},
-author = {Barik, Ankit and Angappan, Regupathi},
-title = {planetMagFields: A Python package for analyzing and plotting planetary magnetic field data},
-journal = {Journal of Open Source Software}
+  doi = {10.21105/joss.06677},
+  url = {https://doi.org/10.21105/joss.06677},
+  year = {2024},
+  publisher = {The Open Journal},
+  volume = {9},
+  number = {97},
+  pages = {6677},
+  author = {Barik, Ankit and Angappan, Regupathi},
+  title = {planetMagFields: A Python package for analyzing and plotting planetary magnetic field data},
+  journal = {Journal of Open Source Software}
 }
 ```
 
