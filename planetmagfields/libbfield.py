@@ -3,7 +3,7 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-from .libgauss import get_grid,getB,getBm0
+from .libgauss import get_grid,getB
 from .plotlib import *
 from .utils import planetlist, stdDatDir
 
@@ -42,23 +42,20 @@ def getBr(planet, r=1.0, nphi=256, ntheta=128, info=True):
 
     p2D,th2D = get_grid(nphi=nphi,ntheta=ntheta)
 
-    if planet.mmax == 0:
-        Br = getBm0(planet.lmax,
-                    planet.glm,
-                    r,
-                    p2D,
-                    th2D) * 1e-3
-        dipTheta = 0.
-        dipPhi = 0.
-    else:
-        Br = getB(planet.lmax,
-                  planet.glm,
-                  planet.hlm,
-                  planet.idx,
-                  r,
-                  p2D,
-                  th2D,
-                  planetname=planet.name) * 1e-3
+    Br = getB(planet.lmax,
+              planet.mmax,
+              planet.glm,
+              planet.hlm,
+              planet.idx,
+              r,
+              p2D,
+              th2D,
+              planetname=planet.name) * 1e-3
+
+    dipTheta = 0
+    dipPhi = 0
+
+    if planet.mmax > 0:
 
         dipTheta = np.arctan(np.sqrt(planet.glm[planet.idx[1,1]]**2 + planet.hlm[planet.idx[1,1]]**2)
                                     /planet.glm[planet.idx[1,0]]) * 180./np.pi

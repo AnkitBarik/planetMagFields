@@ -122,7 +122,7 @@ def gen_arr(lmax, l1,m1,mode='g'):
 
     return glm, hlm, lArr, mArr, idx
 
-def getB(lmax,glm,hlm,idx,r,p2D,th2D,planetname="earth"):
+def getB(lmax,mmax,glm,hlm,idx,r,p2D,th2D,planetname="earth"):
     """
     This function computes the radial magnetic field from arrays of Gauss
     coefficients glm and hlm. It uses scipy's sph_harm function for spherical
@@ -132,6 +132,8 @@ def getB(lmax,glm,hlm,idx,r,p2D,th2D,planetname="earth"):
     ----------
     lmax : int
         Maximum degree of spherical harmonic
+    lmax : int
+        Maximum order of spherical harmonic
     glm : array_like
         Gauss coefficients of cos(m*phi)
     hlm : array_like
@@ -158,65 +160,34 @@ def getB(lmax,glm,hlm,idx,r,p2D,th2D,planetname="earth"):
 
     Br = np.zeros_like(p2D)
 
-    for l in range(1,lmax+1):
-        for m in range(l+1):
-            ylm = sp.sph_harm(m, l, p2D, th2D)
+    if mmax > 0:
+        for l in range(1,lmax+1):
+            for m in range(l+1):
+                ylm = sp.sph_harm(m, l, p2D, th2D)
 
-            # Include Condon-Shortley Phase for Earth but not other planets
-            # Scipy sph_harm has the phase included by default
+                # Include Condon-Shortley Phase for Earth but not other planets
+                # Scipy sph_harm has the phase included by default
 
-            if planetname in ["earth"]:
-                fac_m = 1.
-            else:
-                fac_m = (-1)**m
+                if planetname in ["earth"]:
+                    fac_m = 1.
+                else:
+                    fac_m = (-1)**m
 
-            if m != 0:
-                fac_m *= np.sqrt(2)
+                if m != 0:
+                    fac_m *= np.sqrt(2)
 
-            fac = fac_m * (l+1) * r**(-l-2) * np.sqrt((4.*np.pi)/(2*l+1))
+                fac = fac_m * (l+1) * r**(-l-2) * np.sqrt((4.*np.pi)/(2*l+1))
 
-            G = glm[idx[l,m]] * np.real(ylm)
-            H = hlm[idx[l,m]] * np.imag(ylm)
+                G = glm[idx[l,m]] * np.real(ylm)
+                H = hlm[idx[l,m]] * np.imag(ylm)
 
-            Br +=   np.real(fac * (G + H))
+                Br +=   np.real(fac * (G + H))
+    else:
+        for l in range(1,lmax+1):
+            ylm = sp.sph_harm(0, l, p2D, th2D)
+            fac = (l + 1) * r**(-l-2) * np.sqrt((4.*np.pi)/(2*l+1))
 
-    return Br
-
-def getBm0(lmax,glm,r,p2D,th2D):
-    """
-    This function computes the radial magnetic field from arrays of Gauss
-    coefficients glm when the maximum spherical harmonic order is m=0.
-    Useful for planets like Mercury and Saturn. It uses scipy's sph_harm
-    function for spherical harmonics.
-
-    Parameters
-    ----------
-    lmax : int
-        Maximum degree of spherical harmonic
-    glm : array_like
-        Gauss coefficients of cos(m*phi)
-    r : float
-        Radial level scaled to planetary surface
-    p2D : ndarray(float, ndim=2)
-        2D array defining longitude (phi).
-        This ranges from 0 to 2*pi and has a shape (nphi,ntheta)
-    th2D : ndarray(float, ndim=2)
-        2D array defining co-latitude (theta).
-        This ranges from 0 to pi and has a shape (nphi,ntheta)
-
-    Returns
-    -------
-    Br : ndarray(float, ndim=2)
-        Radial magnetic field on the grid defined by p2D and th2D
-    """
-
-    Br = np.zeros_like(p2D)
-
-    for l in range(1,lmax+1):
-        ylm = sp.sph_harm(0, l, p2D, th2D)
-        fac = (l + 1) * r**(-l-2) * np.sqrt((4.*np.pi)/(2*l+1))
-
-        Br += fac * glm[l] * np.real(ylm)
+            Br += fac * glm[l] * np.real(ylm)
 
     return Br
 
@@ -263,7 +234,8 @@ def get_spec(glm,hlm,idx,lmax,mmax,r=1.0):
         emag_10 = 2 * r**(-2*l-4)* np.abs(glm[idx[1,0]])**2
     return E, emag_10
 
-def filt_Gauss(glm,hlm,lmax,idx,larr=None,marr=None,lCutMin=0,lCutMax=None,mmin=0,mmax=None):
+def filt_Gauss(glm,hlm,lmax,model_mmax,idx,larr=None,marr=None,
+               lCutMin=0,lCutMax=None,mmin=0,mmax=None):
     """
     Filters Gauss coefficients by using either a fixed array of spherical harmonic
     degrees or orders or a minimum or maximum degree or order. Coefficients are either
@@ -281,6 +253,8 @@ def filt_Gauss(glm,hlm,lmax,idx,larr=None,marr=None,lCutMin=0,lCutMax=None,mmin=
         g(0,0) -> 0, g(1,0) -> 1, g(1,1) -> 2 etc.
     lmax : int
         Maximum degree of spherical harmonic
+    model_mmax : int
+        Maximum order of spherical harmonic of the field model
     larr : int array, optional
         Array of desired spherical harmonic degrees, by default None
     marr : int array, optional
@@ -310,100 +284,65 @@ def filt_Gauss(glm,hlm,lmax,idx,larr=None,marr=None,lCutMin=0,lCutMax=None,mmin=
     if lCutMax is None:
         lCutMax = lmax
     if mmax is None:
-        mmax = lmax
+        mmax = model_mmax
 
-    if larr is not None:
-        if max(larr) > lmax:
-            print("Error! Values in filter array must be <= lmax=%d" %lmax)
+    if model_mmax > 0:
+        if larr is not None:
+            if max(larr) > lmax:
+                print("Error! Values in filter array must be <= lmax=%d" %lmax)
+            else:
+                for ell in range(lmax+1):
+                    if ell not in larr:
+                        glm_filt[idx[ell,:]] = 0.
+                        hlm_filt[idx[ell,:]] = 0.
         else:
-            for ell in range(lmax+1):
-                if ell not in larr:
-                    glm_filt[idx[ell,:]] = 0.
-                    hlm_filt[idx[ell,:]] = 0.
+            if lCutMax > lmax or lCutMin > lmax:
+                print("Error! lCutMin/lCutMax must be <= lmax = %d" %lmax)
+            else:
+                for ell in range(lCutMin):
+                        glm_filt[idx[ell,:]] = 0.
+                        hlm_filt[idx[ell,:]] = 0.
+                for ell in range(lCutMax,lmax+1):
+                        glm_filt[idx[ell,:]] = 0.
+                        hlm_filt[idx[ell,:]] = 0.
+
+        if marr is not None:
+            if max(marr) > lmax:
+                print("Error! Values in filter array must be <= lmax=%d" %lmax)
+            else:
+                for m in range(lmax+1):
+                    if m not in marr:
+                        glm_filt[idx[:,m]] = 0.
+                        hlm_filt[idx[:,m]] = 0.
+        else:
+            if mmin > lmax or mmax > lmax:
+                print("Error! mmin/mmax must be <= lmax = %d" %lmax)
+            else:
+                for m in range(mmin):
+                        glm_filt[idx[:,m]] = 0.
+                        hlm_filt[idx[:,m]] = 0.
+                for m in range(mmax+1,lmax+1):
+                        glm_filt[idx[:,m]] = 0.
+                        hlm_filt[idx[:,m]] = 0.
     else:
-        if lCutMax > lmax or lCutMin > lmax:
-            print("Error! lCutMin/lCutMax must be <= lmax = %d" %lmax)
+        if larr is not None:
+            if max(larr) > lmax:
+                print("Error! Values in filter array must be <= lmax=%d" %lmax)
+            else:
+                for ell in range(lmax+1):
+                    if ell not in larr:
+                        glm_filt[ell] = 0.
+                        hlm_filt[ell] = 0.
         else:
-            for ell in range(lCutMin):
-                    glm_filt[idx[ell,:]] = 0.
-                    hlm_filt[idx[ell,:]] = 0.
-            for ell in range(lCutMax,lmax+1):
-                    glm_filt[idx[ell,:]] = 0.
-                    hlm_filt[idx[ell,:]] = 0.
-
-    if marr is not None:
-        if max(marr) > lmax:
-            print("Error! Values in filter array must be <= lmax=%d" %lmax)
-        else:
-            for m in range(lmax+1):
-                if m not in marr:
-                    glm_filt[idx[:,m]] = 0.
-                    hlm_filt[idx[:,m]] = 0.
-    else:
-        if mmin > lmax or mmax > lmax:
-            print("Error! mmin/mmax must be <= lmax = %d" %lmax)
-        else:
-            for m in range(mmin):
-                    glm_filt[idx[:,m]] = 0.
-                    hlm_filt[idx[:,m]] = 0.
-            for m in range(mmax+1,lmax+1):
-                    glm_filt[idx[:,m]] = 0.
-                    hlm_filt[idx[:,m]] = 0.
-
-    return glm_filt,hlm_filt
-
-def filt_Gaussm0(glm,hlm,lmax,larr=None,lCutMin=0,lCutMax=None):
-    """
-    Filters Gauss coefficients when maximum order of Gauss coefficients is mmax=0.
-    Uses either a fixed array of spherical harmonic degrees or a minimum or
-    maximum degree. Coefficients are either restricted to degree values defined by
-    larr or range defined by lCutMin, lCutMax.
-
-    Parameters
-    ----------
-    glm : _type_
-        _description_
-    hlm : _type_
-        _description_
-    lmax : _type_
-        _description_
-    larr : _type_, optional
-        _description_, by default None
-    lCutMin : int, optional
-        _description_, by default 0
-    lCutMax : _type_, optional
-        _description_, by default None
-
-    Returns
-    -------
-    _type_
-        _description_
-    """
-
-    glm_filt = deepcopy(glm)
-    hlm_filt = deepcopy(hlm)
-
-    if lCutMax is None:
-        lCutMax = lmax
-
-    if larr is not None:
-        if max(larr) > lmax:
-            print("Error! Values in filter array must be <= lmax=%d" %lmax)
-        else:
-            for ell in range(lmax+1):
-                if ell not in larr:
-                    glm_filt[ell] = 0.
-                    hlm_filt[ell] = 0.
-    else:
-        if lCutMax > lmax or lCutMin > lmax:
-            print("Error! lCutMin/lCutMax must be <= lmax = %d" %lmax)
-        else:
-            for ell in range(lCutMin):
-                    glm_filt[ell] = 0.
-                    hlm_filt[ell] = 0.
-            for ell in range(lCutMax,lmax+1):
-                    glm_filt[ell] = 0.
-                    hlm_filt[ell] = 0.
+            if lCutMax > lmax or lCutMin > lmax:
+                print("Error! lCutMin/lCutMax must be <= lmax = %d" %lmax)
+            else:
+                for ell in range(lCutMin):
+                        glm_filt[ell] = 0.
+                        hlm_filt[ell] = 0.
+                for ell in range(lCutMax,lmax+1):
+                        glm_filt[ell] = 0.
+                        hlm_filt[ell] = 0.
 
     return glm_filt,hlm_filt
 

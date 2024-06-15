@@ -3,29 +3,37 @@
 
 import numpy as np
 
-def get_pol_from_Gauss(planetname,glm,hlm,lmax,idx):
+def get_pol_from_Gauss(planetname,glm,hlm,lmax,mmax,idx):
 
     bpol = np.zeros(len(glm),dtype=np.complex128)
 
-    for l in range(1,lmax+1):
-        for m in range(l+1):
+    if mmax > 0:
+        for l in range(1,lmax+1):
+            for m in range(l+1):
 
-            if planetname in ["earth"]:
-                fac_m = 1.
-            else:
-                fac_m = (-1)**m
+                if planetname in ["earth"]:
+                    fac_m = 1.
+                else:
+                    fac_m = (-1)**m
 
-            if m == 0:
+                if m == 0:
+                    norm = np.sqrt((4*np.pi/(2*l+1)))/l
+                else:
+                    norm = np.sqrt((2*np.pi/(2*l+1)))/l
+
+                bpol[idx[l,m]] = norm*fac_m*(glm[idx[l,m]] - 1j*hlm[idx[l,m]])
+    else:
+        for l in range(1,lmax+1):
+
+                fac_m = 1
                 norm = np.sqrt((4*np.pi/(2*l+1)))/l
-            else:
-                norm = np.sqrt((2*np.pi/(2*l+1)))/l
 
-            bpol[idx[l,m]] = norm*fac_m*(glm[idx[l,m]] - 1j*hlm[idx[l,m]])
+                bpol[idx[l]] = norm*fac_m*(glm[idx[l]] - 1j*hlm[idx[l]])
 
     return bpol
 
 
-def extrapot(bpol,idx,lmax,rcmb,rout,nphi=None):
+def extrapot(bpol,idx,lmax,model_mmax,rcmb,rout,nphi=None):
     """
     This function extrapolates a potential field to an array of desired radial
     levels. It uses the SHTns library (https://bitbucket.org/nschaeff/shtns)
@@ -33,6 +41,14 @@ def extrapot(bpol,idx,lmax,rcmb,rout,nphi=None):
 
     Parameters
     ----------
+    bpol : ndarray(complex128, ndim=1)
+        Array of poloidal coefficients computed from Gauss coefficients
+    idx : ndarray(int, ndim=1)
+        Array of indices to map [l,m] to an index
+    lmax : int
+        Maximum spherical harmonic degree of field model
+    model_mmax : int
+        Maximum spherical harmonic order of field model
     rcmb : float
         Radius at which the magnetic field is measured or defined
     brcmb : ndarray(float, ndim=2)
@@ -40,9 +56,6 @@ def extrapot(bpol,idx,lmax,rcmb,rout,nphi=None):
         co-latitude
     rout : array_like
         Array of radial levels to which the field should be extrapolated
-    lmax : int, optional
-        Maximum spherical harmonic degree, if None, automatically chosen
-        from the grid, by default None
 
     Returns
     -------
@@ -82,9 +95,13 @@ def extrapot(bpol,idx,lmax,rcmb,rout,nphi=None):
 
     bpolcmb = sh.spec_array()
 
-    for l in range(1,lmax+1):
-        for m in range(l+1):
-            bpolcmb[sh.idx(l,m)] = bpol[idx[l,m]]
+    if model_mmax > 0:
+        for l in range(1,lmax+1):
+            for m in range(l+1):
+                bpolcmb[sh.idx(l,m)] = bpol[idx[l,m]]
+    else:
+        for l in range(1,lmax+1):
+                bpolcmb[sh.idx(l,0)] = bpol[idx[l]]
 
     # brlm = sh.analys(brcmb.T)
     # bpolcmb = np.zeros_like(brlm)

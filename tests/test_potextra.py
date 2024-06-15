@@ -23,3 +23,12 @@ def test_potextra():
     err = np.abs( (br_ref - p.Br) )
 
     np.testing.assert_allclose(err, 0, rtol=1e-2, atol=1e-2)
+
+def test_potextra_m0():
+    p = Planet(name='saturn',r=10,nphi=256,info=False,model='cassini11+')
+
+    p.extrapolate(np.array([10]))
+    br_ref = np.squeeze(p.br_ex)
+    err = np.abs( (br_ref - p.Br) )
+
+    np.testing.assert_allclose(err, 0, rtol=1e-2, atol=1e-2)

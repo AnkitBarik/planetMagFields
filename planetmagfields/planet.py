@@ -4,7 +4,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from .libdata import get_data
-from .libgauss import filt_Gauss, filt_Gaussm0,getB, getBm0, get_spec
+from .libgauss import filt_Gauss,getB, get_spec
 from .libbfield import getBr
 from .plotlib import plotSurf, plot_spec
 from .utils import stdDatDir, planetlist
@@ -177,10 +177,10 @@ class Planet:
 
         # Create poloidal potential from glm and glm
         bpol = get_pol_from_Gauss(self.name,self.glm,self.hlm,
-                                  self.lmax,self.idx)
+                                  self.lmax,self.mmax,self.idx)
 
         self.br_ex,self.btheta_ex,self.bphi_ex \
-            = extrapot(bpol,self.idx,self.lmax,1,rout,self.nphi)
+            = extrapot(bpol,self.idx,self.lmax,self.mmax,1,rout,self.nphi)
 
 
     def writeVtsFile(self,potExtra=False,ratio_out=2,nrout=32):
@@ -221,7 +221,8 @@ class Planet:
     ## Filtered plots
 
     def plot_filt(self,r=1.0,larr=None,marr=None,lCutMin=0,lCutMax=None,mmin=0,mmax=None,
-                  levels=30,cmap='RdBu_r',proj='Mollweide',vmin=None,vmax=None):
+                  levels=30,cmap='RdBu_r',proj='Mollweide',
+                  vmin=None,vmax=None,iplot=True):
         """
         Plots a filtered radial magnetic field at a radial level. Filters can be
         set using specific values of degree and order of spherical harmonics given
@@ -254,6 +255,8 @@ class Planet:
             Minimum of colorscale, by default None
         vmax : float, optional
             Maximum of colorscale, by default None
+        iplot: logical, optional
+            Flag for producing a plot, by default True
 
         Returns
         -------
@@ -274,58 +277,55 @@ class Planet:
 
         self.r_filt = r
 
-        if self.mmax == 0:
-            self.glm_filt,self.hlm_filt =\
-                    filt_Gaussm0(self.glm,self.hlm,self.lmax,larr=self.larr_filt,\
-                        lCutMin=self.lCutMin,lCutMax=self.lCutMax)
-            self.Br_filt = 1e-3*getBm0(self.lmax,self.glm_filt,self.r_filt,self.p2D,self.th2D)
-        else:
-            self.glm_filt,self.hlm_filt =\
-                filt_Gauss(self.glm,self.hlm,self.lmax,self.idx,larr=self.larr_filt,\
-                    marr=self.marr_filt,lCutMin=self.lCutMin,lCutMax=self.lCutMax,mmin=self.mmin_filt,mmax=self.mmax_filt)
+        self.glm_filt,self.hlm_filt =\
+                filt_Gauss(self.glm,self.hlm,self.lmax,self.mmax,self.idx,larr=self.larr_filt,
+                           marr=self.marr_filt,lCutMin=self.lCutMin,lCutMax=self.lCutMax,
+                           mmin=self.mmin_filt,mmax=self.mmax_filt)
 
-            self.Br_filt = 1e-3*getB(self.lmax,self.glm_filt,self.hlm_filt,self.idx,self.r_filt,self.p2D,self.th2D,planetname=self.name)
+        self.Br_filt = 1e-3*getB(self.lmax,self.mmax,self.glm_filt,self.hlm_filt,
+                                 self.idx,self.r_filt,self.p2D,self.th2D,planetname=self.name)
 
-        plt.figure(figsize=(12,6.75))
+        if iplot:
+            plt.figure(figsize=(12,6.75))
 
-        ax,cbar,proj = plotSurf(self.p2D,self.th2D,self.Br_filt,levels=levels,
-                                cmap=cmap,proj=proj,vmin=vmin,vmax=vmax)
+            ax,cbar,proj = plotSurf(self.p2D,self.th2D,self.Br_filt,levels=levels,
+                                    cmap=cmap,proj=proj,vmin=vmin,vmax=vmax)
 
-        if r==1:
-            radLabel = '  Surface'
-        else:
-            radLabel = r'  $r/r_{\rm surface}=%.2f$' %r
+            if r==1:
+                radLabel = '  Surface'
+            else:
+                radLabel = r'  $r/r_{\rm surface}=%.2f$' %r
 
-        if self.larr_filt is not None:
-            elllabel = r', $l = %s$' %str(self.larr_filt)
-        else:
-            if self.lCutMin > 0:
-                if self.lCutMax < self.lmax:
-                    elllabel = r', $ %d \leq l \leq %d$' %(self.lCutMin,self.lCutMax)
-                else:
-                    elllabel = r', $l \geq %d$' %self.lCutMin
+            if self.larr_filt is not None:
+                elllabel = r', $l = %s$' %str(self.larr_filt)
+            else:
+                if self.lCutMin > 0:
+                    if self.lCutMax < self.lmax:
+                        elllabel = r', $ %d \leq l \leq %d$' %(self.lCutMin,self.lCutMax)
+                    else:
+                        elllabel = r', $l \geq %d$' %self.lCutMin
 
-            elif self.lCutMax < self.lmax:
-                elllabel = r', $l \leq %d$' %self.lCutMax
+                elif self.lCutMax < self.lmax:
+                    elllabel = r', $l \leq %d$' %self.lCutMax
 
-        if self.marr_filt is not None:
-            elllabel += r', $m = %s$' %str(self.marr_filt)
-        else:
-            if self.mmin_filt > 0:
-                if self.mmax_filt < self.lmax:
-                    elllabel += r', $ %d \leq m \leq %d$' %(self.mmin_filt,self.mmax_filt)
-                else:
-                    elllabel += r', $m \geq %d$' %self.mmin_filt
-            elif self.mmax_filt < self.lmax:
-                elllabel += r', $m \leq %d$' %self.mmax_filt
+            if self.marr_filt is not None:
+                elllabel += r', $m = %s$' %str(self.marr_filt)
+            else:
+                if self.mmin_filt > 0:
+                    if self.mmax_filt < self.lmax:
+                        elllabel += r', $ %d \leq m \leq %d$' %(self.mmin_filt,self.mmax_filt)
+                    else:
+                        elllabel += r', $m \geq %d$' %self.mmin_filt
+                elif self.mmax_filt < self.lmax:
+                    elllabel += r', $m \leq %d$' %self.mmax_filt
 
-        cbar.ax.set_xlabel(r'Radial magnetic field ($\mu$T)',fontsize=25)
-        cbar.ax.tick_params(labelsize=20)
+            cbar.ax.set_xlabel(r'Radial magnetic field ($\mu$T)',fontsize=25)
+            cbar.ax.tick_params(labelsize=20)
 
-        if proj.lower() != 'hammer' and self.name == 'earth':
-            ax.coastlines()
-        ax.set_title(self.name.capitalize() + radLabel + elllabel,fontsize=25,pad=20)
-        plt.tight_layout()
+            if proj.lower() != 'hammer' and self.name == 'earth':
+                ax.coastlines()
+            ax.set_title(self.name.capitalize() + radLabel + elllabel,fontsize=25,pad=20)
+            plt.tight_layout()
 
 
     def spec(self,r=1.0,iplot=True):
