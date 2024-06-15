@@ -235,7 +235,7 @@ Usage example:
    ratio_out = 5 # Ratio (> 1) in terms of surface radius to which to extrapolate
    nrout = 32 # Number of grid points in radius between 1 and ratio_out
    rout = np.linspace(1,ratio_out,nrout)
-   brout, btout, bpout = potextra.extrapot(p.lmax,1.,p.Br,rout)
+   p.extrapolate(rout) #Gives you three arrays p.br_ex, p.btheta_ex, p.bphi_ex
 
 .. _secMagFieldScript:
 
