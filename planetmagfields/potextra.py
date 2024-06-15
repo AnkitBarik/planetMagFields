@@ -237,19 +237,10 @@ def writeVts(name,br,btheta,bphi,r,theta,phi):
     bx,by,bz = get_cart(br, btheta, bphi,th3D,p3D)
 
     try:
-        try: # Version 2 changed naming convention of functions
-            from evtk.hl import structuredToVTK
-            gridToVTK = structuredToVTK
-        except:
-            import evtk
-            gridToVTK = evtk.hl.gridToVTK
+        from pyevtk.hl import gridToVTK
     except:
-        try:
-            from pyevtk.hl import gridToVTK
-        except:
-            print("This requires the use of evtk library!")
-            print("You can get it from https://github.com/paulo-herrera/PyEVTK")
-
+        print("This requires the use of pyevtk library!")
+        print("You can get it from https://github.com/paulo-herrera/PyEVTK")
 
     br = np.asfortranarray(br)
     bx = np.asfortranarray(bx)

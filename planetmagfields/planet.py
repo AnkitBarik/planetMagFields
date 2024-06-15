@@ -91,7 +91,8 @@ class Planet:
         self.theta = self.th2D[0,:]
         self.r = r
 
-    def plot(self,r=None,levels=30,cmap='RdBu_r',proj='Mollweide'):
+    def plot(self,r=None,levels=30,cmap='RdBu_r',
+             proj='Mollweide',vmin=None,vmax=None):
         """
         Plots the radial magnetic field of a planet at a radial surface.
 
@@ -105,6 +106,10 @@ class Planet:
             Colormap for contours, by default 'RdBu_r'
         proj : str, optional
             Map projection, by default 'Mollweide'
+        vmin : float, optional
+            Minimum of colorscale, by default None
+        vmax : float, optional
+            Maximum of colorscale, by default None
 
         Returns
         -------
@@ -117,12 +122,16 @@ class Planet:
             r = self.r
 
         if r == self.r:
-            ax,cbar,proj = plotSurf(self.p2D,self.th2D,self.Br,levels=levels,cmap=cmap,proj=proj)
+            ax,cbar,proj = plotSurf(self.p2D,self.th2D,self.Br,
+                                    levels=levels,cmap=cmap,proj=proj,
+                                    vmin=vmin,vmax=vmax)
         else:
             self.p2D, self.th2D, self.Br, self.dipTheta, self.dipPhi = \
                     getBr(planet=self,r=r,info=False)
             self.r = r
-            ax,cbar,proj = plotSurf(self.p2D,self.th2D,self.Br,levels=levels,cmap=cmap,proj=proj)
+            ax,cbar,proj = plotSurf(self.p2D,self.th2D,self.Br,
+                                    levels=levels,cmap=cmap,proj=proj,
+                                    vmin=vmin,vmax=vmax)
 
         cbar.ax.set_xlabel(r'Radial magnetic field ($\mu$T)',fontsize=25)
         cbar.ax.tick_params(labelsize=20)
@@ -150,15 +159,28 @@ class Planet:
 
 
     def extrapolate(self,rout):
+        """Potential extrapolation of the magnetic field
+
+        Parameters
+        ----------
+        rout : array_like
+            Array of radial levels
+
+        Returns
+        -------
+        None
+            Assigns three arrays self.br_ex,self.btheta_ex,self.bphi_ex to
+            the planet class for radial, colatitudinal and azimuthal components
+            of the extrapolated field, respectively.
+        """
         from .potextra import get_pol_from_Gauss, extrapot
 
         # Create poloidal potential from glm and glm
         bpol = get_pol_from_Gauss(self.name,self.glm,self.hlm,
                                   self.lmax,self.idx)
 
-        br,btheta,bphi = extrapot(bpol,self.idx,self.lmax,1,rout,self.nphi)
-
-        return br,btheta,bphi
+        self.br_ex,self.btheta_ex,self.bphi_ex \
+            = extrapot(bpol,self.idx,self.lmax,1,rout,self.nphi)
 
 
     def writeVtsFile(self,potExtra=False,ratio_out=2,nrout=32):
@@ -181,11 +203,14 @@ class Planet:
         -------
         None
         """
-        from .potextra import extrapot, writeVts
+        from .potextra import writeVts
 
         rout = np.linspace(1,ratio_out,nrout)
         if potExtra:
-            brout, btout, bpout = self.extrapolate(rout)
+            self.extrapolate(rout)
+            brout = self.br_ex
+            btout = self.btheta_ex
+            bpout = self.bphi_ex
         else:
             brout = self.Br
             btout = np.zeros_like(self.Br)
@@ -195,7 +220,8 @@ class Planet:
 
     ## Filtered plots
 
-    def plot_filt(self,r=1.0,larr=None,marr=None,lCutMin=0,lCutMax=None,mmin=0,mmax=None,levels=30,cmap='RdBu_r',proj='Mollweide'):
+    def plot_filt(self,r=1.0,larr=None,marr=None,lCutMin=0,lCutMax=None,mmin=0,mmax=None,
+                  levels=30,cmap='RdBu_r',proj='Mollweide',vmin=None,vmax=None):
         """
         Plots a filtered radial magnetic field at a radial level. Filters can be
         set using specific values of degree and order of spherical harmonics given
@@ -224,6 +250,10 @@ class Planet:
             Colormap for contours, by default 'RdBu_r'
         proj : str, optional
             Map projection, by default 'Mollweide'
+        vmin : float, optional
+            Minimum of colorscale, by default None
+        vmax : float, optional
+            Maximum of colorscale, by default None
 
         Returns
         -------
@@ -258,7 +288,8 @@ class Planet:
 
         plt.figure(figsize=(12,6.75))
 
-        ax,cbar = plotSurf(self.p2D,self.th2D,self.Br_filt,levels=levels,cmap=cmap,proj=proj)
+        ax,cbar,proj = plotSurf(self.p2D,self.th2D,self.Br_filt,levels=levels,
+                                cmap=cmap,proj=proj,vmin=vmin,vmax=vmax)
 
         if r==1:
             radLabel = '  Surface'

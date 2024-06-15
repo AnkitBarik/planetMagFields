@@ -75,7 +75,8 @@ def getBr(planet, r=1.0, nphi=256, ntheta=128, info=True):
 
     return p2D, th2D, Br, dipTheta, dipPhi
 
-def plotAllFields(datDir=stdDatDir,r=1.0,levels=30,cmap='RdBu_r',proj='Mollweide'):
+def plotAllFields(datDir=stdDatDir,r=1.0,levels=30,cmap='RdBu_r',
+                  proj='Mollweide',vmin=None,vmax=None):
     """
     Plots fields of all the planets for which data is available. It's provided in
     utils.planetlist.
@@ -95,6 +96,10 @@ def plotAllFields(datDir=stdDatDir,r=1.0,levels=30,cmap='RdBu_r',proj='Mollweide
         Colormap for contours, by default 'RdBu_r'
     proj : str, optional
         Map projection, by default 'Mollweide'
+    vmin : float, optional
+        Minimum of colorscale, by default None
+    vmax : float, optional
+        Maximum of colorscale, by default None
     """
 
     from .planet import Planet
@@ -127,7 +132,9 @@ def plotAllFields(datDir=stdDatDir,r=1.0,levels=30,cmap='RdBu_r',proj='Mollweide
                       planetname=name,
                       levels=levels,
                       cmap=cmap,
-                      proj=proj)
+                      proj=proj,
+                      vmin=vmin,
+                      vmax=vmax)
 
         if name in ["mercury","saturn"]:
             print(('|%-8s | %-4.1f | %-5.1f |' %(name.capitalize(),planet.dipTheta, planet.dipPhi)))

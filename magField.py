@@ -25,10 +25,15 @@ parser.add_argument('-l','--levels',type=int,default=20,
 parser.add_argument('-m','--mapproj',type=str,default='Mollweide',
                     help='Type of map projection (default : Mollweide)',
                     dest='proj')
-
 parser.add_argument('-o','--model',type=str,default=None,
                     help='Model to be used, uses the latest model by default (default : None)',
                     dest='model')
+parser.add_argument('--vmin',type=float,default=None,
+                    help='Minimum magnitude of colorscale (default : None)',
+                    dest='vmin')
+parser.add_argument('--vmax',type=float,default=None,
+                    help='Maximum magnitude of colorscale (default : None)',
+                    dest='vmax')
 
 args=parser.parse_args()
 
@@ -38,9 +43,12 @@ cmap   = args.cmap
 levels = args.levels
 proj   = args.proj
 model  = args.model
+vmin   = args.vmin
+vmax   = args.vmax
 
 if planet == 'all':
-    plotAllFields(datDir='./planetmagfields/data/',r=r,levels=levels,cmap=cmap,proj=proj)
+    plotAllFields(datDir='./planetmagfields/data/',r=r,levels=levels,cmap=cmap,
+                  proj=proj,vmin=vmin,vmax=vmax)
     plt.tight_layout()
     plt.subplots_adjust(top=0.895,
                         bottom=0.035,

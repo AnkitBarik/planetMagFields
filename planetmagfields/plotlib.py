@@ -5,6 +5,44 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 
+def get_color_limits(dat,vmin=None,vmax=None):
+    """Computes minimum and maximum of colorbar for plots
+
+    Parameters
+    ----------
+    dat : ndarray(float, ndim=2)
+        Data for plotting
+    vmin : float, optional
+        Minimum of colorscale, by default None
+    vmax : float, optional
+        Maximum of colorscale, by default None
+
+    Returns
+    -------
+    vmin : float, optional
+        Minimum of colorscale
+    vmax : float, optional
+        Minimum of colorscale
+    """
+    if vmin is not None and vmax is not None:
+        return vmin,vmax
+    elif vmin is None and vmax is not None:
+        vmin = -vmax
+    elif vmin is not None and vmax is None:
+        vmax = -vmin
+    else:
+        bmax = np.abs(dat).max()
+        digits = int(np.log10(bmax)) + 1
+
+        if digits > 1:
+            bmax = np.round(bmax)
+        else:
+            bmax = np.round(bmax,decimals=1)
+
+        vmin = -bmax
+        vmax = bmax
+    return vmin, vmax
+
 def hammer2cart(ttheta, pphi, colat=False):
     """
     This function is used to define the Hammer projection for
@@ -36,7 +74,8 @@ def hammer2cart(ttheta, pphi, colat=False):
              /np.sqrt(1.+np.sin(ttheta)*np.sin(pphi/2.))
     return xx, yy
 
-def plotSurf(p2D,th2D,B,levels=60,cmap='RdBu_r',proj='Mollweide'):
+def plotSurf(p2D,th2D,B,levels=60,cmap='RdBu_r',
+             proj='Mollweide',vmin=None,vmax=None):
     """
     Plots magnetic field on a surface defined by 2D arrays
     of longitude and co-latitude.
@@ -59,24 +98,25 @@ def plotSurf(p2D,th2D,B,levels=60,cmap='RdBu_r',proj='Mollweide'):
     proj : str, optional
         Map projection for plotting. Supports all projections used by cartopy,
         by default Mollweide
+    vmin : float, optional
+        Minimum of colorscale, by default None
+    vmax : float, optional
+        Maximum of colorscale, by default None
 
     Returns
     -------
     ax : matplotlib.axes instance
         This is the axes handle of the plot
-    cbar : colorbar handle
+    cbar : matplotlib.colorbar.Colorbar instance
+        This is the handle of the colorbar
+    proj : cartopy.crs projection class
+        This is the map projection of the plot
     """
 
-    bmax = np.abs(B).max()
-    digits = int(np.log10(bmax)) + 1
+    vmin,vmax = get_color_limits(B,vmin,vmax)
 
-    if digits > 1:
-        bmax = np.round(bmax)
-    else:
-        bmax = np.round(bmax,decimals=1)
-
-    divnorm = colors.TwoSlopeNorm(vmin=-bmax, vcenter=0, vmax=bmax)
-    cs = np.linspace(-bmax,bmax,levels)
+    divnorm = colors.TwoSlopeNorm(vmin=vmin, vcenter=0, vmax=vmax)
+    cs = np.linspace(vmin,vmax,levels)
 
 
     lon2D = p2D - np.pi
@@ -100,14 +140,16 @@ def plotSurf(p2D,th2D,B,levels=60,cmap='RdBu_r',proj='Mollweide'):
         cont = ax.contourf(lon2D*180/np.pi,lat2D*180/np.pi,B,cs,  \
             transform=ccrs.PlateCarree(),cmap=cmap,norm=divnorm,extend='both')
 
-    cbar = plt.colorbar(cont,orientation='horizontal',fraction=0.06, pad=0.04,ticks=[-bmax,0,bmax])
+    cbar = plt.colorbar(cont,orientation='horizontal',fraction=0.06,
+                        pad=0.04,ticks=[vmin,0,vmax])
 
     ax.axis('equal')
     ax.axis('off')
 
     return ax, cbar, proj
 
-def plotB_subplot(ax,p2D,th2D,B,planetname="earth",levels=60,cmap='RdBu_r',proj='Mollweide'):
+def plotB_subplot(ax,p2D,th2D,B,planetname="earth",levels=60,cmap='RdBu_r',
+                  proj='Mollweide',vmin=None,vmax=None):
     """
     Plots subplot of magnetic field on a surface defined by 2D arrays
     of longitude and co-latitude. The subplot is defined by the axes handle ax.
@@ -134,6 +176,10 @@ def plotB_subplot(ax,p2D,th2D,B,planetname="earth",levels=60,cmap='RdBu_r',proj=
     proj : str, optional
         Map projection for plotting. Supports all projections used by cartopy,
         by default Mollweide
+    vmin : float, optional
+        Minimum of colorscale, by default None
+    vmax : float, optional
+        Maximum of colorscale, by default None
 
     Returns
     -------
@@ -141,20 +187,13 @@ def plotB_subplot(ax,p2D,th2D,B,planetname="earth",levels=60,cmap='RdBu_r',proj=
     """
     planetname = planetname.lower()
 
-    bmax = np.abs(B).max()
-    digits = int(np.log10(bmax)) + 1
-
-    if digits > 1:
-        bmax = np.round(bmax)
-    else:
-        bmax = np.round(bmax,decimals=1)
-
     p2D -= np.pi
     th2D -= np.pi/2
     th2D = -th2D
 
-    cs = np.linspace(-bmax,bmax,levels)
-    divnorm = colors.TwoSlopeNorm(vmin=-bmax, vcenter=0, vmax=bmax)
+    vmin,vmax = get_color_limits(B,vmin,vmax)
+    divnorm = colors.TwoSlopeNorm(vmin=vmin, vcenter=0, vmax=vmax)
+    cs = np.linspace(vmin,vmax,levels)
 
     try:
         import cartopy.crs as ccrs
@@ -172,7 +211,8 @@ def plotB_subplot(ax,p2D,th2D,B,planetname="earth",levels=60,cmap='RdBu_r',proj=
         cont = ax.contourf(p2D*180/np.pi,th2D*180/np.pi,B,cs,  \
             transform=ccrs.PlateCarree(),cmap=cmap,norm=divnorm,extend='both')
 
-    cbar = plt.colorbar(cont,orientation='horizontal',fraction=0.06, pad=0.04,ticks=[-bmax,0,bmax])
+    cbar = plt.colorbar(cont,orientation='horizontal',fraction=0.06,
+                        pad=0.04,norm=divnorm,ticks=[vmin,0,vmax])
     cbar.ax.tick_params(labelsize=15)
 
     ax.set_title(planetname.capitalize(),fontsize=20)
