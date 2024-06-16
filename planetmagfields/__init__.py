@@ -5,4 +5,4 @@ from .planet import Planet
 from .potextra import extrapot
 from .utils import get_models
 
-__version__ = '1.4.3'
+__version__ = '1.5'

@@ -223,8 +223,7 @@ We filter the surface field to degrees > 4 and orders > 3.
 Potential extrapolation
 ************************
 
-The ``potextra`` module provides a method for potential extrapolation of a planet's magnetic field.
-This uses the `SHTns <https://bitbucket.org/nschaeff/shtns>`_ library for spherical harmonic transforms.
+The :py:func:`Planet.extrapolate <planetmagfields.Planet.extrapolate>` performs a potential extrapolation of a planet's magnetic field. The functions are present in the ``potextra`` module. This uses the `SHTns <https://bitbucket.org/nschaeff/shtns>`_ library for spherical harmonic transforms.
 Usage example:
 
 .. code-block:: python
@@ -236,6 +235,35 @@ Usage example:
    nrout = 32 # Number of grid points in radius between 1 and ratio_out
    rout = np.linspace(1,ratio_out,nrout)
    p.extrapolate(rout) #Gives you three arrays p.br_ex, p.btheta_ex, p.bphi_ex
+
+.. _subsecOrbit:
+
+Get field along a trajectory
+*****************************
+
+You can obtain field components along a trajectory (for example, obtained from NASA's `SPICE Toolkit <https://naif.jpl.nasa.gov/naif/toolkit.html>`_) using the function :py:func:`Planet.orbit_path <planetmagfields.Planet.orbit_path>`. Usage example below using some points from the Cassini Grand Finale:
+
+.. code-block:: python
+
+   from planetmagfields import Planet
+   p = Planet('saturn')
+
+   r = [17.82905598, 17.82110528, 17.81314499, 17.80517584, 17.79719656] # Can also be numpy array
+   theta = [1.1865416 , 1.18632847, 1.18611515, 1.18590167, 1.18568798]
+   phi = [4.70867942, 4.70884014, 4.70900102, 4.70916207, 4.7093233 ]
+
+   p.orbit_path(r,theta,phi)
+   print(p.br_orb)
+   print(p.btheta_orb)
+   print(p.bphi_orb)
+
+This will provide the outputs:
+
+.. code-block:: console
+
+   [-0.00235325 -0.00235858 -0.00236393 -0.0023693  -0.00237469]
+   [-0.09273259 -0.09281168 -0.09289097 -0.09297045 -0.09305014]
+   [-0.00486482 -0.00486659 -0.00486837 -0.00487015 -0.00487194]
 
 .. _secMagFieldScript:
 

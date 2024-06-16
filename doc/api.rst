@@ -14,8 +14,6 @@ Python API
    :members:
    :class-doc-from: class
 
-.. autofunction:: extrapot
-
 .. autofunction:: get_models
 
 .. Indices and tables
