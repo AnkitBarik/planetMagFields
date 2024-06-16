@@ -5,7 +5,7 @@
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/AnkitBarik/planetMagFields/HEAD?labpath=%2FExploreFieldsInteractively.ipynb)
 [![PyPI version](https://badge.fury.io/py/planetMagFields.svg)](https://badge.fury.io/py/planetMagFields)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.11118317.svg)](https://doi.org/10.5281/zenodo.11118317)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.11768470.svg)](https://doi.org/10.5281/zenodo.11768470)
 
 Software to easily access and analyze information about magnetic fields of planets in our solar system and visualize them in both 2D and 3D.
 
