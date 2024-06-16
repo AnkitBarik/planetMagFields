@@ -51,11 +51,11 @@ def extrapot(bpol,idx,lmax,model_mmax,rcmb,rout,nphi=None):
         Maximum spherical harmonic order of field model
     rcmb : float
         Radius at which the magnetic field is measured or defined
-    brcmb : ndarray(float, ndim=2)
-        2D array of radial magnetic field defined on a grid of longitude and
-        co-latitude
     rout : array_like
         Array of radial levels to which the field should be extrapolated
+    nphi : int, optional
+        Number of grid points in longitude, can be automatically
+        selected, by default None
 
     Returns
     -------
@@ -130,6 +130,107 @@ def extrapot(bpol,idx,lmax,model_mmax,rcmb,rout,nphi=None):
     bpout = np.transpose(bpout,(1,0,2))*1e-3 # Convert to microteslas
 
     return brout, btout, bpout
+
+def get_field_along_path(bpol,idx,lmax,model_mmax,
+                         rcmb,r,theta,phi):
+    """Gets field along a specific trajectory defined by 1-D
+       arrays r, theta, phi
+
+    Parameters
+    ----------
+    bpol : ndarray(complex128, ndim=1)
+        Array of poloidal coefficients computed from Gauss coefficients
+    idx : ndarray(int, ndim=1)
+        Array of indices to map [l,m] to an index
+    lmax : int
+        Maximum spherical harmonic degree of field model
+    model_mmax : int
+        Maximum spherical harmonic order of field model
+    rcmb : float
+        Radius at which the magnetic field is measured or defined
+    r : array_like
+        Array of radial distances
+    theta : array_like
+        Array of co-latitudes in radians
+    phi : array_like
+        Array of longitudes in radians
+
+    Returns
+    -------
+    brout : array_like
+        Array of extrapolated radial magnetic field values
+    btout : array_like
+        Array of extrapolated co-latitudinal magnetic field values
+    bpout : array_like
+        Array of extrapolated azimuthal magnetic field values
+
+    Raises
+    ------
+    ValueError
+        If the shapes of the three arrays r, theta, phi
+        are not the same, raises an error.
+    """
+
+    # Check dimensions
+    if ( np.shape(r) != np.shape(theta)  or
+         np.shape(theta) != np.shape(phi)  or
+         np.shape(r) != np.shape(phi) ):
+        raise ValueError("Please make sure all three arrays are of the same shape")
+
+    # Ensure float
+    r     = np.float64(r)
+    theta = np.float64(theta)
+    phi   = np.float64(phi)
+
+    try:
+        import shtns
+    except ImportError:
+        print("Orbit track extrapolation requires the SHTns library")
+        print("It can be obtained here: https://bitbucket.org/nschaeff/shtns")
+
+    mmax = lmax
+    norm=shtns.sht_orthonormal
+    sh = shtns.sht(lmax,mmax=mmax,norm=norm)
+
+    L = sh.l * (sh.l + 1)
+
+    # Take care of shtns index convention
+
+    bpolcmb = sh.spec_array()
+
+    if model_mmax > 0:
+        for l in range(1,lmax+1):
+            for m in range(l+1):
+                bpolcmb[sh.idx(l,m)] = bpol[idx[l,m]]
+    else:
+        for l in range(1,lmax+1):
+                bpolcmb[sh.idx(l,0)] = bpol[idx[l]]
+
+    brout = np.zeros_like(r)
+    btout = np.zeros_like(r)
+    bpout = np.zeros_like(r)
+
+    # Assuming array of dimension 1 of r, theta, phi
+    for k, radius in enumerate(r):
+        radratio = rcmb/radius
+        bpol = bpolcmb * radratio**(sh.l)
+        qlm = bpol * L/radius**2
+        slm = -sh.l/radius * bpol
+        tlm = np.zeros_like(qlm)
+        brout[k], btout[k], bpout[k] = sh.SHqst_to_point(qlm,slm,tlm,
+                                                         np.cos(theta[k]),
+                                                         phi[k])
+
+    brout *= 1e-3 # Convert to microteslas
+    btout *= 1e-3 # Convert to microteslas
+    bpout *= 1e-3 # Convert to microteslas
+
+    return brout, btout, bpout
+
+
+###########################
+# For writing vts files
+###########################
 
 def get_grid(r,theta,phi):
     """
