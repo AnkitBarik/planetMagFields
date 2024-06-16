@@ -241,7 +241,7 @@ Usage example:
 Get field along a trajectory
 *****************************
 
-You can obtain field components along a trajectory (for example, obtained from NASA's `SPICE Toolkit <https://naif.jpl.nasa.gov/naif/toolkit.html>`_) using the function :py:func:`Planet.orbit_path <planetmagfields.Planet.orbit_path>`. Usage example below using some points from the Cassini Grand Finale:
+You can obtain field components along a trajectory (for example, obtained from NASA's `SPICE Toolkit <https://naif.jpl.nasa.gov/naif/toolkit.html>`_) using the function :py:func:`Planet.orbit_path <planetmagfields.Planet.orbit_path>`. This also uses the `SHTns <https://bitbucket.org/nschaeff/shtns>`_ library for spherical harmonic transforms. Usage example below using some points from the Cassini Grand Finale:
 
 .. code-block:: python
 
