@@ -7,7 +7,7 @@ from planetmagfields import Planet
 def test_jupiterBr():
     p = Planet(name='jupiter',r=0.85,nphi=256,info=False,model='jrm33')
 
-    br_ref = np.loadtxt('jupiter/Br_reference.dat')
+    br_ref = np.loadtxt('jupiter/Br_reference085.dat')
     br = p.Br
 
     percent_err = np.abs( (br_ref - br)/br_ref ) * 100
@@ -15,7 +15,7 @@ def test_jupiterBr():
     np.testing.assert_allclose(percent_err, 0, rtol=0.1,
                                 atol=0.1)
 
-def test_potextra():
+def test_potextra_internal():
     p = Planet(name='jupiter',r=10,nphi=256,info=False,model='jrm33')
 
     p.extrapolate(np.array([10]))
@@ -24,7 +24,24 @@ def test_potextra():
 
     np.testing.assert_allclose(err, 0, rtol=1e-2, atol=1e-2)
 
-def test_potextra_m0():
+def test_potextra_jupiterMag():
+
+    p = Planet(name='jupiter',nphi=512,info=False,model='jrm33')
+    p.extrapolate([2])
+
+    br_ref = np.loadtxt('jupiter/Br_reference.dat')
+    bt_ref = np.loadtxt('jupiter/Bt_reference.dat')
+    bp_ref = np.loadtxt('jupiter/Bp_reference.dat')
+
+    percent_err = ( np.mean(np.abs(p.br_ex[...,0]*1e3 - br_ref)/br_ref)
+                +  np.mean(np.abs(p.btheta_ex[...,0]*1e3 - bt_ref)/bt_ref)
+                +  np.mean(np.abs(p.bphi_ex[...,0]*1e3 - bp_ref)/bp_ref)
+                ) * 100
+
+    np.testing.assert_allclose(percent_err, 0, rtol=1,
+                            atol=1)
+
+def test_potextra_internal_m0():
     p = Planet(name='saturn',r=10,nphi=256,info=False,model='cassini11+')
 
     p.extrapolate(np.array([10]))

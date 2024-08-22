@@ -120,8 +120,7 @@ def extrapot(bpol,idx,lmax,model_mmax,rcmb,rout,nphi=None):
         brlm = bpol * L/radius**2
         brout[...,k] = sh.synth(brlm)
 
-        dbpoldr = -sh.l/radius * bpol
-        slm = dbpoldr
+        slm = -sh.l/radius**2 * bpol
 
         btout[...,k], bpout[...,k] = sh.synth(slm,btor)
 
@@ -215,7 +214,7 @@ def get_field_along_path(bpol,idx,lmax,model_mmax,
         radratio = rcmb/radius
         bpol = bpolcmb * radratio**(sh.l)
         qlm = bpol * L/radius**2
-        slm = -sh.l/radius * bpol
+        slm = -sh.l/radius**2 * bpol
         tlm = np.zeros_like(qlm)
         brout[k], btout[k], bpout[k] = sh.SHqst_to_point(qlm,slm,tlm,
                                                          np.cos(theta[k]),

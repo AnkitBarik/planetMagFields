@@ -48,7 +48,7 @@ p = Planet(name='jupiter',r=0.85,nphi=256,info=False,model='jrm33')
 proj = ccrs.Mollweide()
 fig,ax = plt.subplots(figsize=(16,6),nrows=1,ncols=2,subplot_kw={'projection': proj})
 
-br_ref = np.loadtxt('./Br_reference.dat')
+br_ref = np.loadtxt('./Br_reference085.dat')
 
 bmax, im = plot_surface(ax[0],p2D,th2D,br_ref)
 bmax, im = plot_surface(ax[1],p2D,th2D,p.Br)
@@ -65,5 +65,6 @@ cbar.ax.set_xlabel(r'Radial magnetic field ($\mu$T)',fontsize=20)
 cbar.ax.tick_params(labelsize=20)
 
 plt.tight_layout()
-plt.savefig('../../paper/figures/jup_bench.pdf',
-            dpi=200,bbox_inches='tight')
+#plt.savefig('../../paper/figures/jup_bench.pdf',
+#            dpi=200,bbox_inches='tight')
+plt.show()
