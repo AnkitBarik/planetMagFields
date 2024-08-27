@@ -223,6 +223,10 @@ We filter the surface field to degrees > 4 and orders > 3.
 Potential extrapolation
 ************************
 
+.. warning::
+
+   Potential extrapolation prior to v1.5.1 had a bug and the extrapolated fields would be overestimated. Please take care!
+
 The :py:func:`Planet.extrapolate <planetmagfields.Planet.extrapolate>` performs a potential extrapolation of a planet's magnetic field. The functions are present in the ``potextra`` module. This uses the `SHTns <https://bitbucket.org/nschaeff/shtns>`_ library for spherical harmonic transforms.
 Usage example:
 
