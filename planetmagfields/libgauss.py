@@ -231,7 +231,7 @@ def get_spec(glm,hlm,idx,lmax,mmax,r=1.0):
             for m in range(l+1):
                 E[l] += (l+1) * r**(-2*l-4) *(np.abs(glm[idx[l,m]])**2 + np.abs(hlm[idx[l,m]])**2)
 
-        emag_10 = 2 * r**(-2*l-4)* np.abs(glm[idx[1,0]])**2
+        emag_10 = 2 * r**(-2*1-4)* np.abs(glm[idx[1,0]])**2
     return E, emag_10
 
 def filt_Gauss(glm,hlm,lmax,model_mmax,idx,larr=None,marr=None,
