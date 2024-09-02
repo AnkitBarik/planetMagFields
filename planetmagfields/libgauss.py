@@ -221,18 +221,30 @@ def get_spec(glm,hlm,idx,lmax,mmax,r=1.0):
     """
 
     E = np.zeros(lmax+1)
+    E_symm = 0.
+    E_antisymm = 0.
+    E_axisymm = 0.
 
     if mmax == 0:
         for l in range(1,lmax+1):
             E[l] = (l+1) * r**(-2*l-4) *(np.abs(glm[l])**2 + np.abs(hlm[l])**2)
         emag_10 = E[1]
+        E_symm = np.sum(E[1::2])
+        E_antisymm = np.sum(E[::2])
+        E_axisymm = np.sum(E)
     else:
         for l in range(1,lmax+1):
             for m in range(l+1):
-                E[l] += (l+1) * r**(-2*l-4) *(np.abs(glm[idx[l,m]])**2 + np.abs(hlm[idx[l,m]])**2)
+                emag_lm = (l+1) * r**(-2*l-4) *(np.abs(glm[idx[l,m]])**2 + np.abs(hlm[idx[l,m]])**2)
+                E[l] += emag_lm
+                if ( (l-m)%2 == 0 ):
+                    E_symm += emag_lm
+                else:
+                    E_antisymm += emag_lm
+            E_axisymm += (l+1) * r**(-2*l-4) *(np.abs(glm[idx[l,0]])**2 + np.abs(hlm[idx[l,0]])**2)
 
         emag_10 = 2 * r**(-2*1-4)* np.abs(glm[idx[1,0]])**2
-    return E, emag_10
+    return E, emag_10, E_symm, E_antisymm, E_axisymm
 
 def filt_Gauss(glm,hlm,lmax,model_mmax,idx,larr=None,marr=None,
                lCutMin=0,lCutMax=None,mmin=0,mmax=None):

@@ -369,12 +369,15 @@ class Planet:
         -------
         None
         """
-        self.emag_spec, emag_10 = get_spec(self.glm,self.hlm,self.idx,self.lmax,
-                                           self.mmax,r=r)
+        self.emag_spec, emag_10, self.emag_symm, self.emag_antisymm, self.emag_axi \
+            = get_spec(self.glm,self.hlm,
+                       self.idx,self.lmax,
+                       self.mmax,r=r)
         l = np.arange(self.lmax+1)
 
         self.dip_tot = self.emag_spec[1]/sum(self.emag_spec)
         self.dipolarity = emag_10/sum(self.emag_spec)
+        self.emag_tot = sum(self.emag_spec)
         if iplot:
             plt.figure(figsize=(7,7))
             plot_spec(l,self.emag_spec,r,self.name)
