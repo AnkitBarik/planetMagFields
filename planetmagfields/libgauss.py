@@ -218,6 +218,12 @@ def get_spec(glm,hlm,idx,lmax,mmax,r=1.0):
         Magnetic energy in spherical harmonic degrees
     emag_10 : float
         Magnetic energy in the axial dipole
+    E_symm : float
+        Equatorially symmetric magnetic energy
+    E_antisymm : float
+        Equatorially anti-symmetric magnetic energy
+    E_axisymm : float
+        Axisymmetric magnetic energy
     """
 
     E = np.zeros(lmax+1)

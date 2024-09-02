@@ -106,12 +106,12 @@ This can be compared with Fig. 1 g from `Moore et al. 2018 <https://doi.org/10.1
 :py:func:`Planet.spec() <planetmagfields.Planet.spec>`
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-This function computes the Lowes spectrum of a planet at a given radius. It adds an array ``p.emag_spec`` which contains the energy at different spherical harmonic degrees and two variables ``p.dipolarity`` and ``p.dip_tot`` which provide the fraction of energies in the axial dipole and the total dipole with respect to the total energy at all degrees. Usage example:
+This function computes the Lowes spectrum of a planet at a given radius. It adds an array ``p.emag_spec`` which contains the energy at different spherical harmonic degrees and two variables ``p.dipolarity`` and ``p.dip_tot`` which provide the fraction of energies in the axial dipole and the total dipole with respect to the total energy at all degrees. In addition, it provides equatorially symmetric and antisymmetric as well as axisymmetric contributions to the Lowes energy spectrum. Usage example:
 
 .. code-block:: python
 
    from planetmagfields import Planet
-   p = Planet(name='jupiter',model='jrm09')
+   p = Planet(name='jupiter',model='jrm33')
    p.spec()
 
 
@@ -119,17 +119,26 @@ will provide variables
 
 .. code-block:: python
 
-   In [8]: p.dipolarity
-   Out[8]: 0.7472047129875864
+   In [22]: p.dipolarity
+   Out[22]: 0.747204704567949
 
-   In [9]: p.dip_tot
-   Out[9]: 0.7719205112704368
+   In [23]: p.dip_tot
+   Out[23]: 0.7719205020945153
 
-   In [10]: p.emag_spec
-   Out[10]:
-   array([0.00000000e+00, 3.47735422e+11, 2.36340423e+10, 2.12851278e+10,
-         1.75661779e+10, 1.92219842e+10, 9.91200756e+09, 3.34535475e+09,
-         3.95317971e+09, 2.59333412e+09, 1.23423769e+09])
+   In [24]: p.emag_spec
+   Out[24]:
+   array([0.00000000e+00, 3.47735401e+11, 2.36340427e+10, 2.12851283e+10,
+         1.75661770e+10, 1.92219833e+10, 9.91200748e+09, 3.34535482e+09,
+         3.95317968e+09, 2.59333418e+09, 1.23423771e+09])
+
+   In [25]: p.emag_symm/p.emag_tot # Symmetric part
+   Out[25]: 0.16062699807374292
+
+   In [26]: p.emag_antisymm/p.emag_tot # Anti-symmetric part
+   Out[26]: 0.8393730019262573
+
+   In [27]: p.emag_axi/p.emag_tot # Axisymmetric part
+   Out[27]: 0.7768733455808511
 
 
 and will produce Jupiter's surface spectrum:
@@ -138,7 +147,7 @@ and will produce Jupiter's surface spectrum:
    :width: 400
    :align: center
 
-The plotting can be suppressed setting the logical `p.spec(iplot=False)`.
+The plotting can be suppressed setting the logical `p.spec(iplot=False)`. A different radius other than surface can be selected using the `p.spec(r=0.8)` parameter. API documentation : :py:func:`Planet.spec() <planetmagfields.Planet.spec>`
 
 .. _secVts:
 
