@@ -22,7 +22,7 @@ class Planet:
     """
 
     def __init__(self,name='earth',model=None,year=None,
-                 r=1.0,nphi=256,datDir=stdDatDir,info=True):
+                 r=1.0,nphi=256,datDir=stdDatDir,unit='muT',info=True):
         """
         Initialization of the Planet class.
 
@@ -40,6 +40,9 @@ class Planet:
             Data directory, where the Gauss coefficient data is present,
             named as <planetname>.dat, the standard directory is ./data,
             by default stdDatDir
+        unit : str, optional
+            Units of magnetic field, can be 'nT', 'muT' or 'Gauss' for nanoTeslas,
+            microTeslas and Gauss, respectively. By default, 'muT'
         info : bool, optional
             If True, prints some information about the planet, by default True
         """
@@ -47,6 +50,17 @@ class Planet:
         self.name   = name.lower()
         self.nphi   = nphi
         self.ntheta = nphi//2
+        self.unit   = unit
+
+        if self.unit.lower() == 'mut':
+            self.unitfac = 1e-3
+            self.unitlabel = '$\mu$T'
+        elif self.unit.lower() == 'nt':
+            self.unitfac = 1.
+            self.unitlabel = 'nT'
+        elif self.unit.lower() == 'gauss':
+            self.unitfac = 1e-5
+            self.unitlabel = 'Gauss'
 
         #Automatic selection of latest model
         if model is None:
@@ -86,6 +100,8 @@ class Planet:
                                                                         nphi=self.nphi,
                                                                         ntheta=self.ntheta,
                                                                         info=info)
+
+        self.Br *= self.unitfac
 
         self.phi = self.p2D[:,0]
         self.theta = self.th2D[0,:]
@@ -129,11 +145,12 @@ class Planet:
             self.p2D, self.th2D, self.Br, self.dipTheta, self.dipPhi = \
                     getBr(planet=self,r=r,info=False)
             self.r = r
+            self.Br *= self.unitfac
             ax,cbar,proj = plotSurf(self.p2D,self.th2D,self.Br,
                                     levels=levels,cmap=cmap,proj=proj,
                                     vmin=vmin,vmax=vmax)
 
-        cbar.ax.set_xlabel(r'Radial magnetic field ($\mu$T)',fontsize=25)
+        cbar.ax.set_xlabel(r'Radial magnetic field (%s)' %self.unitlabel,fontsize=25)
         cbar.ax.tick_params(labelsize=20)
 
         if r==1:
@@ -182,6 +199,10 @@ class Planet:
         self.br_ex,self.btheta_ex,self.bphi_ex \
             = extrapot(bpol,self.idx,self.lmax,self.mmax,1,rout,self.nphi)
 
+        self.br_ex     *= self.unitfac
+        self.btheta_ex *= self.unitfac
+        self.bphi_ex   *= self.unitfac
+
     def orbit_path(self,r,theta,phi):
         """Extrapolates the magnetic field along an orbit trajectory.
            Assigns objects self.br_orb, self.btheta_orb, self.bphi_orb
@@ -205,6 +226,10 @@ class Planet:
         self.br_orb, self.btheta_orb, self.bphi_orb\
             = get_field_along_path(bpol,self.idx,self.lmax,self.mmax,
                                    1,r,theta,phi)
+
+        self.br_orb     *= self.unitfac
+        self.btheta_orb *= self.unitfac
+        self.bphi_orb   *= self.unitfac
 
     def writeVtsFile(self,potExtra=False,ratio_out=2,nrout=32):
         """
@@ -238,6 +263,10 @@ class Planet:
             brout = self.Br
             btout = np.zeros_like(self.Br)
             bpout = np.zeros_like(self.Br)
+
+        brout *= self.unitfac
+        btout *= self.unitfac
+        bpout *= self.unitfac
 
         writeVts(self.name,brout,btout,bpout,rout,self.theta,self.phi)
 
@@ -305,8 +334,9 @@ class Planet:
                            marr=self.marr_filt,lCutMin=self.lCutMin,lCutMax=self.lCutMax,
                            mmin=self.mmin_filt,mmax=self.mmax_filt)
 
-        self.Br_filt = 1e-3*getB(self.lmax,self.mmax,self.glm_filt,self.hlm_filt,
-                                 self.idx,self.r_filt,self.p2D,self.th2D,planetname=self.name)
+        self.Br_filt = getB(self.lmax,self.mmax,self.glm_filt,self.hlm_filt,
+                            self.idx,self.r_filt,self.p2D,self.th2D,planetname=self.name)
+        self.Br_filt *= self.unitfac
 
         if iplot:
             plt.figure(figsize=(12,6.75))
@@ -342,7 +372,7 @@ class Planet:
                 elif self.mmax_filt < self.lmax:
                     elllabel += r', $m \leq %d$' %self.mmax_filt
 
-            cbar.ax.set_xlabel(r'Radial magnetic field ($\mu$T)',fontsize=25)
+            cbar.ax.set_xlabel(r'Radial magnetic field (%s)' %self.unitlabel,fontsize=25)
             cbar.ax.tick_params(labelsize=20)
 
             if proj.lower() != 'hammer' and self.name == 'earth':

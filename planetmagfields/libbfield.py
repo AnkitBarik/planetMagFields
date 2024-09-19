@@ -50,7 +50,7 @@ def getBr(planet, r=1.0, nphi=256, ntheta=128, info=True):
               r,
               p2D,
               th2D,
-              planetname=planet.name) * 1e-3
+              planetname=planet.name)
 
     dipTheta = 0
     dipPhi = 0
@@ -73,7 +73,7 @@ def getBr(planet, r=1.0, nphi=256, ntheta=128, info=True):
     return p2D, th2D, Br, dipTheta, dipPhi
 
 def plotAllFields(datDir=stdDatDir,r=1.0,levels=30,cmap='RdBu_r',
-                  proj='Mollweide',vmin=None,vmax=None):
+                  proj='Mollweide',unit='muT',vmin=None,vmax=None):
     """
     Plots fields of all the planets for which data is available. It's provided in
     utils.planetlist.
@@ -109,7 +109,7 @@ def plotAllFields(datDir=stdDatDir,r=1.0,levels=30,cmap='RdBu_r',
     plt.figure(figsize=(12,12))
 
     for k, name in enumerate(planetlist):
-        planet = Planet(name=name,datDir=datDir,r=r,info=False)
+        planet = Planet(name=name,datDir=datDir,r=r,info=False,unit=unit)
 
         if name == "ganymede":
             nplot = 8
@@ -141,6 +141,6 @@ def plotAllFields(datDir=stdDatDir,r=1.0,levels=30,cmap='RdBu_r',
     print('|---------|------|-------|')
 
     if r == 1:
-        plt.suptitle(r'Radial magnetic field ($\mu$T) at surface', fontsize=20)
+        plt.suptitle(r'Radial magnetic field (%s) at surface' %planet.unitlabel, fontsize=20)
     else:
-        plt.suptitle(r'Radial magnetic field ($\mu$T) at $r/r_{\rm surface} = %.2f$' %r, fontsize=20)
+        plt.suptitle(r'Radial magnetic field (%s) at $r/r_{\rm surface} = %.2f$' %(planet.unitlabel,r), fontsize=20)

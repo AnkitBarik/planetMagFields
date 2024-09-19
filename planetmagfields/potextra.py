@@ -124,9 +124,9 @@ def extrapot(bpol,idx,lmax,model_mmax,rcmb,rout,nphi=None):
 
         btout[...,k], bpout[...,k] = sh.synth(slm,btor)
 
-    brout = np.transpose(brout,(1,0,2))*1e-3 # Convert to microteslas
-    btout = np.transpose(btout,(1,0,2))*1e-3 # Convert to microteslas
-    bpout = np.transpose(bpout,(1,0,2))*1e-3 # Convert to microteslas
+    brout = np.transpose(brout,(1,0,2))
+    btout = np.transpose(btout,(1,0,2))
+    bpout = np.transpose(bpout,(1,0,2))
 
     return brout, btout, bpout
 
@@ -219,10 +219,6 @@ def get_field_along_path(bpol,idx,lmax,model_mmax,
         brout[k], btout[k], bpout[k] = sh.SHqst_to_point(qlm,slm,tlm,
                                                          np.cos(theta[k]),
                                                          phi[k])
-
-    brout *= 1e-3 # Convert to microteslas
-    btout *= 1e-3 # Convert to microteslas
-    bpout *= 1e-3 # Convert to microteslas
 
     return brout, btout, bpout
 

@@ -28,6 +28,9 @@ parser.add_argument('-m','--mapproj',type=str,default='Mollweide',
 parser.add_argument('-o','--model',type=str,default=None,
                     help='Model to be used, uses the latest model by default (default : None)',
                     dest='model')
+parser.add_argument('-u','--unit',type=str,default='muT',
+                    help='Unit of magnetic field (default : muT)',
+                    dest='unit')
 parser.add_argument('--vmin',type=float,default=None,
                     help='Minimum magnitude of colorscale (default : None)',
                     dest='vmin')
@@ -45,10 +48,11 @@ proj   = args.proj
 model  = args.model
 vmin   = args.vmin
 vmax   = args.vmax
+unit   = args.unit
 
 if planet == 'all':
     plotAllFields(datDir='./planetmagfields/data/',r=r,levels=levels,cmap=cmap,
-                  proj=proj,vmin=vmin,vmax=vmax)
+                  proj=proj,unit=unit,vmin=vmin,vmax=vmax)
     plt.tight_layout()
     plt.subplots_adjust(top=0.895,
                         bottom=0.035,
