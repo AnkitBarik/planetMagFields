@@ -1,0 +1,51 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: planetMagFields
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Ankit
+    family-names: Barik
+    email: ankit.barik@gmail.com
+    affiliation: Johns Hopkins University
+    orcid: 'https://orcid.org/0000-0001-5747-669X'
+  - given-names: Regupathi
+    family-names: Angappan
+    email: rangapp1@jhu.edu
+    orcid: 'https://orcid.org/0000-0002-6258-0659'
+    affiliation: Johns Hopkins University
+identifiers:
+  - type: doi
+    value: 10.21105/joss.06677
+    description: JOSS paper
+repository-code: 'https://github.com/AnkitBarik/planetMagFields'
+url: 'https://ankitbarik.github.io/planetMagFields/'
+abstract: >-
+  planetMagFields is a package that provides an easy
+  interface to plot and analyze planetary magnetic field
+  data.
+keywords:
+  - planetary science
+  - magnetic fields
+  - planetary data
+license: GPL-3.0
+preferred-citation:
+  type: article
+  authors:
+  - family-names: "Barik"
+    given-names: "Ankit"
+    orcid: "https://orcid.org/0000-0001-5747-669X"
+  - family-names: "Angappan"
+    given-names: "Regupathi"
+    orcid: "https://orcid.org/0000-0002-6258-0659"
+  doi: "10.21105/joss.06677"
+  journal: "Journal of Open Source Software"
+  start: 6677
+  end: 6677
+  title: "planetMagFields: A Python package for analyzing and plotting planetary magnetic field data"
+  volume: 9
+  year: 2024
