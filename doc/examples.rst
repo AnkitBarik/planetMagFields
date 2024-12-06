@@ -30,8 +30,7 @@ This displays the some information about the planet
    Dipole tilt (degrees) = -9.410531
 
 
-and gives access to
-variables associated with the planet such as:
+and gives access to variables associated with the planet such as:
 
   * ``p.lmax`` : maximum spherical harmonic degree till which data is available
   * ``p.glm``, ``p.hlm``: the Gauss coefficients
@@ -40,6 +39,7 @@ variables associated with the planet such as:
   * ``p.dipPhi`` : dipole longitude ( in case zero longitude is known, applicable to Earth )
   * ``p.idx`` : indices to get values of Gauss coefficients
   * ``p.model`` : the :ref:`magnetic field model <secmodels>` used. Available models can be obtained using the :py:func:`get_models <planetmagfields.get_models>` function. Selects the latest available model when unspecified.
+  * ``p.unit`` : The unit for outputs for magnetic field components and plots, by default microTeslas. Can be nanoTeslas, microTeslas and Gauss and can be specified using specific strings 'muT', 'nuT' or 'Gauss' (case independent) while calling the :py:class:`planetmagfields.Planet` class. More details in :ref:`Units<secunits>`.
 
 Example using ``IPython``:
 
@@ -53,10 +53,10 @@ Example using ``IPython``:
    l_max = 10
    Dipole tilt (degrees) = 10.307870
 
-   In [3]: p.glm[p.idx[2,0]]      # g20
+   In [3]: p.glm[p.idx[2,0]]      # g20 in nT
    Out[3]: 11670.4
 
-   In [4]: p.hlm[p.idx[4,2]]      # h42
+   In [4]: p.hlm[p.idx[4,2]]      # h42 in nT
    Out[4]: 27811.2
 
 as well as the functions:
@@ -102,6 +102,8 @@ produces the following info about Jupiter and then plot that follows
    :align: center
 
 This can be compared with Fig. 1 g from `Moore et al. 2018 <https://doi.org/10.1038/s41586-018-0468-5>`_ .
+
+.. _secSpec:
 
 :py:func:`Planet.spec() <planetmagfields.Planet.spec>`
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

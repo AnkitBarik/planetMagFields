@@ -4,9 +4,9 @@
    contain the root `toctree` directive.
 .. _secmodels:
 
-######################
-Magnetic field models
-######################
+################################
+Magnetic field models and units
+################################
 
 We have support for different field models for planets. They are listed below:
 
@@ -63,6 +63,21 @@ produces the surface magnetic field in the year 2009.
 .. image:: _static/images/earth_2009.png
    :width: 400
    :align: center
+
+.. _secUnits:
+
+Units
+******
+
+In *physical space*, i.e., while plotting or extrapolating and obtaining the three components of the field :math:`B_r,B_\theta,B_\phi`, the default units are microTeslas. This can be changed while calling the :py:class:`planetmagfields.Planet` class:
+
+.. code-block:: python
+
+   In [1]: from planetmagfields import Planet
+
+   In [2]: p = Planet(name='earth',year=2009,units='Gauss') #Will produce Br plots in Gauss
+
+For *spectral space*, such as Gauss coefficients :math:`g_l^m` and :math:`h_l^m` (see section :ref:`Mathematics <secmath>`) and Lowes spectrum (section :ref:`Planet.spec()<secSpec>`) are always in nanoTeslas (nT).
 
 .. Indices and tables
 .. ==================
