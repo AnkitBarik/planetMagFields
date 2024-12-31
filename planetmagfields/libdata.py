@@ -103,8 +103,8 @@ def get_data(datDir,planetname="earth",model=None,year=2020):
 
         else: # Earth, accounting for linear SV
 
-            if year > 2025:
-                print("IGRF is only defined till 2025,please be careful while selecting year!")
+            if year > 2030:
+                print("IGRF-14 is only defined till 2030,please be careful while selecting year!")
 
             years = 1900 + 5*np.arange(dat.shape[1])
 
