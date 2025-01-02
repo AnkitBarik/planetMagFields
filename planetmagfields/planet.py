@@ -65,7 +65,7 @@ class Planet:
         #Automatic selection of latest model
         if model is None:
             if self.name =='earth':
-                model = 'igrf13'
+                model = 'igrf14'
             elif self.name =='mercury':
                 model = 'wardinski2019'
             elif self.name == 'jupiter':

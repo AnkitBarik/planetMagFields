@@ -51,7 +51,7 @@ def test_potextra_internal_m0():
     np.testing.assert_allclose(err, 0, rtol=1e-2, atol=1e-2)
 
 def test_orbit():
-    p = Planet(name='earth',r=1,nphi=256,info=False,model='igrf13')
+    p = Planet(name='earth',r=1,nphi=256,info=False,model='igrf14')
     p.extrapolate([2])
     p.orbit_path([2],[p.theta[10]],[p.phi[10]])
 
