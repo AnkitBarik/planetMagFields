@@ -223,8 +223,8 @@ class Planet:
         bpol = get_pol_from_Gauss(self.name,self.glm,self.hlm,
                             self.lmax,self.mmax,self.idx)
 
-        self.br_orb, self.btheta_orb, self.bphi_orb\
-            = get_field_along_path(bpol,self.idx,self.lmax,self.mmax,
+        self.br_orb,self.btheta_orb,self.bphi_orb=\
+                get_field_along_path(bpol,self.idx,self.lmax,self.mmax,
                                    1,r,theta,phi)
 
         self.br_orb     *= self.unitfac

@@ -320,7 +320,7 @@ def filt_Gauss(glm,hlm,lmax,model_mmax,idx,larr=None,marr=None,
                 for ell in range(lCutMin):
                         glm_filt[idx[ell,:]] = 0.
                         hlm_filt[idx[ell,:]] = 0.
-                for ell in range(lCutMax,lmax+1):
+                for ell in range(lCutMax+1,lmax+1):
                         glm_filt[idx[ell,:]] = 0.
                         hlm_filt[idx[ell,:]] = 0.
 
@@ -358,7 +358,7 @@ def filt_Gauss(glm,hlm,lmax,model_mmax,idx,larr=None,marr=None,
                 for ell in range(lCutMin):
                         glm_filt[ell] = 0.
                         hlm_filt[ell] = 0.
-                for ell in range(lCutMax,lmax+1):
+                for ell in range(lCutMax+1,lmax+1):
                         glm_filt[ell] = 0.
                         hlm_filt[ell] = 0.
 
