@@ -26,7 +26,7 @@ name = 'planetMagFields'
 version = get_version('planetmagfields/__init__.py')
 description = '''Routines to plot magnetic fields
  of planets in our solar system '''
-copyright = '2023 Ankit Barik'
+copyright = '2025 Ankit Barik'
 
 
 setuptools.setup(
