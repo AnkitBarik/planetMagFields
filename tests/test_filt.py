@@ -4,14 +4,38 @@ import sys
 sys.path.append(os.path.abspath('../'))
 from planetmagfields import Planet
 
-def test_filt():
+def test_filt_sat():
     p = Planet(name='saturn',nphi=256,info=False,model='cassini11+')
     p.plot_filt(r=0.9,lCutMin=3,iplot=False)
 
-    br_ref = np.loadtxt('./saturn/br_filt_ref.dat')
+    br_ref = np.loadtxt('./saturn/br_filt_ref_sat.dat')
     br = p.Br_filt
 
     percent_err = np.abs( (br_ref - br)/br_ref ) * 100
 
     np.testing.assert_allclose(percent_err, 0, rtol=0.1,
                                 atol=0.1)
+
+def test_filt_earth():
+    p = Planet(name='earth',nphi=256,year=2020,info=False,model='igrf14')
+    p.plot_filt(larr=[1,2,4],marr=[4],iplot=False)
+
+    br_ref = np.loadtxt('./earth/br_filt_ref_earth.dat')
+    br = p.Br_filt
+
+    percent_err = np.abs( (br_ref - br)/br_ref ) * 100
+
+    np.testing.assert_allclose(percent_err, 0, rtol=0.1,
+                                atol=0.1)
+
+def test_filt_consistent():
+    from copy import deepcopy
+
+    pl = Planet(name="earth",year=2020)
+    pl.plot_filt(lCutMax=pl.lmax,iplot=False)
+    brfilt1 = deepcopy(pl.Br_filt)
+    pl.plot_filt(lCutMin=0,iplot=False)
+    brfilt2 = deepcopy(pl.Br_filt)
+    err = brfilt1 - brfilt2
+
+    np.testing.assert_allclose(err, 0, rtol=1e-12, atol=1e-12)
