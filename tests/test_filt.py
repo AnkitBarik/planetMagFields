@@ -31,7 +31,7 @@ def test_filt_earth():
 def test_filt_consistent():
     from copy import deepcopy
 
-    pl = Planet(name="earth",year=2020)
+    pl = Planet(name="earth",year=2020,nphi=256,info=False,model='igrf14')
     pl.plot_filt(lCutMax=pl.lmax,iplot=False)
     brfilt1 = deepcopy(pl.Br_filt)
     pl.plot_filt(lCutMin=0,iplot=False)
