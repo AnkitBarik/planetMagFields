@@ -231,7 +231,7 @@ class Planet:
         self.btheta_orb *= self.unitfac
         self.bphi_orb   *= self.unitfac
 
-    def writeVtsFile(self,potExtra=False,ratio_out=2,nrout=32):
+    def writeVtsFile(self,potExtra=False,ratio_out=2,nrout=32,r_planet=1):
         """
         Writes an unstructured vtk (.vts) file for 3D visualization. Uses the
         SHTns library for potential extrapolation and the pyevtk library for
@@ -246,6 +246,8 @@ class Planet:
             continued, scaled to planetary radius, by default 2
         nrout : int, optional
             Number of radial grid levels, by default 32
+        r_planet : float, optional
+            Radius of planet to get coordinates in dimensional units
 
         Returns
         -------
@@ -264,11 +266,7 @@ class Planet:
             btout = np.zeros_like(self.Br)
             bpout = np.zeros_like(self.Br)
 
-        brout *= self.unitfac
-        btout *= self.unitfac
-        bpout *= self.unitfac
-
-        writeVts(self.name,brout,btout,bpout,rout,self.theta,self.phi)
+        writeVts(self.name,brout,btout,bpout,rout,self.theta,self.phi,r_planet)
 
     ## Filtered plots
 

@@ -317,7 +317,7 @@ def get_cart(vr,vt,vp,th3D,p3D):
 
     return vx,vy,vz
 
-def writeVts(name,br,btheta,bphi,r,theta,phi):
+def writeVts(name,br,btheta,bphi,r,theta,phi,r_planet=1):
     """
     Writes an unstructured vtk file for 3D visualization.
 
@@ -343,7 +343,7 @@ def writeVts(name,br,btheta,bphi,r,theta,phi):
     None
     """
 
-    r3D,th3D,p3D, x,y,z, s = get_grid(r,theta,phi)
+    r3D,th3D,p3D, x,y,z, s = get_grid(r*r_planet,theta,phi)
 
     print("grid shape=",th3D.shape)
 
