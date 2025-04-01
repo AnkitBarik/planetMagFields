@@ -365,3 +365,63 @@ def writeVts(name,br,btheta,bphi,r,theta,phi,r_planet=1):
                                           "Mag Field":(bx, by,bz)})
 
     print("Output written to %s!" %name)
+
+
+def export_xshells(planet, filename, r=1.0, info=True):
+    """
+    Writes the potential magnetic field of a planet to a file readable by the
+    xshells simulation code. See https://nschaeff.bitbucket.io/xshells
+
+    Parameters
+    ----------
+    planet : Planet class instance
+        Class containing Gauss coefficients,
+    filename : string
+        Name of file to export to
+    r : float, optional
+        Radial level for radial field computation, by default 1.0
+    info : bool, optional
+        Whether to print information about the planet, by default True
+
+    Returns
+    -------
+    None
+    """
+
+    lmax = planet.lmax
+    mmax = planet.mmax
+    nlm = (mmax+1)*(lmax+1) - (mmax*(mmax+1))//2;
+    bpol = np.zeros(nlm, dtype=complex)
+
+    glm, hlm = planet.glm, planet.hlm
+    idx = planet.idx
+
+    i=1
+    for l in range(1,lmax+1):   # m=0
+        f = r**(-l-2)
+        bpol[i] = glm[idx[l,0]] * f / l
+        i+=1
+
+    for m in range(1,mmax+1):
+        f = sqrt(0.5) * r**(-l-2)
+        for l in range(m,lmax+1):
+            ix = idx[l,m]
+            bpol[i] = (glm[ix] + 1.j*hlm[ix]) * f / l
+            i+=1
+
+    f = open(filename,"w")
+    f.write("%%XS Pol lmax=%d mmax=%d\n" % (lmax,mmax))
+    f.write("%%XS %s surface magnetic field from model %s, exported by planetMagFields, see https://github.com/AnkitBarik/planetMagFields\n" % (planet.name, planet.model))
+    for q in bpol:
+        f.write("%10.7g %10.7g\n" % (real(q),imag(q)))
+    f.close()
+
+    if info:
+        print(("Planet: %s" %planet.name.capitalize()))
+        print("Model: %s" %planet.model)
+        if planet.name == 'earth':
+            print("Year = %d" %planet.year)
+        print("To use as an imposed field in Xshells, modify your xshells.par file to set:")
+        print("  b = potential(%s)  # imposed from inner boundary" % filename)
+        print("or")
+        print("  b = potential(%s,out)  # imposed from outer boundary" % filename)
