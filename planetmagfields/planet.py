@@ -129,10 +129,15 @@ class Planet:
 
         Returns
         -------
-        None
+        fig : matplotlib.pyplot.figure instance
+            Figure handle
+        ax  : matplotlib.axes.Axes instance
+            Figure axis
+        cbar: matplotlib.axes.Axes instance
+            Colorbar axis
         """
 
-        plt.figure(figsize=(12,6.75))
+        fig = plt.figure(figsize=(12,6.75))
 
         if r is None:
             r = self.r
@@ -173,6 +178,8 @@ class Planet:
 
         ax.set_title(title,fontsize=25,pad=20)
         plt.tight_layout()
+
+        return fig, ax, cbar
 
 
     def extrapolate(self,rout):
@@ -310,7 +317,12 @@ class Planet:
 
         Returns
         -------
-        None
+        fig : matplotlib.pyplot.figure instance
+            Figure handle
+        ax  : matplotlib.axes.Axes instance
+            Figure axis
+        cbar: matplotlib.axes.Axes instance
+            Colorbar axis
         """
 
         self.larr_filt = larr
@@ -337,7 +349,7 @@ class Planet:
         self.Br_filt *= self.unitfac
 
         if iplot:
-            plt.figure(figsize=(12,6.75))
+            fig = plt.figure(figsize=(12,6.75))
 
             ax,cbar,proj = plotSurf(self.p2D,self.th2D,self.Br_filt,levels=levels,
                                     cmap=cmap,proj=proj,vmin=vmin,vmax=vmax)
@@ -377,6 +389,8 @@ class Planet:
                 ax.coastlines()
             ax.set_title(self.name.capitalize() + radLabel + elllabel,fontsize=25,pad=20)
             plt.tight_layout()
+
+            return fig, ax, cbar
 
 
     def spec(self,r=1.0,iplot=True):
