@@ -13,9 +13,9 @@ sys.path.insert(0, os.path.abspath('..'))
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = 'planetMagFields'
-copyright = '2024, Ankit Barik'
+copyright = '2025, Ankit Barik'
 author = 'Ankit Barik'
-release = '1.5.4'
+release = '1.5.5'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration

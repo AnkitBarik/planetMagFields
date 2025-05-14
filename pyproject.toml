@@ -1,6 +1,6 @@
 [project]
 name = "planetMagFields"
-version = "1.5.4"
+version = "1.5.5"
 authors = [
   { name="Ankit Barik", email="ankit.barik@gmail.com" },
 ]
@@ -37,6 +37,8 @@ dependencies = [
 
 map = ["cartopy"]
 potextra=["shtns"]
+vtk=["pyevtk"]
+all=["planetMagFields[map,potextra,vtk]"]
 
 [project.urls]
 Homepage = "https://ankitbarik.github.io/planetMagFields/"
