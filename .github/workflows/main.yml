@@ -41,7 +41,7 @@ jobs:
           python3 get-pip.py
           python3 -m pip install numpy scipy matplotlib pytest
           python3 -m pip install pyevtk
-          python3 -m pip install shtns
+          python3 -m pip install shtns==3.6.1
       - name: Run test
         run: |
           cd ${{github.workspace}}/tests
