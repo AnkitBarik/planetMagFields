@@ -1,6 +1,6 @@
 [project]
 name = "planetMagFields"
-version = "1.5.6"
+version = "1.5.8"
 authors = [
   { name="Ankit Barik", email="ankit.barik@gmail.com" },
 ]
