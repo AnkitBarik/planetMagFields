@@ -26,7 +26,7 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       # Runs a single command using the runners shell
       - name: Test shell
@@ -36,12 +36,13 @@ jobs:
       - name: Install pre-requisites
         run: |
           sudo apt-get update
-          sudo apt-get -y install libfftw3-dev gcc g++
+          sudo apt-get -y install libfftw3-dev gcc g++ libomp-dev
+          export CC=gcc
           wget https://bootstrap.pypa.io/get-pip.py
           python3 get-pip.py
           python3 -m pip install numpy scipy matplotlib pytest
           python3 -m pip install pyevtk
-          python3 -m pip install shtns==3.6.1
+          python3 -m pip install shtns
       - name: Run test
         run: |
           cd ${{github.workspace}}/tests
