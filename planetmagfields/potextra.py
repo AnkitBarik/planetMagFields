@@ -404,7 +404,7 @@ def export_xshells(planet, filename, r=1.0, info=True):
 
     for m in range(1,mmax+1):
         for l in range(m,lmax+1):
-            f = sqrt(0.5) * r**(-l-2)
+            f = np.sqrt(0.5) * r**(-l-2)
             ix = idx[l,m]
             bpol[i] = (glm[ix] + 1.j*hlm[ix]) * f / l
             i+=1
@@ -413,7 +413,7 @@ def export_xshells(planet, filename, r=1.0, info=True):
     f.write("%%XS Pol lmax=%d mmax=%d\n" % (lmax,mmax))
     f.write("%%XS %s surface magnetic field from model %s, exported by planetMagFields, see https://github.com/AnkitBarik/planetMagFields\n" % (planet.name, planet.model))
     for q in bpol:
-        f.write("%10.7g %10.7g\n" % (real(q),imag(q)))
+        f.write("%10.7g %10.7g\n" % (np.real(q),np.imag(q)))
     f.close()
 
     if info:
