@@ -210,34 +210,34 @@ class Planet:
         self.btheta_ex *= self.unitfac
         self.bphi_ex   *= self.unitfac
 
-    def orbit_path(self,r,theta,phi):
-        """Extrapolates the magnetic field along an orbit trajectory.
-           Assigns objects self.br_orb, self.btheta_orb, self.bphi_orb
-           which are extrpolated values of radial, co-latitudinal and
-           azimuthal components of the magnetic field, respectively.
-
-        Parameters
-        ----------
-        r : array_like
-            Array of radial distances
-        theta : array_like
-            Array of co-latitudes in radians
-        phi : array_like
-            Array of longitudes in radians
-        """
-        from .potextra import get_pol_from_Gauss, get_field_along_path
-
-        bpol = get_pol_from_Gauss(self.name,self.glm,self.hlm,
-                            self.lmax,self.mmax,self.idx)
-
-        self.br_orb,self.btheta_orb,self.bphi_orb=\
-                get_field_along_path(bpol,self.idx,self.lmax,self.mmax,
-                                   1,r,theta,phi)
-
-        self.br_orb     *= self.unitfac
-        self.btheta_orb *= self.unitfac
-        self.bphi_orb   *= self.unitfac
-
+#    def orbit_path(self,r,theta,phi):
+#        """Extrapolates the magnetic field along an orbit trajectory.
+#           Assigns objects self.br_orb, self.btheta_orb, self.bphi_orb
+#           which are extrpolated values of radial, co-latitudinal and
+#           azimuthal components of the magnetic field, respectively.
+#
+#        Parameters
+#        ----------
+#        r : array_like
+#            Array of radial distances
+#        theta : array_like
+#            Array of co-latitudes in radians
+#        phi : array_like
+#            Array of longitudes in radians
+#        """
+#        from .potextra import get_pol_from_Gauss, get_field_along_path
+#
+#        bpol = get_pol_from_Gauss(self.name,self.glm,self.hlm,
+#                            self.lmax,self.mmax,self.idx)
+#
+#        self.br_orb,self.btheta_orb,self.bphi_orb=\
+#                get_field_along_path(bpol,self.idx,self.lmax,self.mmax,
+#                                   1,r,theta,phi)
+#
+#        self.br_orb     *= self.unitfac
+#        self.btheta_orb *= self.unitfac
+#        self.bphi_orb   *= self.unitfac
+#
     def writeVtsFile(self,potExtra=False,ratio_out=2,nrout=32,r_planet=1):
         """
         Writes an unstructured vtk (.vts) file for 3D visualization. Uses the

@@ -251,43 +251,43 @@ Usage example:
    rout = np.linspace(1,ratio_out,nrout)
    p.extrapolate(rout) #Gives you three arrays p.br_ex, p.btheta_ex, p.bphi_ex
 
-.. _subsecOrbit:
+.. .. _subsecOrbit:
 
-Get field along a trajectory
-*****************************
+.. Get field along a trajectory
+.. *****************************
 
-.. warning::
+.. .. warning::
 
-   Potential extrapolation prior to v1.5.1 had a bug and the extrapolated fields would be overestimated. Please take care!
+..    Potential extrapolation prior to v1.5.1 had a bug and the extrapolated fields would be overestimated. Please take care!
 
 
-You can obtain field components along a trajectory (for example, obtained from NASA's `SPICE Toolkit <https://naif.jpl.nasa.gov/naif/toolkit.html>`_) using the function :py:func:`Planet.orbit_path <planetmagfields.Planet.orbit_path>`. This also uses the `SHTns <https://bitbucket.org/nschaeff/shtns>`_ library for spherical harmonic transforms. Usage example below using some points from the Cassini Grand Finale:
+.. You can obtain field components along a trajectory (for example, obtained from NASA's `SPICE Toolkit <https://naif.jpl.nasa.gov/naif/toolkit.html>`_) using the function :py:func:`Planet.orbit_path <planetmagfields.Planet.orbit_path>`. This also uses the `SHTns <https://bitbucket.org/nschaeff/shtns>`_ library for spherical harmonic transforms. Usage example below using some points from the Cassini Grand Finale:
 
-.. code-block:: python
+.. .. code-block:: python
 
-   from planetmagfields import Planet
-   p = Planet('saturn')
+..    from planetmagfields import Planet
+..    p = Planet('saturn')
 
-   r = [17.82905598, 17.82110528, 17.81314499, 17.80517584, 17.79719656] # Can also be numpy array
-   theta = [1.1865416 , 1.18632847, 1.18611515, 1.18590167, 1.18568798]
-   phi = [4.70867942, 4.70884014, 4.70900102, 4.70916207, 4.7093233 ]
+..    r = [17.82905598, 17.82110528, 17.81314499, 17.80517584, 17.79719656] # Can also be numpy array
+..    theta = [1.1865416 , 1.18632847, 1.18611515, 1.18590167, 1.18568798]
+..    phi = [4.70867942, 4.70884014, 4.70900102, 4.70916207, 4.7093233 ]
 
-   p.orbit_path(r,theta,phi)
-   print(p.br_orb)
-   print(p.btheta_orb)
-   print(p.bphi_orb)
+..    p.orbit_path(r,theta,phi)
+..    print(p.br_orb)
+..    print(p.btheta_orb)
+..    print(p.bphi_orb)
 
-This will provide the outputs:
+.. This will provide the outputs:
 
-.. code-block:: console
+.. .. code-block:: console
 
-    Planet: Saturn
-    Model: cassini11+
-    l_max = 14
-    Dipole tilt (degrees) = 0.000000
-    [0.00278097 0.00278617 0.00279139 0.00279662 0.00280187]
-    [0.00347406 0.00347843 0.00348281 0.00348721 0.00349161]
-    [0. 0. 0. 0. 0.]
+..     Planet: Saturn
+..     Model: cassini11+
+..     l_max = 14
+..     Dipole tilt (degrees) = 0.000000
+..     [0.00278097 0.00278617 0.00279139 0.00279662 0.00280187]
+..     [0.00347406 0.00347843 0.00348281 0.00348721 0.00349161]
+..     [0. 0. 0. 0. 0.]
 
 .. _secMagFieldScript:
 
