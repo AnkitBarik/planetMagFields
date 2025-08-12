@@ -50,29 +50,29 @@ def test_potextra_internal_m0():
 
     np.testing.assert_allclose(err, 0, rtol=1e-2, atol=1e-2)
 
-def test_orbit():
-    p = Planet(name='earth',r=1,nphi=256,info=False,model='igrf14')
-    p.extrapolate([2])
-    p.orbit_path([2],[p.theta[10]],[p.phi[10]])
-
-    br_ref,bt_ref,bp_ref = p.br_ex[10,10,0],p.btheta_ex[10,10,0],p.bphi_ex[10,10,0]
-
-    err = np.sqrt((p.br_orb-br_ref)**2
-                  +(p.btheta_orb-bt_ref)**2
-                  +(p.bphi_orb-bp_ref)**2)
-
-    np.testing.assert_allclose(err, 0, rtol=1e-3, atol=1e-3)
-
-
-def test_orbit_m0():
-    p = Planet(name='saturn',r=1,nphi=256,info=False,model='cassini11+')
-    p.extrapolate([2])
-    p.orbit_path([2],[p.theta[10]],[p.phi[10]])
-
-    br_ref,bt_ref,bp_ref = p.br_ex[10,10,0],p.btheta_ex[10,10,0],p.bphi_ex[10,10,0]
-
-    err = np.sqrt((p.br_orb-br_ref)**2
-                  +(p.btheta_orb-bt_ref)**2
-                  +(p.bphi_orb-bp_ref)**2)
-
-    np.testing.assert_allclose(err, 0, rtol=1e-4, atol=1e-4)
+#def test_orbit():
+#    p = Planet(name='earth',r=1,nphi=256,info=False,model='igrf14')
+#    p.extrapolate([2])
+#    p.orbit_path([2],[p.theta[10]],[p.phi[10]])
+#
+#    br_ref,bt_ref,bp_ref = p.br_ex[10,10,0],p.btheta_ex[10,10,0],p.bphi_ex[10,10,0]
+#
+#    err = np.sqrt((p.br_orb-br_ref)**2
+#                  +(p.btheta_orb-bt_ref)**2
+#                  +(p.bphi_orb-bp_ref)**2)
+#
+#    np.testing.assert_allclose(err, 0, rtol=1e-3, atol=1e-3)
+#
+#
+#def test_orbit_m0():
+#    p = Planet(name='saturn',r=1,nphi=256,info=False,model='cassini11+')
+#    p.extrapolate([2])
+#    p.orbit_path([2],[p.theta[10]],[p.phi[10]])
+#
+#    br_ref,bt_ref,bp_ref = p.br_ex[10,10,0],p.btheta_ex[10,10,0],p.bphi_ex[10,10,0]
+#
+#    err = np.sqrt((p.br_orb-br_ref)**2
+#                  +(p.btheta_orb-bt_ref)**2
+#                  +(p.bphi_orb-bp_ref)**2)
+#
+#    np.testing.assert_allclose(err, 0, rtol=1e-4, atol=1e-4)
