@@ -53,7 +53,7 @@ You can also use `setup.py` to install `planetMagFields`:
 
 $ git clone https://github.com/AnkitBarik/planetMagFields
 $ cd planetMagFields
-$ pytho3 setup.py install --user
+$ python3 setup.py install --user
 ```
 
 Or using `pip`:
