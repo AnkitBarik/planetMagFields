@@ -1,0 +1,578 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="./">
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="4. Mathematics" href="math.html"><link rel="prev" title="2. Installation" href="installation.html">
+
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+        <title>3. Features and examples - planetMagFields 1.5.8 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #eeffcc;
+  --color-code-foreground: black;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #272822;
+  --color-code-foreground: #f8f8f2;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #272822;
+  --color-code-foreground: #f8f8f2;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle site navigation sidebar">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc" aria-label="Toggle table of contents sidebar">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="index.html"><div class="brand">planetMagFields 1.5.8 documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="index.html">
+  
+  <span class="sidebar-brand-text">planetMagFields 1.5.8 documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="prereq.html">1. Prerequisites</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">2. Installation</a></li>
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">3. Features and examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="math.html">4. Mathematics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="models.html">5. Magnetic field models and units</a></li>
+<li class="toctree-l1"><a class="reference internal" href="projections.html">6. Map projections</a></li>
+<li class="toctree-l1"><a class="reference internal" href="jupyter.html">7. Jupyter Notebook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">8. Python API</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="view-this-page">
+  <a class="muted-link" href="_sources/examples.rst.txt" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div>
+<div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <section id="features-and-examples">
+<span id="secexamples"></span><h1><span class="section-number">3. </span>Features and examples<a class="headerlink" href="#features-and-examples" title="Link to this heading">¶</a></h1>
+<section id="the-planet-class">
+<h2><span class="section-number">3.1. </span>The <a class="reference internal" href="api.html#planetmagfields.Planet" title="planetmagfields.Planet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Planet</span></code></a> class<a class="headerlink" href="#the-planet-class" title="Link to this heading">¶</a></h2>
+<p>This gives access to all the relevant properties of a planet and has methods to plot
+the field and write a <cite>vts</cite> file for 3D visualization. Usage:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">planetmagfields</span><span class="w"> </span><span class="kn">import</span> <span class="n">Planet</span>
+<span class="n">p</span> <span class="o">=</span> <span class="n">Planet</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;earth&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This displays the some information about the planet</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>Planet:<span class="w"> </span>Earth
+<span class="nv">l_max</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">13</span>
+Dipole<span class="w"> </span>tilt<span class="w"> </span><span class="o">(</span>degrees<span class="o">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>-9.410531
+</pre></div>
+</div>
+<p>and gives access to variables associated with the planet such as:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">p.lmax</span></code> : maximum spherical harmonic degree till which data is available</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">p.glm</span></code>, <code class="docutils literal notranslate"><span class="pre">p.hlm</span></code>: the Gauss coefficients</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">p.Br</span></code> : computed radial magnetic field at surface</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">p.dipTheta</span></code> : dipole tilt with respect to the rotation axis</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">p.dipPhi</span></code> : dipole longitude ( in case zero longitude is known, applicable to Earth )</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">p.idx</span></code> : indices to get values of Gauss coefficients</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">p.model</span></code> : the <a class="reference internal" href="models.html#secmodels"><span class="std std-ref">magnetic field model</span></a> used. Available models can be obtained using the <a class="reference internal" href="api.html#planetmagfields.get_models" title="planetmagfields.get_models"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_models</span></code></a> function. Selects the latest available model when unspecified.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">p.unit</span></code> : The unit for outputs for magnetic field components and plots, by default microTeslas. Can be nanoTeslas, microTeslas and Gauss and can be specified using specific strings ‘muT’, ‘nuT’ or ‘Gauss’ (case independent) while calling the <a class="reference internal" href="api.html#planetmagfields.Planet" title="planetmagfields.Planet"><code class="xref py py-class docutils literal notranslate"><span class="pre">planetmagfields.Planet</span></code></a> class. More details in <a class="reference internal" href="models.html#secunits"><span class="std std-ref">Units</span></a>.</p></li>
+</ul>
+</div></blockquote>
+<p>Example using <code class="docutils literal notranslate"><span class="pre">IPython</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="kn">from</span><span class="w"> </span><span class="nn">planetmagfields</span><span class="w"> </span><span class="kn">import</span> <span class="n">Planet</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">2</span><span class="p">]:</span> <span class="n">p</span> <span class="o">=</span> <span class="n">Planet</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;jupiter&#39;</span><span class="p">,</span><span class="n">model</span><span class="o">=</span><span class="s1">&#39;jrm09&#39;</span><span class="p">)</span>
+<span class="n">Planet</span><span class="p">:</span> <span class="n">Jupiter</span>
+<span class="n">Model</span><span class="p">:</span> <span class="n">jrm09</span>
+<span class="n">l_max</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">Dipole</span> <span class="n">tilt</span> <span class="p">(</span><span class="n">degrees</span><span class="p">)</span> <span class="o">=</span> <span class="mf">10.307870</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">3</span><span class="p">]:</span> <span class="n">p</span><span class="o">.</span><span class="n">glm</span><span class="p">[</span><span class="n">p</span><span class="o">.</span><span class="n">idx</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">]]</span>      <span class="c1"># g20 in nT</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">3</span><span class="p">]:</span> <span class="mf">11670.4</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">4</span><span class="p">]:</span> <span class="n">p</span><span class="o">.</span><span class="n">hlm</span><span class="p">[</span><span class="n">p</span><span class="o">.</span><span class="n">idx</span><span class="p">[</span><span class="mi">4</span><span class="p">,</span><span class="mi">2</span><span class="p">]]</span>      <span class="c1"># h42 in nT</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">4</span><span class="p">]:</span> <span class="mf">27811.2</span>
+</pre></div>
+</div>
+<p>as well as the functions:</p>
+<section id="planet-plot">
+<h3><span class="section-number">3.1.1. </span><a class="reference internal" href="api.html#planetmagfields.Planet.plot" title="planetmagfields.Planet.plot"><code class="xref py py-func docutils literal notranslate"><span class="pre">Planet.plot()</span></code></a><a class="headerlink" href="#planet-plot" title="Link to this heading">¶</a></h3>
+<p>This function plots a 2D surface plot of the radial magnetic field at radius <cite>r</cite> given in terms of the surface radius.
+For example,</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">planetmagfields</span><span class="w"> </span><span class="kn">import</span> <span class="n">Planet</span>
+<span class="n">p</span> <span class="o">=</span> <span class="n">Planet</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;earth&#39;</span><span class="p">)</span>
+<span class="n">p</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">proj</span><span class="o">=</span><span class="s1">&#39;Mollweide&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>produces the info mentioned above first and then the following plot of Earth’s magnetic field using a Mollweide projection</p>
+<a class="reference internal image-reference" href="_images/earth2d.png"><img alt="_images/earth2d.png" class="align-center" src="_images/earth2d.png" width="400" />
+</a>
+<p>while</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">planetmagfields</span><span class="w"> </span><span class="kn">import</span> <span class="n">Planet</span>
+<span class="n">p</span> <span class="o">=</span> <span class="n">Planet</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;jupiter&#39;</span><span class="p">,</span><span class="n">model</span><span class="o">=</span><span class="s1">&#39;jrm09&#39;</span><span class="p">)</span>
+<span class="n">p</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mf">0.85</span><span class="p">,</span><span class="n">proj</span><span class="o">=</span><span class="s1">&#39;Mollweide&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>produces the following info about Jupiter and then plot that follows</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">Planet: Jupiter</span>
+<span class="go">l_max = 10</span>
+<span class="go">Dipole tilt (degrees) = 10.307870</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="_images/jupiter_r085.png"><img alt="_images/jupiter_r085.png" class="align-center" src="_images/jupiter_r085.png" width="400" />
+</a>
+<p>This can be compared with Fig. 1 g from <a class="reference external" href="https://doi.org/10.1038/s41586-018-0468-5">Moore et al. 2018</a> .</p>
+</section>
+<section id="planet-spec">
+<span id="secspec"></span><h3><span class="section-number">3.1.2. </span><a class="reference internal" href="api.html#planetmagfields.Planet.spec" title="planetmagfields.Planet.spec"><code class="xref py py-func docutils literal notranslate"><span class="pre">Planet.spec()</span></code></a><a class="headerlink" href="#planet-spec" title="Link to this heading">¶</a></h3>
+<p>This function computes the Lowes spectrum of a planet at a given radius. It adds an array <code class="docutils literal notranslate"><span class="pre">p.emag_spec</span></code> which contains the energy at different spherical harmonic degrees and two variables <code class="docutils literal notranslate"><span class="pre">p.dipolarity</span></code> and <code class="docutils literal notranslate"><span class="pre">p.dip_tot</span></code> which provide the fraction of energies in the axial dipole and the total dipole with respect to the total energy at all degrees. In addition, it provides equatorially symmetric and antisymmetric as well as axisymmetric contributions to the Lowes energy spectrum. Usage example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">planetmagfields</span><span class="w"> </span><span class="kn">import</span> <span class="n">Planet</span>
+<span class="n">p</span> <span class="o">=</span> <span class="n">Planet</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;jupiter&#39;</span><span class="p">,</span><span class="n">model</span><span class="o">=</span><span class="s1">&#39;jrm33&#39;</span><span class="p">)</span>
+<span class="n">p</span><span class="o">.</span><span class="n">spec</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>will provide variables</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">22</span><span class="p">]:</span> <span class="n">p</span><span class="o">.</span><span class="n">dipolarity</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">22</span><span class="p">]:</span> <span class="mf">0.747204704567949</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">23</span><span class="p">]:</span> <span class="n">p</span><span class="o">.</span><span class="n">dip_tot</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">23</span><span class="p">]:</span> <span class="mf">0.7719205020945153</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">24</span><span class="p">]:</span> <span class="n">p</span><span class="o">.</span><span class="n">emag_spec</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">24</span><span class="p">]:</span>
+<span class="n">array</span><span class="p">([</span><span class="mf">0.00000000e+00</span><span class="p">,</span> <span class="mf">3.47735401e+11</span><span class="p">,</span> <span class="mf">2.36340427e+10</span><span class="p">,</span> <span class="mf">2.12851283e+10</span><span class="p">,</span>
+      <span class="mf">1.75661770e+10</span><span class="p">,</span> <span class="mf">1.92219833e+10</span><span class="p">,</span> <span class="mf">9.91200748e+09</span><span class="p">,</span> <span class="mf">3.34535482e+09</span><span class="p">,</span>
+      <span class="mf">3.95317968e+09</span><span class="p">,</span> <span class="mf">2.59333418e+09</span><span class="p">,</span> <span class="mf">1.23423771e+09</span><span class="p">])</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">25</span><span class="p">]:</span> <span class="n">p</span><span class="o">.</span><span class="n">emag_symm</span><span class="o">/</span><span class="n">p</span><span class="o">.</span><span class="n">emag_tot</span> <span class="c1"># Symmetric part</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">25</span><span class="p">]:</span> <span class="mf">0.16062699807374292</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">26</span><span class="p">]:</span> <span class="n">p</span><span class="o">.</span><span class="n">emag_antisymm</span><span class="o">/</span><span class="n">p</span><span class="o">.</span><span class="n">emag_tot</span> <span class="c1"># Anti-symmetric part</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">26</span><span class="p">]:</span> <span class="mf">0.8393730019262573</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">27</span><span class="p">]:</span> <span class="n">p</span><span class="o">.</span><span class="n">emag_axi</span><span class="o">/</span><span class="n">p</span><span class="o">.</span><span class="n">emag_tot</span> <span class="c1"># Axisymmetric part</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">27</span><span class="p">]:</span> <span class="mf">0.7768733455808511</span>
+</pre></div>
+</div>
+<p>and will produce Jupiter’s surface spectrum:</p>
+<a class="reference internal image-reference" href="_images/jupiter_spec.png"><img alt="_images/jupiter_spec.png" class="align-center" src="_images/jupiter_spec.png" width="400" />
+</a>
+<p>The plotting can be suppressed setting the logical <cite>p.spec(iplot=False)</cite>. A different radius other than surface can be selected using the <cite>p.spec(r=0.8)</cite> parameter. API documentation : <a class="reference internal" href="api.html#planetmagfields.Planet.spec" title="planetmagfields.Planet.spec"><code class="xref py py-func docutils literal notranslate"><span class="pre">Planet.spec()</span></code></a></p>
+</section>
+<section id="planet-writevtsfile">
+<span id="secvts"></span><h3><span class="section-number">3.1.3. </span><a class="reference internal" href="api.html#planetmagfields.Planet.writeVtsFile" title="planetmagfields.Planet.writeVtsFile"><code class="xref py py-func docutils literal notranslate"><span class="pre">Planet.writeVtsFile()</span></code></a><a class="headerlink" href="#planet-writevtsfile" title="Link to this heading">¶</a></h3>
+<p>This function writes a vts file that can be used to produce 3D visualizations of field lines with Paraview/VisIt. Usage:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">p</span><span class="o">.</span><span class="n">writeVtsFile</span><span class="p">(</span><span class="n">potExtra</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">ratio_out</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">nrout</span><span class="o">=</span><span class="mi">32</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>where,</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">potExtra</span></code> : bool, whether to use potential extrapolation. This uses the <a class="reference external" href="https://bitbucket.org/nschaeff/shtns">SHTns</a> library for spherical harmonic transforms.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ratio_out</span></code>: float, radius till which the field would be extrapolated in terms of the surface radius</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">nrout</span></code>: radial resolution for extrapolation</p></li>
+</ul>
+</div></blockquote>
+<p>Example of a 3D image produced using <a class="reference external" href="https://www.paraview.org/">Paraview</a> for Neptune’s field, extrapolated till 5 times the surface radius is given below.</p>
+<a class="reference internal image-reference" href="_images/neptune3d.png"><img alt="_images/neptune3d.png" class="align-center" src="_images/neptune3d.png" width="400" />
+</a>
+</section>
+</section>
+<section id="field-filtering-using-planet-plot-filt">
+<h2><span class="section-number">3.2. </span>Field filtering using <a class="reference internal" href="api.html#planetmagfields.Planet.plot_filt" title="planetmagfields.Planet.plot_filt"><code class="xref py py-func docutils literal notranslate"><span class="pre">Planet.plot_filt</span></code></a><a class="headerlink" href="#field-filtering-using-planet-plot-filt" title="Link to this heading">¶</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">planet</span></code> class also provides a function for producing a filtered view of the radial magnetic field using the function <code class="docutils literal notranslate"><span class="pre">plot_filt</span></code>.
+This function can take in either an arbitrary array of spherical harmonic degrees and orders or cut-off values. This is illustrated
+below with examples, assuming the user is in the repository directory.</p>
+<section id="saturn-s-small-scale-magnetic-field">
+<h3><span class="section-number">3.2.1. </span>Saturn’s small-scale magnetic field<a class="headerlink" href="#saturn-s-small-scale-magnetic-field" title="Link to this heading">¶</a></h3>
+<p>Here we plot Saturn’s magnetic field at a depth of 0.75 planetary radius for spherical harmonic degrees &gt; 3.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">planetmagfields</span><span class="w"> </span><span class="kn">import</span> <span class="n">Planet</span>
+<span class="n">p</span> <span class="o">=</span> <span class="n">Planet</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;saturn&#39;</span><span class="p">)</span>
+<span class="n">p</span><span class="o">.</span><span class="n">plot_filt</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mf">0.75</span><span class="p">,</span><span class="n">lCutMin</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span><span class="n">proj</span><span class="o">=</span><span class="s1">&#39;Mollweide&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="_images/saturn_lgeq4_2d.png"><img alt="_images/saturn_lgeq4_2d.png" class="align-center" src="_images/saturn_lgeq4_2d.png" width="400" />
+</a>
+<p>Compare this with Fig. 20 B from <a class="reference external" href="https://doi.org/10.1016/j.icarus.2019.113541">Cao et al. 2020</a> .</p>
+</section>
+<section id="jupiter-s-surface-field">
+<h3><span class="section-number">3.2.2. </span>Jupiter’s surface field<a class="headerlink" href="#jupiter-s-surface-field" title="Link to this heading">¶</a></h3>
+<p>Here we filter out Jupiter’s surface field restricted to degrees 1,2,3 and order 3.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">planetmagfields</span><span class="w"> </span><span class="kn">import</span> <span class="n">Planet</span>
+<span class="n">p</span> <span class="o">=</span> <span class="n">Planet</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;jupiter&#39;</span><span class="p">,</span><span class="n">model</span><span class="o">=</span><span class="s1">&#39;jrm09&#39;</span><span class="p">)</span>
+<span class="n">p</span><span class="o">.</span><span class="n">plot_filt</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">larr</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">],</span><span class="n">marr</span><span class="o">=</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span><span class="n">proj</span><span class="o">=</span><span class="s1">&#39;Mollweide&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="_images/jupiter_l123m3_2d.png"><img alt="_images/jupiter_l123m3_2d.png" class="align-center" src="_images/jupiter_l123m3_2d.png" width="400" />
+</a>
+</section>
+<section id="earth-s-smaller-scale-surface-field">
+<h3><span class="section-number">3.2.3. </span>Earth’s smaller scale surface field<a class="headerlink" href="#earth-s-smaller-scale-surface-field" title="Link to this heading">¶</a></h3>
+<p>We filter the surface field to degrees &gt; 4 and orders &gt; 3.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">planetmagfields</span><span class="w"> </span><span class="kn">import</span> <span class="n">Planet</span>
+<span class="n">p</span> <span class="o">=</span> <span class="n">Planet</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;earth&#39;</span><span class="p">)</span>
+<span class="n">p</span><span class="o">.</span><span class="n">plot_filt</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">lCutMin</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span><span class="n">mmin</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span><span class="n">proj</span><span class="o">=</span><span class="s1">&#39;Mollweide&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="_images/earth_lgeq5mgeq4_2d.png"><img alt="_images/earth_lgeq5mgeq4_2d.png" class="align-center" src="_images/earth_lgeq5mgeq4_2d.png" width="400" />
+</a>
+</section>
+</section>
+<section id="potential-extrapolation">
+<span id="subsecpotextra"></span><h2><span class="section-number">3.3. </span>Potential extrapolation<a class="headerlink" href="#potential-extrapolation" title="Link to this heading">¶</a></h2>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Potential extrapolation prior to v1.5.1 had a bug and the extrapolated fields would be overestimated. Please take care!</p>
+</div>
+<p>The <a class="reference internal" href="api.html#planetmagfields.Planet.extrapolate" title="planetmagfields.Planet.extrapolate"><code class="xref py py-func docutils literal notranslate"><span class="pre">Planet.extrapolate</span></code></a> performs a potential extrapolation of a planet’s magnetic field. The functions are present in the <code class="docutils literal notranslate"><span class="pre">potextra</span></code> module. This uses the <a class="reference external" href="https://bitbucket.org/nschaeff/shtns">SHTns</a> library for spherical harmonic transforms.
+Usage example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">planetmagfields</span><span class="w"> </span><span class="kn">import</span> <span class="n">Planet</span>
+<span class="n">p</span> <span class="o">=</span> <span class="n">Planet</span><span class="p">(</span><span class="s1">&#39;saturn&#39;</span><span class="p">)</span>
+<span class="n">ratio_out</span> <span class="o">=</span> <span class="mi">5</span> <span class="c1"># Ratio (&gt; 1) in terms of surface radius to which to extrapolate</span>
+<span class="n">nrout</span> <span class="o">=</span> <span class="mi">32</span> <span class="c1"># Number of grid points in radius between 1 and ratio_out</span>
+<span class="n">rout</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">ratio_out</span><span class="p">,</span><span class="n">nrout</span><span class="p">)</span>
+<span class="n">p</span><span class="o">.</span><span class="n">extrapolate</span><span class="p">(</span><span class="n">rout</span><span class="p">)</span> <span class="c1">#Gives you three arrays p.br_ex, p.btheta_ex, p.bphi_ex</span>
+</pre></div>
+</div>
+</section>
+<section id="quickplot-using-the-magfield-py-script">
+<span id="secmagfieldscript"></span><h2><span class="section-number">3.4. </span>Quickplot using the <code class="docutils literal notranslate"><span class="pre">magField.py</span></code> script<a class="headerlink" href="#quickplot-using-the-magfield-py-script" title="Link to this heading">¶</a></h2>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>./magField.py<span class="w"> </span>--help
+<span class="go">usage: magField.py [-h] [-p PLANET] [-r R] [-c CMAP] [-l LEVELS] [-m PROJ] [-o MODEL]</span>
+
+<span class="go">Script for easy plotting of planetary magnetic field.</span>
+
+<span class="go">optional arguments:</span>
+<span class="go">-h, --help            show this help message and exit</span>
+<span class="go">-p PLANET, --planet PLANET</span>
+<span class="go">                        Planet name (default : earth)</span>
+<span class="go">-r R, --radius R      Radial level scaled to planetary radius (default : 1)</span>
+<span class="go">-c CMAP, --cmap CMAP  Colormap of plot (default : RdBu_r)</span>
+<span class="go">-l LEVELS, --levels LEVELS</span>
+<span class="go">                        Number of contour levels (default : 20)</span>
+<span class="go">-m PROJ, --mapproj PROJ</span>
+<span class="go">                        Type of map projection (default : Mollweide)</span>
+<span class="go">-o MODEL, --model MODEL</span>
+<span class="go">                        Model to be used, uses the latest model by default (default : None)</span>
+</pre></div>
+</div>
+<p>This will plot the radial magnetic field of a planet (any of the names from the list
+below, case insensitive) at a radius given in terms of the surface radius with a given
+map projection. The default is the surface field. More details are available through
+the help.</p>
+<p>For example,</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>./magField.py<span class="w"> </span>-p<span class="w"> </span>earth<span class="w"> </span>-m<span class="w"> </span>Mollweide
+</pre></div>
+</div>
+<p>displays the same information as above about Earth’s field and produces the surface field of Earth while</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>./magField.py<span class="w"> </span>-p<span class="w"> </span>jupiter<span class="w"> </span>-r<span class="w"> </span><span class="m">0</span>.85<span class="w"> </span>-m<span class="w"> </span>Mollweide<span class="w"> </span>-o<span class="w"> </span>jrm09
+</pre></div>
+</div>
+<p>produces the same plot of Jupiter’s field as shown before.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>./magField.py<span class="w"> </span>-p<span class="w"> </span>all<span class="w"> </span>-r<span class="w"> </span>&lt;radius&gt;<span class="w"> </span>-m<span class="w"> </span>&lt;projection&gt;
+</pre></div>
+</div>
+<p>would produce a table of information about dipole tilt for each planet and magnetic field maps of all different planets at the given radius in a single figure.</p>
+<p>For example:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>./magField.py<span class="w"> </span>-p<span class="w"> </span>all<span class="w"> </span>-r<span class="w"> </span><span class="m">0</span>.9<span class="w"> </span>-m<span class="w"> </span>Mollweide
+</pre></div>
+</div>
+<p>would give</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">|=========|======|=======|</span>
+<span class="go">|Planet   | Theta| Phi   |</span>
+<span class="go">|=========|======|=======|</span>
+<span class="go">|Mercury  | 0.0  | 0.0   |</span>
+<span class="go">|Earth    | -9.4 | -72.7 |</span>
+<span class="go">|Jupiter  | 10.3 | -16.6 |</span>
+<span class="go">|Saturn   | 0.0  | 0.0   |</span>
+<span class="go">|Uranus   | 58.6 | -53.6 |</span>
+<span class="go">|Neptune  | 46.9 | -72.0 |</span>
+<span class="go">|Ganymede | -4.2 | 25.5  |</span>
+<span class="go">|---------|------|-------|</span>
+</pre></div>
+</div>
+<p>followed by the following plot</p>
+<a class="reference internal image-reference" href="_images/magField_all_09.png"><img alt="_images/magField_all_09.png" class="align-center" src="_images/magField_all_09.png" width="500" />
+</a>
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="math.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title"><span class="section-number">4. </span>Mathematics</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="installation.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title"><span class="section-number">2. </span>Installation</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2025, Ankit Barik
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">3. Features and examples</a><ul>
+<li><a class="reference internal" href="#the-planet-class">3.1. The <code class="xref py py-class docutils literal notranslate"><span class="pre">Planet</span></code> class</a><ul>
+<li><a class="reference internal" href="#planet-plot">3.1.1. <code class="xref py py-func docutils literal notranslate"><span class="pre">Planet.plot()</span></code></a></li>
+<li><a class="reference internal" href="#planet-spec">3.1.2. <code class="xref py py-func docutils literal notranslate"><span class="pre">Planet.spec()</span></code></a></li>
+<li><a class="reference internal" href="#planet-writevtsfile">3.1.3. <code class="xref py py-func docutils literal notranslate"><span class="pre">Planet.writeVtsFile()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#field-filtering-using-planet-plot-filt">3.2. Field filtering using <code class="xref py py-func docutils literal notranslate"><span class="pre">Planet.plot_filt</span></code></a><ul>
+<li><a class="reference internal" href="#saturn-s-small-scale-magnetic-field">3.2.1. Saturn’s small-scale magnetic field</a></li>
+<li><a class="reference internal" href="#jupiter-s-surface-field">3.2.2. Jupiter’s surface field</a></li>
+<li><a class="reference internal" href="#earth-s-smaller-scale-surface-field">3.2.3. Earth’s smaller scale surface field</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#potential-extrapolation">3.3. Potential extrapolation</a></li>
+<li><a class="reference internal" href="#quickplot-using-the-magfield-py-script">3.4. Quickplot using the <code class="docutils literal notranslate"><span class="pre">magField.py</span></code> script</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="_static/documentation_options.js?v=c334614b"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/scripts/furo.js?v=46bd48cc"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=3c9ff161"></script>
+    </body>
+</html>
