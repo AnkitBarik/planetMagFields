@@ -30,7 +30,7 @@ Software to easily access and analyze information about magnetic fields of plane
 `planetMagFields` requires [NumPy](https://numpy.org/), [Matplotlib](https://matplotlib.org/) and [SciPy](https://www.scipy.org/). Other than that, the following external libraries are used for a few different functions:
 
  - 2D plotting for map projections other than Hammer : [Cartopy](https://scitools.org.uk/cartopy/docs/latest/) library
- - Potential extrapolation: [SHTns](https://bitbucket.org/nschaeff/shtns) library
+ - Potential extrapolation: It is preferable to have the [SHTns](https://bitbucket.org/nschaeff/shtns) library which can be installed from PyPI, otherwise it falls back to SciPy.
  - Writing vts files for 3D visualisation: [PyEVTK](https://github.com/paulo-herrera/PyEVTK) library
 
 # Installation
