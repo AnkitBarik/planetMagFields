@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-import scipy.special as sp
+from scipy.special import sph_harm_y
+from scipy.special import roots_legendre
 from copy import deepcopy
 
 def gen_idx(lmax):
@@ -54,7 +55,7 @@ def get_grid(nphi=256,ntheta=128):
     """
 
     phi    = np.linspace(0.,2*np.pi,nphi)
-    x,w    = sp.roots_legendre(ntheta)
+    x,w    = roots_legendre(ntheta)
     theta  = np.sort(np.arccos(x))
 
     p2D, th2D = np.meshgrid(phi,theta,indexing='ij')
@@ -122,33 +123,6 @@ def gen_arr(lmax, l1,m1,mode='g'):
 
     return glm, hlm, lArr, mArr, idx
 
-def spherical_harmonic(l,m,theta,phi):
-    """
-    This function takes care of the deprecation of the scipy sph_harm function.
-
-    Parameters
-    ----------
-    l : int
-        Spherical harmonic degree
-    m : int
-        Spherical harmonic order
-    theta : float
-        Co-latitude in radians
-    phi : float
-        Longitude in radians
-
-    Returns
-    -------
-    ndarray(float,ndim=2)
-        Spherical harmonic of degree l and order m computed on a co-latitude/
-        longitude grid
-    """
-
-    try:
-        return sp.sph_harm_y(l, m, theta, phi)
-    except:
-        return sp.sph_harm(m, l, phi, theta)
-
 
 def getB(lmax,mmax,glm,hlm,idx,r,p2D,th2D,planetname="earth"):
     """
@@ -191,7 +165,7 @@ def getB(lmax,mmax,glm,hlm,idx,r,p2D,th2D,planetname="earth"):
     if mmax > 0:
         for l in range(1,lmax+1):
             for m in range(l+1):
-                ylm = spherical_harmonic(l, m, th2D, p2D)
+                ylm = sph_harm_y(l, m, th2D, p2D)
 
                 # Include Condon-Shortley Phase for Earth but not other planets
                 # Scipy sph_harm has the phase included by default
@@ -212,10 +186,10 @@ def getB(lmax,mmax,glm,hlm,idx,r,p2D,th2D,planetname="earth"):
                 Br +=   np.real(fac * (G + H))
     else:
         for l in range(1,lmax+1):
-            ylm = spherical_harmonic(l, 0, th2D, p2D)
+            ylm = sph_harm_y(l, 0, th2D, p2D)
             fac = (l + 1) * r**(-l-2) * np.sqrt((4.*np.pi)/(2*l+1))
 
-            Br += fac * glm[l] * np.real(ylm)
+            Br += fac * glm[idx[l,0]] * np.real(ylm)
 
     return Br
 
@@ -261,7 +235,7 @@ def get_spec(glm,hlm,idx,lmax,mmax,r=1.0):
 
     if mmax == 0:
         for l in range(1,lmax+1):
-            E[l] = (l+1) * r**(-2*l-4) *(np.abs(glm[l])**2 + np.abs(hlm[l])**2)
+            E[l] = (l+1) * r**(-2*l-4) *(np.abs(glm[idx[l,0]])**2 + np.abs(hlm[idx[l,0]])**2)
         emag_10 = E[1]
         E_symm = np.sum(E[1::2])
         E_antisymm = np.sum(E[::2])
@@ -377,18 +351,18 @@ def filt_Gauss(glm,hlm,lmax,model_mmax,idx,larr=None,marr=None,
             else:
                 for ell in range(lmax+1):
                     if ell not in larr:
-                        glm_filt[ell] = 0.
-                        hlm_filt[ell] = 0.
+                        glm_filt[idx[ell,0]] = 0.
+                        hlm_filt[idx[ell,0]] = 0.
         else:
             if lCutMax > lmax or lCutMin > lmax:
                 print("Error! lCutMin/lCutMax must be <= lmax = %d" %lmax)
             else:
                 for ell in range(lCutMin):
-                        glm_filt[ell] = 0.
-                        hlm_filt[ell] = 0.
+                        glm_filt[idx[ell,0]] = 0.
+                        hlm_filt[idx[ell,0]] = 0.
                 for ell in range(lCutMax+1,lmax+1):
-                        glm_filt[ell] = 0.
-                        hlm_filt[ell] = 0.
+                        glm_filt[idx[ell,0]] = 0.
+                        hlm_filt[idx[ell,0]] = 0.
 
     return glm_filt,hlm_filt
 

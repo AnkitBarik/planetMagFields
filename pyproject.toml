@@ -1,6 +1,6 @@
 [project]
 name = "planetMagFields"
-version = "1.5.8"
+version = "1.6.0"
 authors = [
   { name="Ankit Barik", email="ankit.barik@gmail.com" },
 ]
@@ -34,15 +34,20 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-
 map = ["cartopy"]
-potextra=["shtns"]
-vtk=["pyevtk"]
-all=["planetMagFields[map,potextra,vtk]"]
+potextra = ["shtns"]
+vtk = ["pyevtk"]
+all = ["cartopy", "shtns", "pyevtk"]
+
+[project.scripts]
+magfield = "planetmagfields.cli:main"
 
 [project.urls]
 Homepage = "https://ankitbarik.github.io/planetMagFields/"
 Issues = "https://github.com/AnkitBarik/planetMagFields/issues"
+
+[tool.setuptools.package-data]
+planetmagfields = ["config.json", "data/*"]
 
 [build-system]
 requires = ["setuptools >= 61.0"]

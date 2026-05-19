@@ -7,33 +7,103 @@ def get_pol_from_Gauss(planetname,glm,hlm,lmax,mmax,idx):
 
     bpol = np.zeros(len(glm),dtype=np.complex128)
 
-    if mmax > 0:
-        for l in range(1,lmax+1):
-            for m in range(l+1):
+    for l in range(1,lmax+1):
+        for m in range(min(mmax+1,l+1)):
 
-                if planetname in ["earth"]:
-                    fac_m = 1.
-                else:
-                    fac_m = (-1)**m
+            if planetname in ["earth"]:
+                fac_m = 1.
+            else:
+                fac_m = (-1)**m
 
-                if m == 0:
-                    norm = np.sqrt((4*np.pi/(2*l+1)))/l
-                else:
-                    norm = np.sqrt((2*np.pi/(2*l+1)))/l
-
-                bpol[idx[l,m]] = norm*fac_m*(glm[idx[l,m]] - 1j*hlm[idx[l,m]])
-    else:
-        for l in range(1,lmax+1):
-
-                fac_m = 1
+            if m == 0:
                 norm = np.sqrt((4*np.pi/(2*l+1)))/l
+            else:
+                norm = np.sqrt((2*np.pi/(2*l+1)))/l
 
-                bpol[idx[l]] = norm*fac_m*(glm[idx[l]] - 1j*hlm[idx[l]])
+            bpol[idx[l,m]] = norm*fac_m*(glm[idx[l,m]] - 1j*hlm[idx[l,m]])
 
     return bpol
 
 
-def extrapot(bpol,idx,lmax,model_mmax,rcmb,rout,nphi=None):
+def extrapot_scipy(glm, hlm, idx, lmax, mmax, rplanet, rout, nphi=None):
+
+    """
+    This function extrapolates a potential field to an array of desired radial
+    levels. It uses the scipy library for computing spherical harmonics.
+
+    Parameters
+    ----------
+    glm : ndarray(float, ndim=1)
+        Array of Gauss coefficients g_lm
+    hlm : ndarray(float, ndim=1)
+        Array of Gauss coefficients h_lm
+    idx : ndarray(int, ndim=1)
+        Array of indices to map [l,m] to an index
+    lmax : int
+        Maximum spherical harmonic degree of field model
+    mmax : int
+        Maximum spherical harmonic order of field model
+    rplanet : float
+        Radius of the planet at which the magnetic field is measured or defined. This is used to scale the field correctly during extrapolation.
+    rout : array_like
+        Array of radial levels to which the field should be extrapolated
+    nphi : int, optional
+        Number of grid points in longitude, can be automatically
+        selected, by default None
+
+    Returns
+    -------
+    brout : ndarray(float, ndim=3)
+        3D array of extrapolated radial magnetic field, shape : (nphi,ntheta,nr)
+    btout : ndarray(float, ndim=3)
+        3D array of extrapolated co-latitudinal magnetic field, shape : (nphi,ntheta,nr)
+    bpout : ndarray(float, ndim=3)
+        3D array of extrapolated azimuthal magnetic field, shape : (nphi,ntheta,nr)
+    """
+
+    from scipy.special import sph_harm_y
+
+    nrout = len(rout)
+
+    if nphi is None:
+        nphi   = int(max(256,lmax*3))
+    ntheta = nphi//2
+
+    theta = np.linspace(0,np.pi,ntheta+2)[1:-1]
+    phi   = np.linspace(0,2*np.pi,nphi)
+
+    phi2d, theta2d = np.meshgrid(phi,theta,indexing='ij')
+
+    brout = np.zeros([nphi,ntheta,nrout], dtype=np.complex128)
+    btout = np.zeros([nphi,ntheta,nrout], dtype=np.complex128)
+    bpout = np.zeros([nphi,ntheta,nrout], dtype=np.complex128)
+
+    for k, r in enumerate(rout/rplanet):
+        for l in range(lmax+1):
+
+            fac_l = (1/r)**(l+1)
+
+            for m in range(min(mmax+1,l+1)):
+
+                ylm = sph_harm_y(l,m,theta2d,phi2d,diff_n=1)
+                dylmdth = ylm[1][...,0]
+                dylmdphi = ylm[1][...,1]
+                ylm = ylm[0]
+                if m == 0:
+                    Nlm = np.sqrt(4 * np.pi / (2*l+1))
+                else:
+                    Nlm = np.sqrt(8 * np.pi / (2*l+1)) * (-1)**m
+
+                glmp = glm[idx[l,m]]
+                hlmp = hlm[idx[l,m]]
+
+                brout[...,k] +=   (1/r) * fac_l * (l+1) * ( glmp - 1j*hlmp ) * Nlm * ylm
+                btout[...,k] += - (1/r) * fac_l      *     (( glmp - 1j*hlmp ) * Nlm * dylmdth )
+                bpout[...,k] += - (1/r) * fac_l      *  1/np.sin(theta2d) *   ( glmp - 1j*hlmp ) * Nlm * dylmdphi
+
+    return np.real(brout), np.real(btout), np.real(bpout)
+
+def extrapot_shtns(bpol,idx,lmax,mmax,rplanet,rout,nphi=None):
     """
     This function extrapolates a potential field to an array of desired radial
     levels. It uses the SHTns library (https://bitbucket.org/nschaeff/shtns)
@@ -47,9 +117,9 @@ def extrapot(bpol,idx,lmax,model_mmax,rcmb,rout,nphi=None):
         Array of indices to map [l,m] to an index
     lmax : int
         Maximum spherical harmonic degree of field model
-    model_mmax : int
+    mmax : int
         Maximum spherical harmonic order of field model
-    rcmb : float
+    rplanet : float
         Radius at which the magnetic field is measured or defined
     rout : array_like
         Array of radial levels to which the field should be extrapolated
@@ -67,22 +137,14 @@ def extrapot(bpol,idx,lmax,model_mmax,rcmb,rout,nphi=None):
         3D array of extrapolated azimuthal magnetic field, shape : (nphi,ntheta,nr)
     """
 
-    # nphi, ntheta = brcmb.shape
-    nrout = len(rout)
+    import shtns
 
+    nrout = len(rout)
     polar_opt = 1e-15
 
     if nphi is None:
         nphi   = int(max(256,lmax*3))
     ntheta = nphi//2
-
-    mmax = lmax
-
-    try:
-        import shtns
-    except ImportError:
-        print("Potential extrapolation requires the SHTns library")
-        print("It can be obtained here: https://bitbucket.org/nschaeff/shtns")
 
     norm=shtns.sht_orthonormal
 
@@ -95,17 +157,10 @@ def extrapot(bpol,idx,lmax,model_mmax,rcmb,rout,nphi=None):
 
     bpolcmb = sh.spec_array()
 
-    if model_mmax > 0:
-        for l in range(1,lmax+1):
-            for m in range(l+1):
-                bpolcmb[sh.idx(l,m)] = bpol[idx[l,m]]
-    else:
-        for l in range(1,lmax+1):
-                bpolcmb[sh.idx(l,0)] = bpol[idx[l]]
+    for l in range(1,lmax+1):
+        for m in range(min(mmax+1,l+1)):
+            bpolcmb[sh.idx(l,m)] = bpol[idx[l,m]]
 
-    # brlm = sh.analys(brcmb.T)
-    # bpolcmb = np.zeros_like(brlm)
-    # bpolcmb[1:] = rcmb**2 * brlm[1:]/L[1:]
     btor = np.zeros_like(bpolcmb)
 
     brout = np.zeros([ntheta,nphi,nrout])
@@ -115,7 +170,7 @@ def extrapot(bpol,idx,lmax,model_mmax,rcmb,rout,nphi=None):
     for k,radius in enumerate(rout):
         print(("%d/%d" %(k,nrout)))
 
-        radratio = rcmb/radius
+        radratio = rplanet/radius
         bpol = bpolcmb * radratio**(sh.l)
         brlm = bpol * L/radius**2
         brout[...,k] = sh.synth(brlm)
@@ -130,8 +185,134 @@ def extrapot(bpol,idx,lmax,model_mmax,rcmb,rout,nphi=None):
 
     return brout, btout, bpout
 
-def get_field_along_path(bpol,idx,lmax,model_mmax,
-                         rcmb,r,theta,phi):
+def extrapot(planetname, glm, hlm, idx, lmax, mmax, rplanet, rout, nphi=None):
+    """
+    This function extrapolates a potential field to an array of desired radial
+    levels. It uses the SHTns library (https://bitbucket.org/nschaeff/shtns)
+    for spherical harmonic transforms, and falls back to scipy if SHTns is not
+    available.
+
+    Parameters
+    ----------
+    glm : ndarray(float, ndim=1)
+        Array of Gauss coefficients g_lm
+    hlm : ndarray(float, ndim=1)
+        Array of Gauss coefficients h_lm
+    idx : ndarray(int, ndim=1)
+        Array of indices to map [l,m] to an index
+    lmax : int
+        Maximum spherical harmonic degree of field model
+    mmax : int
+        Maximum spherical harmonic order of field model
+    rplanet : float
+        Radius at which the magnetic field is measured or defined
+    rout : array_like
+        Array of radial levels to which the field should be extrapolated
+    nphi : int, optional
+        Number of grid points in longitude, can be automatically
+        selected, by default None
+
+    Returns
+    -------
+    brout : ndarray(float, ndim=3)
+        3D array of extrapolated radial magnetic field, shape : (nphi,ntheta,nr)
+    btout : ndarray(float, ndim=3)
+        3D array of extrapolated co-latitudinal magnetic field, shape : (nphi,ntheta,nr)
+    bpout : ndarray(float, ndim=3)
+        3D array of extrapolated azimuthal magnetic field, shape : (nphi,ntheta,nr)
+    """
+
+    bpol = get_pol_from_Gauss(planetname, glm, hlm, lmax, mmax, idx)
+
+    try:
+        import shtns
+        print("Using SHTns for potential extrapolation")
+        brout, btout, bpout = extrapot_shtns(bpol, idx, lmax, mmax,
+                                            rplanet,rout,nphi=nphi)
+    except ImportError:
+        print("SHTns library not found, falling back to scipy!")
+        print("Consider installing SHTns from https://bitbucket.org/nschaeff/shtns")
+
+        brout, btout, bpout = extrapot_scipy(glm, hlm, idx, lmax, mmax,
+                                            rplanet,rout,nphi=nphi)
+    return brout, btout, bpout
+
+def get_field_along_path_scipy(glm, hlm, idx, lmax, r, theta, phi):
+
+    """Gets field along a specific trajectory defined by 1-D
+       arrays r, theta, phi. Uses scipy for computing spherical harmonics.
+
+    Parameters
+    ----------
+    glm : ndarray(float, ndim=1)
+        Array of Gauss coefficients g_lm
+    hlm : ndarray(float, ndim=1)
+        Array of Gauss coefficients h_lm
+    idx : ndarray(int, ndim=1)
+        Array of indices to map [l,m] to an index
+    lmax : int
+        Maximum spherical harmonic degree of field model
+    r : array_like
+        Array of radial distances
+    theta : array_like
+        Array of co-latitudes in radians
+    phi : array_like
+        Array of longitudes in radians
+
+    Returns
+    -------
+    brout : array_like
+        Array of extrapolated radial magnetic field values
+    btout : array_like
+        Array of extrapolated co-latitudinal magnetic field values
+    bpout : array_like
+        Array of extrapolated azimuthal magnetic field values
+
+    Raises
+    ------
+    ValueError
+        If the shapes of the three arrays r, theta, phi
+        are not the same, raises an error.
+    """
+    # Check dimensions
+    if ( np.shape(r) != np.shape(theta)  or
+         np.shape(theta) != np.shape(phi)  or
+         np.shape(r) != np.shape(phi) ):
+        raise ValueError("Please make sure all three arrays are of the same shape")
+
+    from scipy.special import sph_harm_y
+
+    br     = np.zeros(len(r),dtype=np.complex128)
+    btheta = np.zeros(len(r),dtype=np.complex128)
+    bphi   = np.zeros(len(r),dtype=np.complex128)
+
+    for l in range(lmax+1):
+
+        fac_l = (1/r)**(l+1)
+
+        for m in range(l+1):
+
+            ylm = sph_harm_y(l,m,theta,phi,diff_n=1)
+            dylmdth = ylm[1][...,0]
+            dylmdphi = ylm[1][...,1]
+            ylm = ylm[0]
+            if m == 0:
+                Nlm = np.sqrt(4 * np.pi / (2*l+1))
+            else:
+                Nlm = np.sqrt(8 * np.pi / (2*l+1)) * (-1)**m
+
+            glmp = glm[idx[l,m]]
+            hlmp = hlm[idx[l,m]]
+
+            br     +=   (1/r) * fac_l * (l+1) * ( glmp - 1j*hlmp ) * Nlm * ylm
+            btheta += - (1/r) * fac_l      *     (( glmp - 1j*hlmp ) * Nlm * dylmdth )
+            bphi   += - (1/r) * fac_l      *  1/np.sin(theta) *   ( glmp - 1j*hlmp ) * Nlm * dylmdphi
+
+    return np.real(br), np.real(btheta), np.real(bphi)
+
+
+def get_field_along_path_shtns(bpol,idx,lmax,mmax,
+                         rplanet,r,theta,phi):
     """Gets field along a specific trajectory defined by 1-D
        arrays r, theta, phi
 
@@ -143,10 +324,100 @@ def get_field_along_path(bpol,idx,lmax,model_mmax,
         Array of indices to map [l,m] to an index
     lmax : int
         Maximum spherical harmonic degree of field model
-    model_mmax : int
+    mmax : int
         Maximum spherical harmonic order of field model
-    rcmb : float
+    rplanet : float
         Radius at which the magnetic field is measured or defined
+    r : array_like
+        Array of radial distances
+    theta : array_like
+        Array of co-latitudes in radians
+    phi : array_like
+        Array of longitudes in radians
+
+    Returns
+    -------
+    brout : array_like
+        Array of extrapolated radial magnetic field values
+    btout : array_like
+        Array of extrapolated co-latitudinal magnetic field values
+    bpout : array_like
+        Array of extrapolated azimuthal magnetic field values
+
+    Raises
+    ------
+    ValueError
+        If the shapes of the three arrays r, theta, phi
+        are not the same, raises an error.
+    """
+
+    # Check dimensions
+    if ( np.shape(r) != np.shape(theta)  or
+         np.shape(theta) != np.shape(phi)  or
+         np.shape(r) != np.shape(phi) ):
+        raise ValueError("Please make sure all three arrays are of the same shape")
+
+    # Ensure float array (np.float64(seq) collapses to scalar; use asarray)
+    r     = np.asarray(r,     dtype=np.float64)
+    theta = np.asarray(theta, dtype=np.float64)
+    phi   = np.asarray(phi,   dtype=np.float64)
+
+    try:
+        import shtns
+    except ImportError:
+        print("Orbit track extrapolation requires the SHTns library")
+        print("It can be obtained here: https://bitbucket.org/nschaeff/shtns")
+
+    mmax = lmax
+    norm=shtns.sht_orthonormal
+    sh = shtns.sht(lmax,mmax=mmax,norm=norm)
+
+    L = sh.l * (sh.l + 1)
+
+    # Take care of shtns index convention
+
+    bpolcmb = sh.spec_array()
+
+    if mmax > 0:
+        for l in range(1,lmax+1):
+            for m in range(l+1):
+                bpolcmb[sh.idx(l,m)] = bpol[idx[l,m]]
+    else:
+        for l in range(1,lmax+1):
+                bpolcmb[sh.idx(l,0)] = bpol[idx[l,0]]
+
+    brout = np.zeros_like(r)
+    btout = np.zeros_like(r)
+    bpout = np.zeros_like(r)
+
+    # Assuming array of dimension 1 of r, theta, phi
+    for k, radius in enumerate(r):
+        radratio = rplanet/radius
+        bpol = bpolcmb * radratio**(sh.l)
+        qlm = bpol * L/radius**2
+        slm = -sh.l/radius**2 * bpol
+        tlm = np.zeros_like(qlm)
+        brout[k], btout[k], bpout[k] = sh.SHqst_to_point(qlm,slm,tlm,
+                                                         np.cos(theta[k]),
+                                                         phi[k])
+
+    return brout, btout, bpout
+
+
+def get_field_along_path(planetname, glm, hlm, idx, lmax, mmax, r, theta, phi):
+    """Gets field along a specific trajectory defined by 1-D
+       arrays r, theta, phi
+
+    Parameters
+    ----------
+    glm : ndarray(float, ndim=1)
+        Array of Gauss coefficients g_lm
+    hlm : ndarray(float, ndim=1)
+        Array of Gauss coefficients h_lm
+    idx : ndarray(int, ndim=1)
+        Array of indices to map [l,m] to an index
+    lmax : int
+        Maximum spherical harmonic degree of field model
     r : array_like
         Array of radial distances
     theta : array_like
@@ -181,47 +452,27 @@ def get_field_along_path(bpol,idx,lmax,model_mmax,
     theta = np.float64(theta)
     phi   = np.float64(phi)
 
-    try:
-        import shtns
-    except ImportError:
-        print("Orbit track extrapolation requires the SHTns library")
-        print("It can be obtained here: https://bitbucket.org/nschaeff/shtns")
-
-    mmax = lmax
-    norm=shtns.sht_orthonormal
-    sh = shtns.sht(lmax,mmax=mmax,norm=norm)
-
-    L = sh.l * (sh.l + 1)
-
-    # Take care of shtns index convention
-
-    bpolcmb = sh.spec_array()
-
-    if model_mmax > 0:
-        for l in range(1,lmax+1):
-            for m in range(l+1):
-                bpolcmb[sh.idx(l,m)] = bpol[idx[l,m]]
-    else:
-        for l in range(1,lmax+1):
-                bpolcmb[sh.idx(l,0)] = bpol[idx[l]]
-
     brout = np.zeros_like(r)
     btout = np.zeros_like(r)
     bpout = np.zeros_like(r)
 
-    # Assuming array of dimension 1 of r, theta, phi
-    for k, radius in enumerate(r):
-        radratio = rcmb/radius
-        bpol = bpolcmb * radratio**(sh.l)
-        qlm = bpol * L/radius**2
-        slm = -sh.l/radius**2 * bpol
-        tlm = np.zeros_like(qlm)
-        brout[k], btout[k], bpout[k] = sh.SHqst_to_point(qlm,slm,tlm,
-                                                         np.cos(theta[k]),
-                                                         phi[k])
+    shtns_present = False
+
+    try:
+        import shtns
+        shtns_present = True
+    except ImportError:
+        pass
+
+    if shtns_present:
+        bpol = get_pol_from_Gauss(planetname, glm, hlm, lmax, mmax, idx)
+        brout, btout, bpout = get_field_along_path_shtns(bpol, idx, lmax, mmax, 1.0, r, theta, phi)
+    else:
+        print("SHTns library not found, falling back to scipy!")
+        print("Consider installing SHTns from https://bitbucket.org/nschaeff/shtns")
+        brout, btout, bpout = get_field_along_path_scipy(glm, hlm, idx, lmax, mmax, r, theta, phi)
 
     return brout, btout, bpout
-
 
 ###########################
 # For writing vts files
@@ -259,25 +510,14 @@ def get_grid(r,theta,phi):
         3D array of cylindrical radius values at each grid point, shape (nphi,ntheta,nr)
     """
 
-    nr,ntheta,nphi = len(r),len(theta),len(phi)
-
-    r3D  = np.zeros([nphi,ntheta,nr])
-    th3D = np.zeros([nphi,ntheta,nr])
-    p3D  = np.zeros([nphi,ntheta,nr])
-
-    for i in range(nr):
-        r3D[...,i] = r[i]
-    for j in range(ntheta):
-        th3D[:,j,:] = theta[j]
-    for k in range(nphi):
-        p3D[k,...] = phi[k]
+    p3D, th3D, r3D = np.meshgrid(phi, theta, r, indexing='ij')
 
     s = r3D * np.sin(th3D)
     x = s *   np.cos(p3D)
     y = s *   np.sin(p3D)
     z = r3D * np.cos(th3D)
 
-    return r3D,th3D,p3D, x,y,z, s
+    return r3D,th3D,p3D, x,y,z
 
 def get_cart(vr,vt,vp,th3D,p3D):
     """
@@ -343,7 +583,7 @@ def writeVts(name,br,btheta,bphi,r,theta,phi,r_planet=1):
     None
     """
 
-    r3D,th3D,p3D, x,y,z, s = get_grid(r*r_planet,theta,phi)
+    r3D,th3D,p3D, x,y,z = get_grid(r*r_planet,theta,phi)
 
     print("grid shape=",th3D.shape)
 

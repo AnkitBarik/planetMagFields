@@ -1,0 +1,20 @@
+{
+    "_comment": "Default configuration for magfield CLI. Copy and edit this file, then pass it with --config /path/to/your/config.json",
+
+    "planet": "earth",
+    "model": null,
+
+    "r": 1.0,
+    "unit": "muT",
+
+    "cmap": "RdBu_r",
+    "levels": 20,
+    "proj": "Mollweide",
+    "vmin": null,
+    "vmax": null,
+
+    "dark": false,
+    "save_path": null,
+    "verbose": false,
+    "trajectory": null
+}

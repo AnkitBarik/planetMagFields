@@ -131,10 +131,19 @@ def get_data(datDir,planetname="earth",model=None,year=2020):
     # Ensure type int
     lmax = int(lmax)
 
+    idx = gen_idx(lmax)
     if mmax == 0:
-        idx = np.arange(lmax+1)
+        # glm/hlm were built with only lmax+1 entries (one per degree).
+        # Expand to the full triangular size so idx[l,0] is always in bounds.
+        ncoeff = (lmax+1)*(lmax+2)//2
+        glm_full = np.zeros(ncoeff)
+        hlm_full = np.zeros(ncoeff)
+        for ll in range(lmax+1):
+            glm_full[idx[ll,0]] = glm[ll]
+            hlm_full[idx[ll,0]] = hlm[ll]
+        glm = glm_full
+        hlm = hlm_full
     else:
-        idx = gen_idx(lmax)
         mmax = lmax
 
     return glm,hlm,lmax,idx,mmax

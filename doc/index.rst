@@ -20,6 +20,7 @@ The prerequisites, installation and features are described in the pages below. H
    prereq
    installation
    examples
+   cli
    math
    models
    projections

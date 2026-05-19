@@ -4,7 +4,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import pyvista as pv
-from .potextra import
+from .potextra import *
 
 def _cell_bounds(points, bound_position=0.5):
     """
