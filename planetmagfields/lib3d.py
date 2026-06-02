@@ -219,11 +219,9 @@ def render_tight(plotter, mesh, padding=0.1):
         center[2] + size * (1 + padding)
     )
 
-    # Reset camera to fit all actors
+    # Reset camera to fit all actors with some padding
     plotter.reset_camera(bounds=bounds)
-
-    # Zoom in slightly to reduce whitespace
-    plotter.camera.zoom(1.2)
+    plotter.camera.zoom(0.8)
 
     return plotter
 
