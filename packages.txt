@@ -1,0 +1,3 @@
+libgl1-mesa-glx
+libglu1-mesa
+xvfb
