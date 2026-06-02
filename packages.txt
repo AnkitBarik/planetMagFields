@@ -1,3 +1,5 @@
 libgl1
 libglu1-mesa
+libegl1
+libosmesa6
 xvfb

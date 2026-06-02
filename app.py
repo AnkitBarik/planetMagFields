@@ -121,4 +121,4 @@ if "render_params" in st.session_state:
                 clim_fac=p["colorlim_fac"], bgcolor=p["bgcolor"],
                 units=planet.units, cmap=p["cmap"]
             )
-        stpyvista(pl, key=f"sphere_{p['res']}")
+        stpyvista(pl, key=f"sphere_{p['res']}", backend="panel")

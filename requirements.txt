@@ -4,3 +4,4 @@ matplotlib
 streamlit
 pyvista
 stpyvista
+panel
