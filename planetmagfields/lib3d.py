@@ -240,7 +240,7 @@ def plot_surface(theta,phi,dat,fieldname='Br',cmap='seismic',clim_fac=0.01, bgco
 
     grid.cell_data[fieldname] = dat.ravel('C')
 
-    pl = pv.Plotter()
+    pl = pv.Plotter(window_size=(500, 500))
 
     font_color = set_plotter_properties(pl, bgcolor)
 
@@ -250,6 +250,8 @@ def plot_surface(theta,phi,dat,fieldname='Br',cmap='seismic',clim_fac=0.01, bgco
         pl.add_mesh(grid, cmap=cmap,clim=clim,smooth_shading=True, show_scalar_bar=False)
     else:
         pl.add_mesh(grid, cmap=cmap,smooth_shading=True, show_scalar_bar=False)
+
+    pl = render_tight(pl, grid, padding=0.1)
 
     return pl, font_color
 
@@ -321,7 +323,7 @@ def render_field_lines(planetname, glm, hlm, idx, lmax, mmax, rplanet,
         br_surf = getB(lmax,mmax,glm,hlm,idx,1,p2D,th2D,planetname=planetname)
         pl, font_color = plot_surface(theta, phi, br_surf, clim_fac=clim_fac, bgcolor=bgcolor)
     else:
-        pl = pv.Plotter()
+        pl = pv.Plotter(window_size=(500, 500))
         font_color = set_plotter_properties(pl, bgcolor)
 
     # Transform vectors to cartesian coordinates
@@ -341,7 +343,7 @@ def render_field_lines(planetname, glm, hlm, idx, lmax, mmax, rplanet,
 
     grid.set_active_vectors('B')
 
-    max_time = 500.0
+    max_length = rout.max() * rplanet * 2.0
     initial_step = 0.2
     max_steps = 1000
 
@@ -351,7 +353,7 @@ def render_field_lines(planetname, glm, hlm, idx, lmax, mmax, rplanet,
             source_radius=r.max(),  # Radius of seeding sphere
             source_center=(0, 0, 0),
             integration_direction='both',  # 'forward', 'backward', or 'both'
-            max_time=max_time,
+            max_length=max_length,
             initial_step_length=initial_step,
             max_steps=max_steps,
             terminal_speed=1e-12,
@@ -407,7 +409,6 @@ def render_field_lines(planetname, glm, hlm, idx, lmax, mmax, rplanet,
                              }
         )
 
-
-    pl = render_tight(pl, grid)
+    pl = render_tight(pl, grid, padding=0.1)
 
     return pl
