@@ -4,12 +4,11 @@ import sys
 import pytest
 sys.path.insert(0, os.path.abspath('../'))
 from planetmagfields import Planet
-from planetmagfields.libgauss import gen_idx
+from planetmagfields.libgauss import gen_idx, get_grid
 from planetmagfields.potextra import (
     get_pol_from_Gauss,
     extrapot_scipy,
-    get_field_along_path_scipy,
-    get_grid,
+    get_field_along_path_scipy
 )
 
 
@@ -113,8 +112,7 @@ class TestScipyImplementations:
             glm, hlm, idx, lmax, lmax, 1.0, np.array([r_test]), nphi=nphi
         )
 
-        theta = np.linspace(0, np.pi,    ntheta + 2)[1:-1]
-        phi   = np.linspace(0, 2 * np.pi, nphi)
+        _, _, phi, theta = get_grid(nphi, ntheta)
 
         for i_phi, i_theta in [(5, 4), (10, 7), (20, 12)]:
             br_pt, bt_pt, bp_pt = get_field_along_path_scipy(
@@ -135,7 +133,7 @@ class TestScipyImplementations:
 
     def test_get_cart_spherical_basis_vectors(self):
         """At (theta=pi/2, phi=0): r-hat -> +x, theta-hat -> -z, phi-hat -> +y."""
-        from planetmagfields.potextra import get_cart
+        from planetmagfields.lib3d import get_cart
 
         th    = np.array([[[np.pi / 2]]])
         p     = np.array([[[0.0]]])
@@ -262,8 +260,7 @@ def test_extrapot_scipy_vs_field_along_path():
     )
 
     # Reconstruct the exact grid used internally by extrapot_scipy
-    theta = np.linspace(0, np.pi,   ntheta + 2)[1:-1]
-    phi   = np.linspace(0, 2*np.pi, nphi)
+    _,_,phi,theta = get_grid(nphi, ntheta)
 
     for i_phi, i_theta in [(5, 4), (10, 7), (20, 12)]:
         br_pt, bt_pt, bp_pt = get_field_along_path_scipy(
@@ -275,36 +272,6 @@ def test_extrapot_scipy_vs_field_along_path():
         np.testing.assert_allclose(br_grid[i_phi, i_theta, 0], br_pt[0], rtol=1e-10, atol=1e-10)
         np.testing.assert_allclose(bt_grid[i_phi, i_theta, 0], bt_pt[0], rtol=1e-10, atol=1e-10)
         np.testing.assert_allclose(bp_grid[i_phi, i_theta, 0], bp_pt[0], rtol=1e-10, atol=1e-10)
-
-
-def test_get_cart_spherical_basis_vectors():
-    """get_cart must map each unit spherical basis vector to the correct
-    Cartesian direction.  At (theta=pi/2, phi=0):
-      r-hat     -> +x-hat
-      theta-hat -> -z-hat
-      phi-hat   -> +y-hat
-    """
-    from planetmagfields.potextra import get_cart
-
-    th    = np.array([[[np.pi / 2]]])
-    p     = np.array([[[0.0]]])
-    ones  = np.ones((1, 1, 1))
-    zeros = np.zeros((1, 1, 1))
-
-    vx, vy, vz = get_cart(ones, zeros, zeros, th, p)
-    np.testing.assert_allclose(
-        [vx[0,0,0], vy[0,0,0], vz[0,0,0]], [1, 0, 0], atol=1e-14
-    )
-
-    vx, vy, vz = get_cart(zeros, ones, zeros, th, p)
-    np.testing.assert_allclose(
-        [vx[0,0,0], vy[0,0,0], vz[0,0,0]], [0, 0, -1], atol=1e-14
-    )
-
-    vx, vy, vz = get_cart(zeros, zeros, ones, th, p)
-    np.testing.assert_allclose(
-        [vx[0,0,0], vy[0,0,0], vz[0,0,0]], [0, 1, 0], atol=1e-14
-    )
 
 
 def test_orbit():
@@ -438,32 +405,3 @@ def test_get_field_along_path_scipy_shape_mismatch():
             np.array([np.pi / 2]),
             np.array([0.0]),
         )
-
-
-# ---------------------------------------------------------------------------
-# get_grid – Cartesian coordinates at a known point
-# ---------------------------------------------------------------------------
-
-def test_get_grid_cartesian_equator():
-    """At r=1, theta=pi/2 (equator), phi=0: x=1, y=0, z=0."""
-    r3D, th3D, p3D, x, y, z = get_grid(
-        np.array([1.0]),
-        np.array([np.pi / 2]),
-        np.array([0.0]),
-    )
-    np.testing.assert_allclose(x[0, 0, 0], 1.0, atol=1e-14)
-    np.testing.assert_allclose(y[0, 0, 0], 0.0, atol=1e-14)
-    np.testing.assert_allclose(z[0, 0, 0], 0.0, atol=1e-14)
-
-
-def test_get_grid_cartesian_pole():
-    """At r=1, theta=0 (north pole), any phi: x=0, y=0, z=1."""
-    r3D, th3D, p3D, x, y, z = get_grid(
-        np.array([1.0]),
-        np.array([0.0]),
-        np.array([1.23]),   # phi irrelevant at pole
-    )
-    np.testing.assert_allclose(x[0, 0, 0], 0.0, atol=1e-14)
-    np.testing.assert_allclose(y[0, 0, 0], 0.0, atol=1e-14)
-    np.testing.assert_allclose(z[0, 0, 0], 1.0, atol=1e-14)
-

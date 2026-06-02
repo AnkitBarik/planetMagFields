@@ -40,7 +40,7 @@ def getBr(planet, r=1.0, nphi=256, ntheta=128, info=True):
         Dipole longitude in degrees
     """
 
-    p2D,th2D = get_grid(nphi=nphi,ntheta=ntheta)
+    p2D,th2D,_,_ = get_grid(nphi=nphi,ntheta=ntheta)
 
     Br = getB(planet.lmax,
               planet.mmax,

@@ -60,7 +60,7 @@ def get_grid(nphi=256,ntheta=128):
 
     p2D, th2D = np.meshgrid(phi,theta,indexing='ij')
 
-    return p2D, th2D
+    return p2D, th2D, phi, theta
 
 def gen_arr(lmax, l1,m1,mode='g'):
 

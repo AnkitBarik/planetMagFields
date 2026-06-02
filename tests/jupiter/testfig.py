@@ -42,7 +42,7 @@ def plot_surface(ax,p2D,th2D,B,levels=21,cmap='RdBu_r'):
 
     return bmax, cont
 
-p2D,th2D = get_grid()
+p2D,th2D, _, _ = get_grid()
 p = Planet(name='jupiter',r=0.85,nphi=256,info=False,model='jrm33')
 
 proj = ccrs.Mollweide()

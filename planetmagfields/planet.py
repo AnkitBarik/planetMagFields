@@ -22,7 +22,7 @@ class Planet:
     """
 
     def __init__(self,name='earth',model=None,year=None,
-                 r=1.0,nphi=256,datDir=stdDatDir,unit='muT',info=True):
+                 r=1.0,nphi=256,datDir=stdDatDir,units='muT',info=True):
         """
         Initialization of the Planet class.
 
@@ -40,7 +40,7 @@ class Planet:
             Data directory, where the Gauss coefficient data is present,
             named as <planetname>.dat, the standard directory is ./data,
             by default stdDatDir
-        unit : str, optional
+        units : str, optional
             Units of magnetic field, can be 'nT', 'muT' or 'Gauss' for nanoTeslas,
             microTeslas and Gauss, respectively. By default, 'muT'
         info : bool, optional
@@ -50,15 +50,15 @@ class Planet:
         self.name   = name.lower()
         self.nphi   = nphi
         self.ntheta = nphi//2
-        self.unit   = unit
+        self.units   = units
 
-        if self.unit.lower() == 'mut':
+        if self.units.lower() == 'mut':
             self.unitfac = 1e-3
             self.unitlabel = '$\mu$T'
-        elif self.unit.lower() == 'nt':
+        elif self.units.lower() == 'nt':
             self.unitfac = 1.
             self.unitlabel = 'nT'
-        elif self.unit.lower() == 'gauss':
+        elif self.units.lower() == 'gauss':
             self.unitfac = 1e-5
             self.unitlabel = 'Gauss'
 
@@ -252,7 +252,7 @@ class Planet:
         -------
         None
         """
-        from .potextra import writeVts
+        from .lib3d import writeVts
 
         rout = np.linspace(1,ratio_out,nrout)
         if potExtra:

@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
+from .libgauss import get_grid
 
 def get_pol_from_Gauss(planetname,glm,hlm,lmax,mmax,idx):
 
@@ -69,10 +70,7 @@ def extrapot_scipy(glm, hlm, idx, lmax, mmax, rplanet, rout, nphi=None):
         nphi   = int(max(256,lmax*3))
     ntheta = nphi//2
 
-    theta = np.linspace(0,np.pi,ntheta+2)[1:-1]
-    phi   = np.linspace(0,2*np.pi,nphi)
-
-    phi2d, theta2d = np.meshgrid(phi,theta,indexing='ij')
+    phi2d, theta2d, _, _ = get_grid(nphi,ntheta)
 
     brout = np.zeros([nphi,ntheta,nrout], dtype=np.complex128)
     btout = np.zeros([nphi,ntheta,nrout], dtype=np.complex128)
@@ -473,138 +471,6 @@ def get_field_along_path(planetname, glm, hlm, idx, lmax, mmax, r, theta, phi):
         brout, btout, bpout = get_field_along_path_scipy(glm, hlm, idx, lmax, mmax, r, theta, phi)
 
     return brout, btout, bpout
-
-###########################
-# For writing vts files
-###########################
-
-def get_grid(r,theta,phi):
-    """
-    Produces a 3D grid for storing values of extrapolated field. Used in producing
-    vtk file for 3D visualization.
-
-    Parameters
-    ----------
-    r : array_like
-        Array of radial levels
-    theta : array_like
-        Array of colatitudes, ranging from 0 to pi
-    phi : array_like
-        Array of longitudes, ranging from 0 to 2*pi
-
-    Returns
-    -------
-    r3D : ndarray(float, ndim=3)
-        3D array of radius values at each grid point, shape (nphi,ntheta,nr)
-    th3D : ndarray(float, ndim=3)
-        3D array of colatitude values at each grid point, shape (nphi,ntheta,nr)
-    p3D : ndarray(float, ndim=3)
-        3D array of longitude values at each grid point, shape (nphi,ntheta,nr)
-    x : ndarray(float, ndim=3)
-        3D array of Cartesian x values at each grid point, shape (nphi,ntheta,nr)
-    y : ndarray(float, ndim=3)
-        3D array of Cartesian y values at each grid point, shape (nphi,ntheta,nr)
-    z : ndarray(float, ndim=3)
-        3D array of Cartesian z values at each grid point, shape (nphi,ntheta,nr)
-    s : ndarray(float, ndim=3)
-        3D array of cylindrical radius values at each grid point, shape (nphi,ntheta,nr)
-    """
-
-    p3D, th3D, r3D = np.meshgrid(phi, theta, r, indexing='ij')
-
-    s = r3D * np.sin(th3D)
-    x = s *   np.cos(p3D)
-    y = s *   np.sin(p3D)
-    z = r3D * np.cos(th3D)
-
-    return r3D,th3D,p3D, x,y,z
-
-def get_cart(vr,vt,vp,th3D,p3D):
-    """
-    Converts a set of vector components in spherical coordinate system
-    to Cartesian. All components, both at input and output have shape
-    (nphi,ntheta,nr), number of points in longitude, colatitude and radial
-    directions, respectively.
-
-    Parameters
-    ----------
-    vr : ndarray(float, ndim=3)
-        3D array of radial component of vector
-    vt : ndarray(float, ndim=3)
-        3D array of colatitude component of vector
-    vp : ndarray(float, ndim=3)
-        3D array of azimuthal component of vector
-    th3D : ndarray(float, ndim=3)
-        3D array of colatitude values on the grid
-    p3D : ndarray(float, ndim=3)
-        3D array of longitude values on the grid
-
-    Returns
-    -------
-    vx : ndarray(float, ndim=3)
-        3D array of vector component in Cartesian x direction
-    vy : ndarray(float, ndim=3)
-        3D array of vector component in Cartesian x direction
-    vz : ndarray(float, ndim=3)
-        3D array of vector component in Cartesian x direction
-    """
-
-    vs = vr * np.sin(th3D) + vt * np.cos(th3D)
-    vz = vr * np.cos(th3D) - vt * np.sin(th3D)
-
-    vx = vs * np.cos(p3D) - vp * np.sin(p3D)
-    vy = vs * np.sin(p3D) + vp * np.cos(p3D)
-
-    return vx,vy,vz
-
-def writeVts(name,br,btheta,bphi,r,theta,phi,r_planet=1):
-    """
-    Writes an unstructured vtk file for 3D visualization.
-
-    Parameters
-    ----------
-    name : str
-        Name of the file
-    br : ndarray(float, ndim=3)
-        3D array of radial component of vector
-    btheta : ndarray(float, ndim=3)
-        3D array of colatitudinal component of vector
-    bphi : ndarray(float, ndim=3)
-        3D array of azimuthal component of vector
-    r : array_like
-        Array of radial levels
-    theta : array_like
-        Array of colatitudes
-    phi : array_like
-        Array of longitudes
-
-    Returns
-    -------
-    None
-    """
-
-    r3D,th3D,p3D, x,y,z = get_grid(r*r_planet,theta,phi)
-
-    print("grid shape=",th3D.shape)
-
-    bx,by,bz = get_cart(br, btheta, bphi,th3D,p3D)
-
-    try:
-        from pyevtk.hl import gridToVTK
-    except:
-        print("This requires the use of pyevtk library!")
-        print("You can get it from https://github.com/paulo-herrera/PyEVTK")
-
-    br = np.asfortranarray(br)
-    bx = np.asfortranarray(bx)
-    by = np.asfortranarray(by)
-    bz = np.asfortranarray(bz)
-
-    gridToVTK("%s"%name,x,y,z,pointData= {"radius":r3D,
-                                          "Radial mag field":br,
-                                          "Mag Field":(bx, by,bz)})
-
-    print("Output written to %s!" %name)
 
 
 def export_xshells(planet, filename, r=1.0, info=True):
