@@ -119,6 +119,6 @@ if "render_params" in st.session_state:
                 planet.name, planet.glm.copy(), planet.hlm.copy(), planet.idx, planet.lmax, planet.mmax,
                 1, p["rout"], nphi=p["res"], surf=True,
                 clim_fac=p["colorlim_fac"], bgcolor=p["bgcolor"],
-                units=planet.units, cmap=p["cmap"]
+                units=planet.units, cmap=p["cmap"], lightweight=True
             )
         stpyvista(pl, key=f"sphere_{p['res']}", backend="panel")

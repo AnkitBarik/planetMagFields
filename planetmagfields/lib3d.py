@@ -257,7 +257,8 @@ def plot_surface(theta,phi,dat,fieldname='Br',cmap='seismic',clim_fac=0.01, bgco
 
 def render_field_lines(planetname, glm, hlm, idx, lmax, mmax, rplanet,
                        rout, nphi=128, surf=False, clim_fac=0.01,
-                       units='nT',bgcolor='black', cmap='seismic'):
+                       units='nT', bgcolor='black', cmap='seismic',
+                       lightweight=False):
 
     """
     Renders field lines using pyvista.
@@ -347,67 +348,76 @@ def render_field_lines(planetname, glm, hlm, idx, lmax, mmax, rplanet,
     initial_step = 0.2
     max_steps = 1000
 
+    n_seeds = 30 if lightweight else 100
+    n_steps = 500 if lightweight else 1000
+
     streamlines = grid.streamlines(
             vectors='B',
-            n_points=100,  # Number of seed points
-            source_radius=r.max(),  # Radius of seeding sphere
+            n_points=n_seeds,
+            source_radius=r.max(),
             source_center=(0, 0, 0),
-            integration_direction='both',  # 'forward', 'backward', or 'both'
+            integration_direction='both',
             max_length=max_length,
             initial_step_length=initial_step,
-            max_steps=max_steps,
+            max_steps=n_steps,
             terminal_speed=1e-12,
-            interpolator_type='point'
+            interpolator_type='cell'
         )
 
     if streamlines.n_points > 0:
-        # Sample onto streamlines
-        streamlines_sampled = streamlines.sample(grid)
-
-        # Get and normalize radius scaling
-        b_mag_sq_vals = streamlines_sampled.point_data['Energy']
+        # Get and normalize energy for tube radius scaling
+        b_mag_sq_vals = streamlines.point_data['Energy']
         max_b_sq = np.max(b_mag_sq_vals)
 
         if max_b_sq > 0:
-            # In-place normalization
             radius_scale = b_mag_sq_vals / max_b_sq
             np.clip(radius_scale, 0.1, 1.0, out=radius_scale)
         else:
             radius_scale = np.ones_like(b_mag_sq_vals) * 0.5
 
-        streamlines_sampled.point_data['radius_scale'] = radius_scale
+        streamlines.point_data['radius_scale'] = radius_scale
 
-        n_sides = 8
+        scalar_bar_args = {'title': cbar_title,
+                           'vertical': True,
+                           'position_x': 0.88,
+                           'position_y': 0.2,
+                           'width': 0.08,
+                           'height': 0.6,
+                           'title_font_size': 25,
+                           'label_font_size': 18,
+                           'n_labels': 5,
+                           'fmt': '%.1e',
+                           'font_family': 'times',
+                           'color': font_color}
 
-        tubes = streamlines_sampled.tube(
-            scalars='radius_scale',
-            radius=rplanet * 0.015,
-            radius_factor=8,
-            n_sides=n_sides,
-            capping=False  # Faster without end caps
-        )
-
-        pl.add_mesh(
-            tubes,
-            scalars='Br',
-            cmap=cmap,
-            clim=clim,
-            smooth_shading=True,
-            show_scalar_bar=True,
-            scalar_bar_args={'title': cbar_title,
-                             'vertical': True,
-                             'position_x': 0.88,      # Push to right edge
-                             'position_y': 0.2,       # Vertical position
-                             'width': 0.08,           # Narrower bar
-                             'height': 0.6,           # Height
-                             'title_font_size': 25,
-                             'label_font_size': 18,
-                             'n_labels': 5,
-                             'fmt': '%.1e',
-                             'font_family': 'times',
-                             'color': font_color
-                             }
-        )
+        if lightweight:
+            # Render as lines — much faster than tubes
+            pl.add_mesh(
+                streamlines,
+                scalars='Br',
+                cmap=cmap,
+                clim=clim,
+                line_width=1.5,
+                show_scalar_bar=True,
+                scalar_bar_args=scalar_bar_args
+            )
+        else:
+            tubes = streamlines.tube(
+                scalars='radius_scale',
+                radius=rplanet * 0.015,
+                radius_factor=8,
+                n_sides=8,
+                capping=False
+            )
+            pl.add_mesh(
+                tubes,
+                scalars='Br',
+                cmap=cmap,
+                clim=clim,
+                smooth_shading=True,
+                show_scalar_bar=True,
+                scalar_bar_args=scalar_bar_args
+            )
 
     pl = render_tight(pl, grid, padding=0.1)
 
