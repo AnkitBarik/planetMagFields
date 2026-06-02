@@ -302,8 +302,8 @@ def render_field_lines(planetname, glm, hlm, idx, lmax, mmax, rplanet,
         unitfac = 1e-5
         cbar_title = r'$B_r$ (Gauss)'
 
-    glm *= unitfac
-    hlm *= unitfac
+    glm = glm * unitfac
+    hlm = hlm * unitfac
 
     brout, btout, bpout = extrapot(planetname, glm, hlm, idx, lmax, mmax, rplanet,
                                    np.atleast_1d(rout * rplanet), nphi=nphi)

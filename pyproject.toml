@@ -37,7 +37,8 @@ dependencies = [
 map = ["cartopy"]
 potextra = ["shtns"]
 vtk = ["pyevtk"]
-all = ["cartopy", "shtns", "pyevtk"]
+webapp = ["streamlit", "pyvista", "stpyvista"]
+all = ["cartopy", "shtns", "pyevtk", "streamlit", "pyvista", "stpyvista"]
 
 [project.scripts]
 magfield = "planetmagfields.cli:main"

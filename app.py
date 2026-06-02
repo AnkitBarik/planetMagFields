@@ -5,8 +5,6 @@ Run locally:  streamlit run app.py
 """
 
 import numpy as np
-import plotly.express as px
-import plotly.graph_objects as go
 import streamlit as st
 import pyvista as pv
 from stpyvista import stpyvista
@@ -14,8 +12,6 @@ from stpyvista import stpyvista
 from planetmagfields import Planet, get_models
 from planetmagfields.utils import planetlist
 from planetmagfields.lib3d import plot_surface, render_field_lines
-
-plotter = pv.Plotter(window_size=[500, 500])
 
 # ---------------------------------------------------------------------------
 # Page config
@@ -120,7 +116,7 @@ if "render_params" in st.session_state:
             )
         else:
             pl = render_field_lines(
-                planet.name, planet.glm, planet.hlm, planet.idx, planet.lmax, planet.mmax,
+                planet.name, planet.glm.copy(), planet.hlm.copy(), planet.idx, planet.lmax, planet.mmax,
                 1, p["rout"], nphi=p["res"], surf=True,
                 clim_fac=p["colorlim_fac"], bgcolor=p["bgcolor"],
                 units=planet.units, cmap=p["cmap"]
