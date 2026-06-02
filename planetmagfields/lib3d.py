@@ -190,7 +190,6 @@ def set_plotter_properties(plotter, bgcolor):
             zlabel='Z',
             label_size=(0.1, 0.1),   # Label size as fraction of viewport
             labels_off=False,
-            box=False,
         )
     else:
         font_color = 'black'
