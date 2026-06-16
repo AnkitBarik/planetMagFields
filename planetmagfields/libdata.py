@@ -103,13 +103,18 @@ def get_data(datDir,planetname="earth",model=None,year=2020):
 
         else: # Earth, accounting for linear SV
 
-            if year > 2030:
-                print("IGRF-14 is only defined till 2030,please be careful while selecting year!")
+            if year < 1900:
+                print("IGRF-14 is only defined from 1900, please be careful while selecting year!")
+            elif year > 2030:
+                print("IGRF-14 is only defined till 2030, please be careful while selecting year!")
 
-            years = 1900 + 5*np.arange(dat.shape[1])
+            # Columns 0,1 are l,m; columns 2:-1 are year data; last column is secular variation
+            year_data = dat[:, 2:-1]
+            n_epochs = year_data.shape[1]
+            years = 1900 + 5 * np.arange(n_epochs)
 
             from scipy import interpolate
-            f = interpolate.interp1d(years,dat,fill_value='extrapolate')
+            f = interpolate.interp1d(years, year_data, fill_value='extrapolate')
             selected_dat = f(year)
 
             mask = gh == 'g'
@@ -117,10 +122,9 @@ def get_data(datDir,planetname="earth",model=None,year=2020):
             mask = gh == 'h'
             h = selected_dat[mask]
 
-            m = dat[mask,1]
+            m = dat[mask, 1]
             m1Idx = np.where(m == 1.)[0]
-            h   = np.insert(h,m1Idx,0.)
-
+            h = np.insert(h, m1Idx, 0.)
 
 
     # Insert (0,0) -> 0 for less confusion

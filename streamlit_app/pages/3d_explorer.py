@@ -4,14 +4,17 @@ Streamlit webapp for interactive 3D visualization of planetary magnetic fields.
 Uses planetmagfields' built-in potential extrapolation for fast field line tracing.
 """
 
-from matplotlib import axis
+import datetime
+import json
+from pathlib import Path
+import warnings
+
 import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 from scipy.integrate import solve_ivp
 from scipy.interpolate import RegularGridInterpolator
-import warnings
 
 from planetmagfields import Planet, get_models
 from planetmagfields.libgauss import getB
@@ -27,6 +30,59 @@ st.set_page_config(
 )
 
 # ---------------------------------------------------------------------------
+# Model display names and references (loaded from JSON)
+# ---------------------------------------------------------------------------
+
+@st.cache_data(show_spinner=False)
+def load_model_info() -> dict:
+    """Load model info from JSON file."""
+    possible_paths = [
+        Path("data/model_info.json"),
+        Path(__file__).parent / "data" / "model_info.json",
+        Path(__file__).parent.parent / "data" / "model_info.json",
+    ]
+
+    for filepath in possible_paths:
+        if filepath.exists():
+            with open(filepath, "r") as f:
+                return json.load(f)
+
+    st.warning("Model info not found. Using default names.")
+    return {}
+
+
+MODEL_INFO = load_model_info()
+
+
+def get_model_display_name(model: str) -> str:
+    """Get display name for a model."""
+    info = MODEL_INFO.get(model.lower())
+    if info:
+        return info["name"]
+    return model
+
+
+def get_model_url(model: str) -> str | None:
+    """Get paper URL for a model."""
+    info = MODEL_INFO.get(model.lower())
+    if info:
+        return info.get("url")
+    return None
+
+
+def get_model_link_html(model: str) -> str:
+    """Get HTML link for a model (for display in metrics)."""
+    info = MODEL_INFO.get(model.lower())
+    if info:
+        name = info["name"]
+        url = info.get("url")
+        if url:
+            return f'<a href="{url}" target="_blank" style="color: #58a6ff; text-decoration: none;">{name}</a>'
+        return name
+    return model
+
+
+# ---------------------------------------------------------------------------
 # Cached helpers
 # ---------------------------------------------------------------------------
 
@@ -36,16 +92,20 @@ def fetch_models(planet_name: str) -> list[str]:
 
 
 @st.cache_resource(show_spinner="Loading planet...")
-def load_planet(name: str, model: str, r: float, units: str, nphi: int) -> Planet:
+def load_planet(
+    name: str, model: str, year: float | None, r: float, units: str, nphi: int
+) -> Planet:
+    if name == "earth" and year is not None:
+        return Planet(name=name, model=model, year=year, r=r, units=units, nphi=nphi, info=False)
     return Planet(name=name, model=model, r=r, units=units, nphi=nphi, info=False)
 
 
 @st.cache_data(show_spinner=False)
 def compute_surface_br(
-    name: str, model: str, r: float, units: str, nphi: int
+    name: str, model: str, year: float | None, r: float, units: str, nphi: int
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Compute Br on a uniform (regular) grid to avoid pole holes in the 3D sphere."""
-    planet = load_planet(name, model, r, units, nphi)
+    planet = load_planet(name, model, year, r, units, nphi)
     ntheta = nphi // 2
     phi = np.linspace(0, 2 * np.pi, nphi + 1)
     theta = np.linspace(0, np.pi, ntheta + 1)
@@ -66,7 +126,7 @@ def compute_surface_br(
 
 @st.cache_resource(show_spinner="Extrapolating field to 3D grid...")
 def get_extrapolated_field(
-    name: str, model: str, units: str, r: float, nphi: int, rmax: float, nr: int = 40
+    name: str, model: str, year: float | None, units: str, r: float, nphi: int, rmax: float, nr: int = 40
 ) -> tuple[Planet, np.ndarray]:
     """
     Use Planet.extrapolate() to compute B-field on radial shells.
@@ -74,7 +134,10 @@ def get_extrapolated_field(
 
     Field arrays have shape (nphi, ntheta, nr).
     """
-    planet = Planet(name=name, model=model, r=r, units=units, nphi=nphi, info=False)
+    if name == "earth" and year is not None:
+        planet = Planet(name=name, model=model, year=year, r=r, units=units, nphi=nphi, info=False)
+    else:
+        planet = Planet(name=name, model=model, r=r, units=units, nphi=nphi, info=False)
     rout = np.linspace(r, rmax, nr)
     planet.extrapolate(rout)
     return planet, rout
@@ -113,8 +176,9 @@ def create_field_interpolators(
 def get_seed_points(
     planet_name: str,
     planet_model: str,
+    planet_year: float | None,
     planet_units: str,
-    r : float,
+    r: float,
     nphi: int,
     n_lines: int,
     rng_seed: int = 42,
@@ -127,7 +191,7 @@ def get_seed_points(
     2. Ensure coverage of both positive and negative Br regions (for closed field lines)
     3. Add some uniform random seeds for overall coverage
     """
-    planet = load_planet(planet_name, planet_model, r, planet_units, nphi)
+    planet = load_planet(planet_name, planet_model, planet_year, r, planet_units, nphi)
 
     rng = np.random.default_rng(rng_seed)
     br = planet.Br  # shape: (nphi, ntheta)
@@ -206,8 +270,9 @@ def create_ode_rhs(interp_br, interp_bt, interp_bp, theta_min, theta_max, r_min,
 def compute_field_lines(
     planet_name: str,
     planet_model: str,
+    planet_year: float | None,
     planet_units: str,
-    surface_r: float,  # Renamed from 'r' to avoid shadowing
+    surface_r: float,
     nphi: int,
     rmax: float,
     nr: int,
@@ -223,7 +288,7 @@ def compute_field_lines(
         return []
 
     planet, rout = get_extrapolated_field(
-        planet_name, planet_model, planet_units, surface_r, nphi, rmax, nr
+        planet_name, planet_model, planet_year, planet_units, surface_r, nphi, rmax, nr
     )
 
     interp_br, interp_bt, interp_bp = create_field_interpolators(planet, rout)
@@ -326,9 +391,11 @@ def compute_field_lines(
 
     return lines
 
+
 # ---------------------------------------------------------------------------
 # 3D figure builder - separated into cached traces and layout
 # ---------------------------------------------------------------------------
+
 def get_diverging_colormaps():
     """Get list of diverging colormap names from plotly, excluding reversed variants."""
     return sorted([
@@ -337,6 +404,7 @@ def get_diverging_colormaps():
         and name[0].isupper()
         and not name.endswith('_r')
     ])
+
 
 # Colormap selection
 colormaps = get_diverging_colormaps()
@@ -395,6 +463,7 @@ def compute_surface_trace(
         "hover_text": hover_text,
     }
 
+
 # ---------------------------------------------------------------------------
 # Coastlines for Earth (loaded from pre-generated data)
 # ---------------------------------------------------------------------------
@@ -404,7 +473,7 @@ def load_coastline_segments(resolution: str = "110m") -> list[np.ndarray]:
     """Load pre-generated coastline data from disk."""
     import os
 
-     # Get the root app directory (parent of 'pages' if we're in a page)
+    # Get the root app directory (parent of 'pages' if we're in a page)
     script_dir = os.path.dirname(os.path.abspath(__file__))
 
     # Check if we're in the pages subdirectory
@@ -470,9 +539,6 @@ def get_earth_coastlines(
         phi = phi % (2 * np.pi)  # Wrap to 0-2π
 
         # Convert latitude to colatitude theta (0 to π)
-        # lat=90° (North pole) -> theta=0
-        # lat=0° (equator) -> theta=π/2
-        # lat=-90° (South pole) -> theta=π
         theta = np.pi / 2 - np.radians(lat_deg)
 
         # Convert to Cartesian (same convention as planetmagfields)
@@ -483,6 +549,7 @@ def get_earth_coastlines(
         lines.append((x, y, z))
 
     return lines
+
 
 @st.cache_data(show_spinner=False)
 def compute_coastline_traces(
@@ -619,7 +686,7 @@ _DEFAULT_MODELS = {
     "jupiter": "jrm33",
     "saturn": "cassini11+",
     "uranus": "holme1996",
-    "neptune": "connerny1991",
+    "neptune": "connerney1991",
     "ganymede": "kivelson2002",
 }
 
@@ -636,7 +703,30 @@ with st.sidebar:
     models = fetch_models(planet_name)
     default_model = _DEFAULT_MODELS.get(planet_name, models[-1])
     default_idx = models.index(default_model) if default_model in models else len(models) - 1
-    model = st.selectbox("Model", options=models, index=default_idx)
+    model = st.selectbox(
+        "Model",
+        options=models,
+        index=default_idx,
+        format_func=get_model_display_name,
+    )
+
+    # Show paper reference link
+    model_url = get_model_url(model)
+    if model_url:
+        st.caption(f"📄 [Paper reference]({model_url})")
+
+    # Year option for Earth (IGRF models support 1900-2030)
+    year = None
+    if planet_name == "earth":
+        current_year = datetime.datetime.now().year
+        year = st.slider(
+            "Year",
+            min_value=1900.0,
+            max_value=2030.0,
+            value=float(current_year),
+            step=0.5,
+            help="IGRF models support years 1900-2030. Field coefficients are interpolated for the selected epoch."
+        )
 
     r_reset_col, r_col = st.columns([1, 4])
     with r_reset_col:
@@ -671,7 +761,6 @@ with st.sidebar:
     # Coastlines option (only for Earth)
     show_coastlines = False
     coastline_color = "white"
-    coastline_res = "110m"
     if planet_name == "earth":
         show_coastlines = st.checkbox("Show coastlines", value=True)
         if show_coastlines:
@@ -687,8 +776,11 @@ with st.sidebar:
     selected_cmap = st.selectbox("Colormap", colormaps, index=colormaps.index(default_cmap))
 
     # Invert checkbox - default unchecked means blue=negative, red=positive
-    invert_cmap = st.checkbox("Invert colormap", value=False,
-                            help="Flip color mapping (default: blue=negative, red=positive)")
+    invert_cmap = st.checkbox(
+        "Invert colormap",
+        value=False,
+        help="Flip color mapping (default: blue=negative, red=positive)"
+    )
 
     use_reversescale = not invert_cmap  # Default True, becomes False when inverted
 
@@ -731,39 +823,49 @@ with st.sidebar:
 
 st.title("Planetary Magnetic Fields — 3D Explorer")
 
-planet = load_planet(planet_name, model, r, units, resolution)
-p2D, th2D, br_surf = compute_surface_br(planet_name, model, r, units, resolution)
+planet = load_planet(planet_name, model, year, r, units, resolution)
+p2D, th2D, br_surf = compute_surface_br(planet_name, model, year, r, units, resolution)
 
 st.markdown("""
 <style>
 [data-testid="stMetricLabel"] { font-size: 1.5rem !important; }
 [data-testid="stMetricValue"] { font-size: 1.6rem !important; }
+a { color: #58a6ff !important; text-decoration: none !important; }
+a:hover { text-decoration: underline !important; }
 </style>
 """, unsafe_allow_html=True)
 
-c1, c2, c3, c4, c5 = st.columns(5)
 
 def _metric_html(label: str, value: str) -> str:
     return (
         f'<div style="text-align:center">'
-        f'<div style="font-size:2.0rem;color:#aaa;margin-bottom:2px">{label}</div>'
-        f'<div style="font-size:1.6rem;font-weight:600">{value}</div>'
+        f'<div style="font-size:1.8rem;color:#aaa;margin-bottom:2px">{label}</div>'
+        f'<div style="font-size:1.4rem;font-weight:600">{value}</div>'
         f'</div>'
     )
 
+
+# Adjust columns based on whether year is shown
+if year is not None:
+    c1, c2, c3, c4, c5, c6 = st.columns(6)
+else:
+    c1, c2, c3, c4, c5 = st.columns(5)
+
 c1.markdown(_metric_html("Planet", planet.name.capitalize()), unsafe_allow_html=True)
-c2.markdown(_metric_html("Model", planet.model), unsafe_allow_html=True)
-c3.markdown(_metric_html("l_max", str(planet.lmax)), unsafe_allow_html=True)
+c2.markdown(_metric_html("Model", get_model_link_html(planet.model)), unsafe_allow_html=True)
+c3.markdown(_metric_html("ℓ<sub>max</sub>", str(planet.lmax)), unsafe_allow_html=True)
 c4.markdown(_metric_html("Dipole tilt", f"{planet.dipTheta:.2f}°"), unsafe_allow_html=True)
-c5.markdown(_metric_html("r / Rp", f"{r:.2f}"), unsafe_allow_html=True)
+c5.markdown(_metric_html("r / R<sub>p</sub>", f"{r:.2f}"), unsafe_allow_html=True)
+if year is not None:
+    c6.markdown(_metric_html("Year", f"{year:.1f}"), unsafe_allow_html=True)
 
 # Compute field lines if enabled (cached)
 field_lines = None
-# In the main panel section, change the call:
 if show_lines and fl_settings:
     seed_thetas, seed_phis = get_seed_points(
         planet_name,
         model,
+        year,
         units,
         r,
         resolution,
@@ -772,14 +874,18 @@ if show_lines and fl_settings:
 
     # Check if field lines can be shown
     if r >= fl_settings["rmax"]:
-        st.warning(f"Surface radius ({r:.1f} Rₚ) ≥ max field line radius ({fl_settings['rmax']:.1f} Rₚ). Field lines hidden inside surface.")
+        st.warning(
+            f"Surface radius ({r:.1f} Rₚ) ≥ max field line radius "
+            f"({fl_settings['rmax']:.1f} Rₚ). Field lines hidden inside surface."
+        )
         field_lines = []
     else:
         field_lines = compute_field_lines(
             planet_name,
             model,
+            year,
             units,
-            r,  # This is surface_r in the function
+            r,
             min(resolution, 128),
             rmax=fl_settings["rmax"],
             nr=25,
@@ -788,7 +894,6 @@ if show_lines and fl_settings:
             max_arc_length=80.0,
             points_per_unit_length=25,
         )
-
 
 surface_data = compute_surface_trace(
     units,
@@ -808,7 +913,6 @@ field_line_data = compute_field_line_traces(
     fl_settings.get("line_width", 3) if fl_settings else 3,
 )
 
-
 # Compute coastlines if Earth and enabled
 coastline_data = []
 if planet_name == "earth" and show_coastlines:
@@ -826,15 +930,8 @@ fig = build_figure(
     rmax_for_layout,
     r
 )
-# config = {
-#     "scrollZoom": True,           # Pinch zoom on touch devices
-#     "displayModeBar": "hover",    # Show toolbar on hover (less clutter)
-#     "modeBarButtonsToRemove": ["toImage", "sendDataToCloud"],
-#     "displaylogo": False,
-#     "doubleClick": "reset",       # Double-tap to reset view
-# }
 
-st.plotly_chart(fig, width="stretch")#, config=config)
+st.plotly_chart(fig, width='stretch')
 
 st.caption(
     "Drag to rotate · Scroll to zoom · "
