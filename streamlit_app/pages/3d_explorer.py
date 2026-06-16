@@ -491,6 +491,7 @@ def build_figure(
         paper_bgcolor="#0e1117",
         margin=dict(l=0, r=0, t=0, b=0),
         height=650,
+        dragmode="orbit"
     )
 
     return fig
@@ -685,7 +686,15 @@ fig = build_figure(
     rmax_for_layout,
 )
 
-st.plotly_chart(fig, width="stretch")
+config = {
+    "scrollZoom": True,           # Pinch zoom on touch devices
+    "displayModeBar": "hover",    # Show toolbar on hover (less clutter)
+    "modeBarButtonsToRemove": ["toImage", "sendDataToCloud"],
+    "displaylogo": False,
+    "doubleClick": "reset",       # Double-tap to reset view
+}
+
+st.plotly_chart(fig, width="stretch", config=config)
 
 st.caption(
     "Drag to rotate · Scroll to zoom · "
