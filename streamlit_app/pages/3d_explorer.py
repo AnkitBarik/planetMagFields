@@ -486,7 +486,7 @@ def build_figure(
             zaxis=dict(visible=show_axes, range=axis_range),
             bgcolor="black",
             aspectmode="cube",
-            camera=dict(eye=dict(x=1.1, y=1.1, z=0.8)),
+            camera=dict(eye=dict(x=2.0, y=2.0, z=1.6)),
         ),
         paper_bgcolor="#0e1117",
         margin=dict(l=0, r=0, t=0, b=0),
