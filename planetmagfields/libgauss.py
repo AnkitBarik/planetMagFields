@@ -52,6 +52,10 @@ def get_grid(nphi=256,ntheta=128):
         Longitude at every point on a (longitude,co-latitude) grid
     th2D : ndarray(float, ndim=2)
         Co-latitude at every point on a (longitude,co-latitude) grid
+    phi : ndarray(float, ndim=1)
+        Array of longitude values
+    theta : ndarray(float, ndim=1)
+        Array of co-latitude values
     """
 
     phi    = np.linspace(0.,2*np.pi,nphi)
