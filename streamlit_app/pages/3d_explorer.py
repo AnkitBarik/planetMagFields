@@ -491,7 +491,6 @@ def build_figure(
         paper_bgcolor="#0e1117",
         margin=dict(l=0, r=0, t=0, b=0),
         height=650,
-        dragmode="zoom"
     )
 
     return fig
