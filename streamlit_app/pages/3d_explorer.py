@@ -4,6 +4,7 @@ Streamlit webapp for interactive 3D visualization of planetary magnetic fields.
 Uses planetmagfields' built-in potential extrapolation for fast field line tracing.
 """
 
+from matplotlib import axis
 import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
@@ -65,7 +66,7 @@ def compute_surface_br(
 
 @st.cache_resource(show_spinner="Extrapolating field to 3D grid...")
 def get_extrapolated_field(
-    name: str, model: str, units: str, nphi: int, rmax: float, nr: int = 40
+    name: str, model: str, units: str, r: float, nphi: int, rmax: float, nr: int = 40
 ) -> tuple[Planet, np.ndarray]:
     """
     Use Planet.extrapolate() to compute B-field on radial shells.
@@ -73,8 +74,8 @@ def get_extrapolated_field(
 
     Field arrays have shape (nphi, ntheta, nr).
     """
-    planet = Planet(name=name, model=model, r=1.0, units=units, nphi=nphi, info=False)
-    rout = np.linspace(1.0, rmax, nr)
+    planet = Planet(name=name, model=model, r=r, units=units, nphi=nphi, info=False)
+    rout = np.linspace(r, rmax, nr)
     planet.extrapolate(rout)
     return planet, rout
 
@@ -113,6 +114,7 @@ def get_seed_points(
     planet_name: str,
     planet_model: str,
     planet_units: str,
+    r : float,
     nphi: int,
     n_lines: int,
     rng_seed: int = 42,
@@ -125,7 +127,7 @@ def get_seed_points(
     2. Ensure coverage of both positive and negative Br regions (for closed field lines)
     3. Add some uniform random seeds for overall coverage
     """
-    planet = load_planet(planet_name, planet_model, 1.0, planet_units, nphi)
+    planet = load_planet(planet_name, planet_model, r, planet_units, nphi)
 
     rng = np.random.default_rng(rng_seed)
     br = planet.Br  # shape: (nphi, ntheta)
@@ -205,6 +207,7 @@ def compute_field_lines(
     planet_name: str,
     planet_model: str,
     planet_units: str,
+    surface_r: float,  # Renamed from 'r' to avoid shadowing
     nphi: int,
     rmax: float,
     nr: int,
@@ -215,8 +218,12 @@ def compute_field_lines(
 ) -> list[tuple[np.ndarray, np.ndarray, np.ndarray]]:
     """Trace field lines using adaptive ODE solver with optimizations."""
 
+    # Can't trace field lines if surface encompasses the entire domain
+    if surface_r >= rmax:
+        return []
+
     planet, rout = get_extrapolated_field(
-        planet_name, planet_model, planet_units, nphi, rmax, nr
+        planet_name, planet_model, planet_units, surface_r, nphi, rmax, nr
     )
 
     interp_br, interp_bt, interp_bp = create_field_interpolators(planet, rout)
@@ -230,8 +237,9 @@ def compute_field_lines(
         theta_min, theta_max, r_min, r_max_grid
     )
 
+    # Termination events use surface_r instead of hardcoded 1.0
     def hit_surface(t, state, direction):
-        return state[2] - 1.0
+        return state[2] - surface_r
 
     def hit_rmax(t, state, direction):
         return state[2] - rmax
@@ -242,7 +250,8 @@ def compute_field_lines(
     hit_rmax.direction = 1
 
     lines = []
-    r_start = 1.02
+    # Start slightly above the surface
+    r_start = surface_r + 0.02
 
     for theta0, phi0 in zip(seed_thetas, seed_phis):
         with warnings.catch_warnings():
@@ -253,10 +262,10 @@ def compute_field_lines(
                 [0, max_arc_length],
                 [phi0, theta0, r_start],
                 args=(1,),
-                method='LSODA',  # Auto-switching, often faster
+                method='LSODA',
                 events=[hit_surface, hit_rmax],
                 dense_output=True,
-                rtol=1e-3,  # Even looser
+                rtol=1e-3,
                 atol=1e-5,
             )
 
@@ -276,17 +285,18 @@ def compute_field_lines(
         points_forward = []
         points_backward = []
 
+        # Filter points: must be >= surface_r (not inside planet) and <= rmax
         if fwd.success and fwd.t[-1] > 1e-6:
             n_pts = max(10, int(points_per_unit_length * fwd.t[-1]))
             states = fwd.sol(np.linspace(0, fwd.t[-1], n_pts))
-            mask = (states[2, :] >= 0.99) & (states[2, :] <= rmax + 0.01)
+            mask = (states[2, :] >= surface_r - 0.01) & (states[2, :] <= rmax + 0.01)
             if mask.any():
                 points_forward = states[:, mask].T
 
         if bwd.success and bwd.t[-1] > 1e-6:
             n_pts = max(10, int(points_per_unit_length * bwd.t[-1]))
             states = bwd.sol(np.linspace(0, bwd.t[-1], n_pts))
-            mask = (states[2, :] >= 0.99) & (states[2, :] <= rmax + 0.01)
+            mask = (states[2, :] >= surface_r - 0.01) & (states[2, :] <= rmax + 0.01)
             if mask.any():
                 points_backward = states[:, mask].T
 
@@ -303,14 +313,14 @@ def compute_field_lines(
         if len(all_points) < 5:
             continue
 
-        # Convert to Cartesian
-        phi = all_points[:, 0]
-        theta = all_points[:, 1]
-        r = all_points[:, 2]
+        # Convert to Cartesian - use different variable names to avoid shadowing
+        phi_pts = all_points[:, 0]
+        theta_pts = all_points[:, 1]
+        r_pts = all_points[:, 2]
 
-        x = r * np.sin(theta) * np.cos(phi)
-        y = r * np.sin(theta) * np.sin(phi)
-        z = r * np.cos(theta)
+        x = r_pts * np.sin(theta_pts) * np.cos(phi_pts)
+        y = r_pts * np.sin(theta_pts) * np.sin(phi_pts)
+        z = r_pts * np.cos(theta_pts)
 
         lines.append((x, y, z))
 
@@ -335,9 +345,8 @@ default_cmap = "RdBu" if "RdBu" in colormaps else colormaps[0]
 
 @st.cache_data(show_spinner=False)
 def compute_surface_trace(
-    planet_name: str,
-    planet_model: str,
     planet_units: str,
+    r: float,
     p2D: np.ndarray,
     th2D: np.ndarray,
     br: np.ndarray,
@@ -347,9 +356,9 @@ def compute_surface_trace(
     vmax: float | None,
 ) -> dict:
     """Compute surface trace data (cached). Returns dict for go.Surface."""
-    x = np.sin(th2D) * np.cos(p2D)
-    y = np.sin(th2D) * np.sin(p2D)
-    z = np.cos(th2D)
+    x = r * np.sin(th2D) * np.cos(p2D)
+    y = r * np.sin(th2D) * np.sin(p2D)
+    z = r * np.cos(th2D)
 
     abs_max = float(np.abs(br).max())
     cmin = vmin if vmin is not None else -abs_max
@@ -386,6 +395,110 @@ def compute_surface_trace(
         "hover_text": hover_text,
     }
 
+# ---------------------------------------------------------------------------
+# Coastlines for Earth (loaded from pre-generated data)
+# ---------------------------------------------------------------------------
+
+@st.cache_data(show_spinner=False)
+def load_coastline_segments(resolution: str = "110m") -> list[np.ndarray]:
+    """Load pre-generated coastline data from disk."""
+    import os
+
+     # Get the root app directory (parent of 'pages' if we're in a page)
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+
+    # Check if we're in the pages subdirectory
+    if os.path.basename(script_dir) == "pages":
+        app_root = os.path.dirname(script_dir)
+    else:
+        app_root = script_dir
+
+    filepath = os.path.join(app_root, "data", f"coastlines_{resolution}.npz")
+
+    if not os.path.exists(filepath):
+        st.warning(f"Coastline data not found: {filepath}")
+        return []
+
+    data = np.load(filepath)
+    segments = [data[key] for key in data.files]
+    return segments
+
+
+@st.cache_data(show_spinner=False)
+def get_earth_coastlines(
+    r: float,
+    resolution: str = "110m"
+) -> list[tuple[np.ndarray, np.ndarray, np.ndarray]]:
+    """
+    Get Earth coastline coordinates as 3D line segments.
+
+    Coordinate convention (matching planetmagfields):
+    - phi: 0 to 2π (0 at Greenwich, increasing eastward)
+    - theta: 0 to π (0 at North pole, π at South pole)
+
+    Natural Earth uses:
+    - longitude: -180° to +180° (0° at Greenwich)
+    - latitude: -90° to +90° (positive North)
+
+    Parameters
+    ----------
+    r : float
+        Radius at which to plot coastlines (should match surface radius)
+    resolution : str
+        Resolution: '110m' (low/fast) or '50m' (medium)
+
+    Returns
+    -------
+    list of (x, y, z) tuples for each coastline segment
+    """
+    segments = load_coastline_segments(resolution)
+    if not segments:
+        return []
+
+    lines = []
+    # Slight offset to prevent z-fighting with the surface
+    r_coast = r * 1.002
+
+    for coords in segments:
+        # coords[:, 0] = longitude in degrees (-180 to 180)
+        # coords[:, 1] = latitude in degrees (-90 to 90)
+        lon_deg = coords[:, 0]
+        lat_deg = coords[:, 1]
+
+        # Convert longitude to phi (0 to 2π)
+        phi = np.radians(lon_deg) + np.pi  # Add 180° shift
+        phi = phi % (2 * np.pi)  # Wrap to 0-2π
+
+        # Convert latitude to colatitude theta (0 to π)
+        # lat=90° (North pole) -> theta=0
+        # lat=0° (equator) -> theta=π/2
+        # lat=-90° (South pole) -> theta=π
+        theta = np.pi / 2 - np.radians(lat_deg)
+
+        # Convert to Cartesian (same convention as planetmagfields)
+        x = r_coast * np.sin(theta) * np.cos(phi)
+        y = r_coast * np.sin(theta) * np.sin(phi)
+        z = r_coast * np.cos(theta)
+
+        lines.append((x, y, z))
+
+    return lines
+
+@st.cache_data(show_spinner=False)
+def compute_coastline_traces(
+    coastlines: list[tuple[np.ndarray, np.ndarray, np.ndarray]],
+    line_color: str = "white",
+    line_width: float = 1.0,
+) -> list[dict]:
+    """Convert coastline data to trace dicts for Plotly."""
+    if not coastlines:
+        return []
+
+    return [
+        {"x": x, "y": y, "z": z, "color": line_color, "width": line_width}
+        for x, y, z in coastlines
+    ]
+
 
 @st.cache_data(show_spinner=False)
 def compute_field_line_traces(
@@ -420,10 +533,12 @@ def compute_field_line_traces(
 def build_figure(
     surface_data: dict,
     field_line_data: list[dict],
+    coastline_data: list[dict],
     show_axes: bool,
     rmax: float,
+    surface_r: float
 ) -> go.Figure:
-    """Build the 3D Plotly figure from cached trace data. Only layout depends on show_axes."""
+    """Build the 3D Plotly figure from cached trace data."""
 
     surface = go.Surface(
         x=surface_data["x"],
@@ -446,6 +561,19 @@ def build_figure(
 
     fig = go.Figure(data=[surface])
 
+    # Add coastlines (before field lines so they appear under)
+    for cl in coastline_data:
+        fig.add_trace(go.Scatter3d(
+            x=cl["x"],
+            y=cl["y"],
+            z=cl["z"],
+            mode="lines",
+            line=dict(color=cl["color"], width=cl["width"]),
+            hoverinfo="none",
+            showlegend=False,
+        ))
+
+    # Add field lines
     for fl in field_line_data:
         fig.add_trace(go.Scatter3d(
             x=fl["x"],
@@ -458,7 +586,11 @@ def build_figure(
         ))
 
     # Set symmetric axis ranges to keep rotation centered on origin
-    axis_range = [-rmax, rmax]
+    axis_limit = max(rmax, surface_r) + 0.5
+    axis_range = [-axis_limit, axis_limit]
+
+    # Camera distance based on surface size
+    cam_distance = 0.05 * axis_limit
 
     fig.update_layout(
         scene=dict(
@@ -467,7 +599,7 @@ def build_figure(
             zaxis=dict(visible=show_axes, range=axis_range),
             bgcolor="black",
             aspectmode="cube",
-            camera=dict(eye=dict(x=0.8, y=0.8, z=0.8)),
+            camera=dict(eye=dict(x=cam_distance, y=cam_distance, z=cam_distance)),
         ),
         paper_bgcolor="#0e1117",
         margin=dict(l=0, r=0, t=0, b=0),
@@ -535,6 +667,19 @@ with st.sidebar:
         )
 
     show_axes = st.checkbox("Show axes", value=False)
+
+    # Coastlines option (only for Earth)
+    show_coastlines = False
+    coastline_color = "white"
+    coastline_res = "110m"
+    if planet_name == "earth":
+        show_coastlines = st.checkbox("Show coastlines", value=True)
+        if show_coastlines:
+            coastline_color = st.selectbox(
+                "Coastline colour",
+                ["white", "black", "cyan"],
+                key="coastline_color"
+            )
 
     st.divider()
     st.subheader("Colour scale")
@@ -614,33 +759,40 @@ c5.markdown(_metric_html("r / Rp", f"{r:.2f}"), unsafe_allow_html=True)
 
 # Compute field lines if enabled (cached)
 field_lines = None
+# In the main panel section, change the call:
 if show_lines and fl_settings:
     seed_thetas, seed_phis = get_seed_points(
         planet_name,
         model,
         units,
+        r,
         resolution,
         n_lines=fl_settings["n_lines"],
     )
 
-    field_lines = compute_field_lines(
-        planet_name,
-        model,
-        units,
-        min(resolution, 128),
-        rmax=fl_settings["rmax"],
-        nr=25,  # Lower
-        seed_thetas=seed_thetas,
-        seed_phis=seed_phis,
-        max_arc_length=80.0,
-        points_per_unit_length=25,
-    )
+    # Check if field lines can be shown
+    if r >= fl_settings["rmax"]:
+        st.warning(f"Surface radius ({r:.1f} Rₚ) ≥ max field line radius ({fl_settings['rmax']:.1f} Rₚ). Field lines hidden inside surface.")
+        field_lines = []
+    else:
+        field_lines = compute_field_lines(
+            planet_name,
+            model,
+            units,
+            r,  # This is surface_r in the function
+            min(resolution, 128),
+            rmax=fl_settings["rmax"],
+            nr=25,
+            seed_thetas=seed_thetas,
+            seed_phis=seed_phis,
+            max_arc_length=80.0,
+            points_per_unit_length=25,
+        )
 
-# Compute cached trace data (does NOT depend on show_axes)
+
 surface_data = compute_surface_trace(
-    planet_name,
-    model,
     units,
+    r,
     p2D,
     th2D,
     br_surf,
@@ -656,16 +808,24 @@ field_line_data = compute_field_line_traces(
     fl_settings.get("line_width", 3) if fl_settings else 3,
 )
 
-# Build figure with layout (show_axes only affects layout, not cached data)
+
+# Compute coastlines if Earth and enabled
+coastline_data = []
+if planet_name == "earth" and show_coastlines:
+    coastlines = get_earth_coastlines(r)
+    coastline_data = compute_coastline_traces(coastlines, coastline_color, line_width=1.5)
+
+# Build figure
 rmax_for_layout = fl_settings.get("rmax", 1.0) if fl_settings else 1.0
 
 fig = build_figure(
     surface_data,
     field_line_data,
+    coastline_data,
     show_axes,
     rmax_for_layout,
+    r
 )
-
 # config = {
 #     "scrollZoom": True,           # Pinch zoom on touch devices
 #     "displayModeBar": "hover",    # Show toolbar on hover (less clutter)
