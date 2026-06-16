@@ -52,6 +52,10 @@ A list of models and keywords for them can be obtained using the :py:func:`get_m
    In [2]: get_models("jupiter")
    Out[2]: array(['jrm09', 'jrm33', 'vip4'], dtype='<U5')
 
+.. warning::
+
+   Reading of IGRF14 model had a bug before version 1.7.0. Please update to the latest version to avoid any issues.
+
 In case of Earth, a special argument ``year`` is also used to provide a year between 1900 to present day. This uses the IGRF14 model to compute a linear secular variation and extrapolate to the desired year. For example, the code below
 
 .. code-block:: python

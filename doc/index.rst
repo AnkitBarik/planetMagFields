@@ -17,7 +17,6 @@ The prerequisites, installation and features are described in the pages below. T
    :maxdepth: 2
    :numbered:
 
-   prereq
    installation
    examples
    cli

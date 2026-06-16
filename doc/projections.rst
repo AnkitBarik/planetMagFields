@@ -39,20 +39,6 @@ By default, the plot function tries to use the Mollweide projection. However, us
 .. image:: _static/images/proj_examples/jup_r0_85AzimuthalEquidistant.png
   :width: 45%
 
-This also works with the :ref:`magField.py <secmagfieldscript>` script for quick plotting. Examples:
-
-.. code-block:: bash
-
-  ./magField.py -p earth -r 0.9 -m Robinson
-
-
-or even with plots of all planets together
-
-.. code-block:: bash
-
-  ./magField.py -p all -r 0.9 -m Robinson
-
-
-Note that the projection information is kept out of the plot titles to prevent too much text.
+This also works with the :ref:`command line interface <seccli>` for quick plotting. Note that the projection information is kept out of the plot titles to prevent too much text.
 
 ❗ | The Orthographic projection often does not create correct plots, be cautious while using it.

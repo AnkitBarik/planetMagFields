@@ -261,7 +261,7 @@ Get field along a trajectory
    Potential extrapolation prior to v1.5.1 had a bug and the extrapolated fields would be overestimated. Please take care!
 
 
-You can obtain field components along a trajectory (for example, obtained from NASA's `SPICE Toolkit <https://naif.jpl.nasa.gov/naif/toolkit.html>`_) using the function :py:func:`Planet.orbit_path <planetmagfields.Planet.orbit_path>`. This also uses the `SHTns <https://bitbucket.org/nschaeff/shtns>`_ library for spherical harmonic transforms. Usage example below using some points from the Cassini Grand Finale:
+You can obtain field components along a trajectory (for example, obtained from NASA's `SPICE Toolkit <https://naif.jpl.nasa.gov/naif/toolkit.html>`_) using the function :py:func:`Planet.orbit_path <planetmagfields.Planet.orbit_path>`. This uses the `SHTns <https://bitbucket.org/nschaeff/shtns>`_ library for spherical harmonic transforms but falls back to SciPy if SHTns is not available. Usage example below using some points from the Cassini Grand Finale:
 
 .. code-block:: python
 
@@ -289,84 +289,28 @@ This will provide the outputs:
     [0.00347406 0.00347843 0.00348281 0.00348721 0.00349161]
     [0. 0. 0. 0. 0.]
 
-.. _secMagFieldScript:
+A plot for the Cassini Grand Finale trajectory compared against the MAG data is shown below:
 
-Quickplot using the ``magField.py`` script
-********************************************
+.. image:: _static/images/field_Cassini_traj.png
+   :height: 300
+   :align: center
 
-.. code-block:: console
+.. _subsec3Dviz:
 
-   $ ./magField.py --help
-   usage: magField.py [-h] [-p PLANET] [-r R] [-c CMAP] [-l LEVELS] [-m PROJ] [-o MODEL]
+3D Visualization with :py:func:`Planet.plot3D <planetmagfields.Planet.plot3D>`
+******************************************************************************
 
-   Script for easy plotting of planetary magnetic field.
+The :py:func:`Planet.plot3D <planetmagfields.Planet.plot3D>` function allows for 3D visualization of a planet's magnetic field. This can be particularly useful for understanding the spatial distribution and behavior of the magnetic field in three dimensions. This function makes use of VTK using the `PyVista <https://docs.pyvista.org/>`_ library.
+An example usage is shown below:
 
-   optional arguments:
-   -h, --help            show this help message and exit
-   -p PLANET, --planet PLANET
-                           Planet name (default : earth)
-   -r R, --radius R      Radial level scaled to planetary radius (default : 1)
-   -c CMAP, --cmap CMAP  Colormap of plot (default : RdBu_r)
-   -l LEVELS, --levels LEVELS
-                           Number of contour levels (default : 20)
-   -m PROJ, --mapproj PROJ
-                           Type of map projection (default : Mollweide)
-   -o MODEL, --model MODEL
-                           Model to be used, uses the latest model by default (default : None)
+.. code-block:: python
 
-This will plot the radial magnetic field of a planet (any of the names from the list
-below, case insensitive) at a radius given in terms of the surface radius with a given
-map projection. The default is the surface field. More details are available through
-the help.
+   from planetmagfields import Planet
+   p = Planet('saturn')
+   p.plot3D(fieldlines=True)
 
-For example,
+which produces a 3D plot of the magnetic field lines for the planet Saturn.
 
-.. code-block:: bash
-
-   $ ./magField.py -p earth -m Mollweide
-
-displays the same information as above about Earth's field and produces the surface field of Earth while
-
-.. code-block:: bash
-
-   $ ./magField.py -p jupiter -r 0.85 -m Mollweide -o jrm09
-
-
-produces the same plot of Jupiter's field as shown before.
-
-.. code-block:: bash
-
-   $ ./magField.py -p all -r <radius> -m <projection>
-
-
-would produce a table of information about dipole tilt for each planet and magnetic field maps of all different planets at the given radius in a single figure.
-
-For example:
-
-.. code-block:: bash
-
-   $ ./magField.py -p all -r 0.9 -m Mollweide
-
-
-would give
-
-.. code-block:: console
-
-   |=========|======|=======|
-   |Planet   | Theta| Phi   |
-   |=========|======|=======|
-   |Mercury  | 0.0  | 0.0   |
-   |Earth    | -9.4 | -72.7 |
-   |Jupiter  | 10.3 | -16.6 |
-   |Saturn   | 0.0  | 0.0   |
-   |Uranus   | 58.6 | -53.6 |
-   |Neptune  | 46.9 | -72.0 |
-   |Ganymede | -4.2 | 25.5  |
-   |---------|------|-------|
-
-
-followed by the following plot
-
-.. image:: _static/images/magField_all_09.png
-   :width: 500
+.. image:: _static/images/saturn_3D.png
+   :height: 300
    :align: center
