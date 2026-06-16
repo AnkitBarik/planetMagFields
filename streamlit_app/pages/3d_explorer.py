@@ -110,10 +110,10 @@ def create_field_interpolators(
 
 @st.cache_data(show_spinner=False)
 def get_seed_points(
-    _planet_name: str,
-    _planet_model: str,
-    _planet_units: str,
-    _nphi: int,
+    planet_name: str,
+    planet_model: str,
+    planet_units: str,
+    nphi: int,
     n_lines: int,
     rng_seed: int = 42,
 ) -> tuple[np.ndarray, np.ndarray]:
@@ -125,7 +125,7 @@ def get_seed_points(
     2. Ensure coverage of both positive and negative Br regions (for closed field lines)
     3. Add some uniform random seeds for overall coverage
     """
-    planet = load_planet(_planet_name, _planet_model, 1.0, _planet_units, _nphi)
+    planet = load_planet(planet_name, planet_model, 1.0, planet_units, nphi)
 
     rng = np.random.default_rng(rng_seed)
     br = planet.Br  # shape: (nphi, ntheta)
@@ -172,42 +172,51 @@ def get_seed_points(
 # Smooth adaptive field-line tracing with dense_output (CACHED)
 # ---------------------------------------------------------------------------
 
+def create_ode_rhs(interp_br, interp_bt, interp_bp, theta_min, theta_max, r_min, r_max_grid):
+    """Create ODE function with closures for speed."""
+    point = np.zeros((1, 3))  # Pre-allocate once
+
+    def ode_rhs(t, state, direction):
+        phi, theta, r = state
+
+        point[0, 0] = phi % (2 * np.pi)
+        point[0, 1] = np.clip(theta, theta_min + 1e-6, theta_max - 1e-6)
+        point[0, 2] = np.clip(r, r_min, r_max_grid)
+
+        br = interp_br(point)[0]
+        bt = interp_bt(point)[0]
+        bp = interp_bp(point)[0]
+
+        mag = np.sqrt(br*br + bt*bt + bp*bp) + 1e-12
+        sin_theta = np.sin(point[0, 1]) + 1e-10
+        r_val = point[0, 2]
+
+        return [
+            direction * bp / (r_val * sin_theta * mag),
+            direction * bt / (r_val * mag),
+            direction * br / mag,
+        ]
+
+    return ode_rhs
+
+
 @st.cache_data(show_spinner="Tracing field lines...")
 def compute_field_lines(
-    _planet_name: str,
-    _planet_model: str,
-    _planet_units: str,
-    _nphi: int,
+    planet_name: str,
+    planet_model: str,
+    planet_units: str,
+    nphi: int,
     rmax: float,
     nr: int,
     seed_thetas: np.ndarray,
     seed_phis: np.ndarray,
-    max_arc_length: float = 100.0,
-    points_per_unit_length: int = 50,
+    max_arc_length: float = 80.0,
+    points_per_unit_length: int = 25,
 ) -> list[tuple[np.ndarray, np.ndarray, np.ndarray]]:
-    """
-    Trace field lines using adaptive ODE solver with dense_output for smooth curves.
+    """Trace field lines using adaptive ODE solver with optimizations."""
 
-    Parameters
-    ----------
-    _planet_name, _planet_model, _planet_units, _nphi : str/int
-        Planet parameters for cache key (prefixed with _ to exclude from hashing).
-    rmax : float
-        Maximum radius for tracing.
-    nr : int
-        Number of radial grid points.
-    seed_thetas, seed_phis : ndarray
-        Seed point coordinates.
-    max_arc_length : float
-        Maximum arc length to integrate.
-    points_per_unit_length : int
-        Number of points per unit arc length for smooth rendering.
-
-    State vector: [phi, theta, r] to match (nphi, ntheta, nr) convention.
-    """
-    # Load extrapolated field inside cached function
     planet, rout = get_extrapolated_field(
-        _planet_name, _planet_model, _planet_units, _nphi, rmax, nr
+        planet_name, planet_model, planet_units, nphi, rmax, nr
     )
 
     interp_br, interp_bt, interp_bp = create_field_interpolators(planet, rout)
@@ -215,35 +224,17 @@ def compute_field_lines(
     theta_min, theta_max = planet.theta.min(), planet.theta.max()
     r_min, r_max_grid = rout.min(), rout.max()
 
-    def ode_rhs(t, state, direction):
-        """ODE for field line tracing. State: [phi, theta, r]."""
-        phi, theta, r = state
-
-        phi_wrapped = phi % (2 * np.pi)
-        theta_clamped = np.clip(theta, theta_min + 1e-6, theta_max - 1e-6)
-        r_clamped = np.clip(r, r_min, r_max_grid)
-
-        point = np.array([[phi_wrapped, theta_clamped, r_clamped]])
-
-        br = float(interp_br(point)[0])
-        bt = float(interp_bt(point)[0])
-        bp = float(interp_bp(point)[0])
-
-        mag = np.sqrt(br**2 + bt**2 + bp**2) + 1e-12
-        sin_theta = np.sin(theta_clamped) + 1e-10
-
-        # Derivatives: [dphi/ds, dtheta/ds, dr/ds]
-        return [
-            direction * bp / (r_clamped * sin_theta * mag),
-            direction * bt / (r_clamped * mag),
-            direction * br / mag,
-        ]
+    # Create ODE function once (with pre-allocated array)
+    ode_rhs = create_ode_rhs(
+        interp_br, interp_bt, interp_bp,
+        theta_min, theta_max, r_min, r_max_grid
+    )
 
     def hit_surface(t, state, direction):
-        return state[2] - 1.0  # r is state[2]
+        return state[2] - 1.0
 
     def hit_rmax(t, state, direction):
-        return state[2] - rmax  # r is state[2]
+        return state[2] - rmax
 
     hit_surface.terminal = True
     hit_surface.direction = -1
@@ -254,74 +245,65 @@ def compute_field_lines(
     r_start = 1.02
 
     for theta0, phi0 in zip(seed_thetas, seed_phis):
-        points_forward = []
-        points_backward = []
-
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
 
-            # Forward integration: state = [phi, theta, r]
             fwd = solve_ivp(
                 ode_rhs,
                 [0, max_arc_length],
                 [phi0, theta0, r_start],
                 args=(1,),
-                method='RK45',
+                method='LSODA',  # Auto-switching, often faster
                 events=[hit_surface, hit_rmax],
                 dense_output=True,
-                rtol=1e-6,
-                atol=1e-8,
+                rtol=1e-3,  # Even looser
+                atol=1e-5,
             )
 
-            # Backward integration
             bwd = solve_ivp(
                 ode_rhs,
                 [0, max_arc_length],
                 [phi0, theta0, r_start],
                 args=(-1,),
-                method='RK45',
+                method='LSODA',
                 events=[hit_surface, hit_rmax],
                 dense_output=True,
-                rtol=1e-6,
-                atol=1e-8,
+                rtol=1e-3,
+                atol=1e-5,
             )
 
-        # Resample forward path at uniform arc-length intervals
+        # Resample with vectorized masking
+        points_forward = []
+        points_backward = []
+
         if fwd.success and fwd.t[-1] > 1e-6:
-            n_pts_fwd = max(20, int(points_per_unit_length * fwd.t[-1]))
-            s_fwd = np.linspace(0, fwd.t[-1], n_pts_fwd)
-            states_fwd = fwd.sol(s_fwd)  # shape: (3, n_pts)
-            for i in range(len(s_fwd)):
-                phi, theta, r = states_fwd[0, i], states_fwd[1, i], states_fwd[2, i]
-                if 1.0 - 0.01 <= r <= rmax + 0.01:
-                    points_forward.append([phi, theta, r])
+            n_pts = max(10, int(points_per_unit_length * fwd.t[-1]))
+            states = fwd.sol(np.linspace(0, fwd.t[-1], n_pts))
+            mask = (states[2, :] >= 0.99) & (states[2, :] <= rmax + 0.01)
+            if mask.any():
+                points_forward = states[:, mask].T
 
-        # Resample backward path at uniform arc-length intervals
         if bwd.success and bwd.t[-1] > 1e-6:
-            n_pts_bwd = max(20, int(points_per_unit_length * bwd.t[-1]))
-            s_bwd = np.linspace(0, bwd.t[-1], n_pts_bwd)
-            states_bwd = bwd.sol(s_bwd)
-            for i in range(len(s_bwd)):
-                phi, theta, r = states_bwd[0, i], states_bwd[1, i], states_bwd[2, i]
-                if 1.0 - 0.01 <= r <= rmax + 0.01:
-                    points_backward.append([phi, theta, r])
+            n_pts = max(10, int(points_per_unit_length * bwd.t[-1]))
+            states = bwd.sol(np.linspace(0, bwd.t[-1], n_pts))
+            mask = (states[2, :] >= 0.99) & (states[2, :] <= rmax + 0.01)
+            if mask.any():
+                points_backward = states[:, mask].T
 
-        # Combine: backward (reversed) + forward (skip duplicate at seed)
-        points_backward.reverse()
-        if points_forward and points_backward:
-            all_points = points_backward + points_forward[1:]
-        elif points_forward:
+        # Combine
+        if len(points_forward) and len(points_backward):
+            all_points = np.vstack([points_backward[::-1], points_forward[1:]])
+        elif len(points_forward):
             all_points = points_forward
-        elif points_backward:
-            all_points = points_backward
+        elif len(points_backward):
+            all_points = points_backward[::-1]
         else:
             continue
 
         if len(all_points) < 5:
             continue
 
-        # Convert to Cartesian: points are [phi, theta, r]
-        all_points = np.array(all_points)
+        # Convert to Cartesian
         phi = all_points[:, 0]
         theta = all_points[:, 1]
         r = all_points[:, 2]
@@ -333,7 +315,6 @@ def compute_field_lines(
         lines.append((x, y, z))
 
     return lines
-
 
 # ---------------------------------------------------------------------------
 # 3D figure builder - separated into cached traces and layout
@@ -354,9 +335,9 @@ default_cmap = "RdBu" if "RdBu" in colormaps else colormaps[0]
 
 @st.cache_data(show_spinner=False)
 def compute_surface_trace(
-    _planet_name: str,
-    _planet_model: str,
-    _planet_units: str,
+    planet_name: str,
+    planet_model: str,
+    planet_units: str,
     p2D: np.ndarray,
     th2D: np.ndarray,
     br: np.ndarray,
@@ -379,18 +360,18 @@ def compute_surface_trace(
 
     hover_text = np.where(
         use_scientific,
-        np.char.add(np.char.add("Br: ", np.char.mod("%.2e", br)), f" {_planet_units}"),
-        np.char.add(np.char.add("Br: ", np.char.mod("%.3f", br)), f" {_planet_units}"),
+        np.char.add(np.char.add("Br: ", np.char.mod("%.2e", br)), f" {planet_units}"),
+        np.char.add(np.char.add("Br: ", np.char.mod("%.3f", br)), f" {planet_units}"),
     )
 
-    if _planet_units == "nT":
+    if planet_units == "nT":
         cbar_title = "Bᵣ (nT)"
-    elif _planet_units == "muT":
+    elif planet_units == "muT":
         cbar_title = "Bᵣ (μT)"
-    elif _planet_units == "Gauss":
+    elif planet_units == "Gauss":
         cbar_title = "Bᵣ (G)"
     else:
-        cbar_title = f"Bᵣ ({_planet_units})"
+        cbar_title = f"Bᵣ ({planet_units})"
 
     return {
         "x": x,
@@ -486,7 +467,7 @@ def build_figure(
             zaxis=dict(visible=show_axes, range=axis_range),
             bgcolor="black",
             aspectmode="cube",
-            camera=dict(eye=dict(x=2.0, y=2.0, z=1.6)),
+            camera=dict(eye=dict(x=0.8, y=0.8, z=0.8)),
         ),
         paper_bgcolor="#0e1117",
         margin=dict(l=0, r=0, t=0, b=0),
@@ -577,7 +558,7 @@ with st.sidebar:
     st.divider()
     st.subheader("Field lines")
 
-    show_lines = st.checkbox("Show field lines", value=False)
+    show_lines = st.checkbox("Show field lines", value=True)
     fl_settings = {}
 
     if show_lines:
@@ -646,13 +627,13 @@ if show_lines and fl_settings:
         planet_name,
         model,
         units,
-        resolution,
+        min(resolution, 128),
         rmax=fl_settings["rmax"],
-        nr=50,
+        nr=25,  # Lower
         seed_thetas=seed_thetas,
         seed_phis=seed_phis,
-        max_arc_length=150.0,
-        points_per_unit_length=50,
+        max_arc_length=80.0,
+        points_per_unit_length=25,
     )
 
 # Compute cached trace data (does NOT depend on show_axes)
@@ -685,15 +666,15 @@ fig = build_figure(
     rmax_for_layout,
 )
 
-config = {
-    "scrollZoom": True,           # Pinch zoom on touch devices
-    "displayModeBar": "hover",    # Show toolbar on hover (less clutter)
-    "modeBarButtonsToRemove": ["toImage", "sendDataToCloud"],
-    "displaylogo": False,
-    "doubleClick": "reset",       # Double-tap to reset view
-}
+# config = {
+#     "scrollZoom": True,           # Pinch zoom on touch devices
+#     "displayModeBar": "hover",    # Show toolbar on hover (less clutter)
+#     "modeBarButtonsToRemove": ["toImage", "sendDataToCloud"],
+#     "displaylogo": False,
+#     "doubleClick": "reset",       # Double-tap to reset view
+# }
 
-st.plotly_chart(fig, width="stretch", config=config)
+st.plotly_chart(fig, width="stretch")#, config=config)
 
 st.caption(
     "Drag to rotate · Scroll to zoom · "
