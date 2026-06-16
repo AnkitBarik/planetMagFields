@@ -6,12 +6,12 @@
 Welcome to planetMagFields' documentation!
 ===========================================
 
-`planetMagFields` is a package that provides an easy interface to plot and analyze planetary magnetic field data. `planetMagFields` is free and open source and is available at https://github.com/AnkitBarik/planetMagFields .
+`planetMagFields` is a package that provides an easy interface to plot and analyze planetary magnetic field data. `planetMagFields` is free and open source and is available at https://github.com/AnkitBarik/planetMagFields . The web application for `planetMagFields` is available at https://planetmagfields.streamlit.app/ . Head there to start visualizing magnetic fields of planets.
 
 Documentation
 -------------
 
-The prerequisites, installation and features are described in the pages below. However, for easy and quick visualization, skip ahead to the :ref:`Jupyter notebook <secjup>` section. The details of the math are explained in the :ref:`Mathematics <secMath>` section.
+The prerequisites, installation and features are described in the pages below. The details of the math are explained in the :ref:`Mathematics <secMath>` section.
 
 .. toctree::
    :maxdepth: 2
