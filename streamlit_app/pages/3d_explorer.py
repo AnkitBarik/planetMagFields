@@ -853,6 +853,7 @@ with st.sidebar:
             key="res_val",
         )
 
+    show_spectrum = st.checkbox("Show spectrum", value=False)
     show_axes = st.checkbox("Show axes", value=False)
 
     # Coastlines option (only for Earth)
@@ -918,9 +919,8 @@ with st.sidebar:
 # Main panel
 # ---------------------------------------------------------------------------
 
-col_3d, _,col_spectrum = st.columns([1.5, 0.1, 1])
+def display_3d_visualization():
 
-with col_3d:
     st.title("Planetary Magnetic Fields — 3D Explorer")
 
     planet = load_planet(planet_name, model, year, r, units, resolution)
@@ -1033,20 +1033,36 @@ with col_3d:
 
     st.plotly_chart(fig3d, width='stretch')
 
-    with col_spectrum:
-        st.markdown('<div style="margin-top: 100px;"></div>', unsafe_allow_html=True)
 
-        spectrum_data = compute_spectrum_data(
-            planet_name,
-            year if planet_name.lower() == "earth" else None,
-            r
-        )
-        fig_spectrum = build_spectrum_figure(spectrum_data)
-        st.plotly_chart(fig_spectrum, width='stretch', theme="streamlit")
-        display_spectrum_metrics(spectrum_data)
+if show_spectrum:
+    col_3d, _,col_spectrum = st.columns([1.5, 0.1, 1])
 
-st.caption(
-    "Drag to rotate · Scroll to zoom · "
-    "Documentation: [planetMagFields](https://github.com/AnkitBarik/planetMagFields) · "
-    "Source: [planetMagFields](https://github.com/AnkitBarik/planetMagFields)"
-)
+    with col_3d:
+        display_3d_visualization()
+
+        with col_spectrum:
+            st.markdown('<div style="margin-top: 100px;"></div>', unsafe_allow_html=True)
+
+            spectrum_data = compute_spectrum_data(
+                planet_name,
+                year if planet_name.lower() == "earth" else None,
+                r
+            )
+            fig_spectrum = build_spectrum_figure(spectrum_data)
+            st.plotly_chart(fig_spectrum, width='stretch', theme="streamlit")
+            display_spectrum_metrics(spectrum_data)
+
+    st.caption(
+        "Drag to rotate · Scroll to zoom · "
+        "Documentation: [planetMagFields](https://github.com/AnkitBarik/planetMagFields) · "
+        "Source: [planetMagFields](https://github.com/AnkitBarik/planetMagFields)"
+    )
+
+else:
+    display_3d_visualization()
+
+    st.caption(
+        "Drag to rotate · Scroll to zoom · "
+        "Documentation: [planetMagFields](https://github.com/AnkitBarik/planetMagFields) · "
+        "Source: [planetMagFields](https://github.com/AnkitBarik/planetMagFields)"
+    )
