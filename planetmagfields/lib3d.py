@@ -225,7 +225,7 @@ def render_tight(plotter, mesh, padding=0.1):
 
     return plotter
 
-def plot_surface(theta,phi,dat,fieldname='Br',cmap='seismic',clim_fac=0.01, bgcolor='black'):
+def plot_surface(theta,phi,dat,fieldname='Br',cmap='seismic',clim_fac=1.0, bgcolor='black'):
 
     th_bounds = _cell_bounds(theta * 180/np.pi)
     ph_bounds = _cell_bounds(phi * 180/np.pi)
@@ -240,23 +240,20 @@ def plot_surface(theta,phi,dat,fieldname='Br',cmap='seismic',clim_fac=0.01, bgco
 
     grid.cell_data[fieldname] = dat.ravel('C')
 
-    pl = pv.Plotter(window_size=(500, 500))
+    pl = pv.Plotter(window_size=(800, 800))
 
     font_color = set_plotter_properties(pl, bgcolor)
 
-    if clim_fac is not None:
-        datMax = np.max(np.abs(dat))
-        clim = [-clim_fac * datMax, clim_fac * datMax]
-        pl.add_mesh(grid, cmap=cmap,clim=clim,smooth_shading=True, show_scalar_bar=False)
-    else:
-        pl.add_mesh(grid, cmap=cmap,smooth_shading=True, show_scalar_bar=False)
+    datMax = np.max(np.abs(dat))
+    clim = [-clim_fac * datMax, clim_fac * datMax]
+    pl.add_mesh(grid, cmap=cmap,clim=clim,smooth_shading=True, show_scalar_bar=False)
 
     pl = render_tight(pl, grid, padding=0.1)
 
     return pl, font_color
 
 def render_field_lines(planetname, glm, hlm, idx, lmax, mmax, rplanet,
-                       rout, nphi=128, surf=False, clim_fac=0.01,
+                       rout, nphi=128, surf=False, clim_fac=1.0,
                        units='nT', bgcolor='black', cmap='seismic',
                        lightweight=False):
 
@@ -324,7 +321,7 @@ def render_field_lines(planetname, glm, hlm, idx, lmax, mmax, rplanet,
         br_surf = getB(lmax,mmax,glm,hlm,idx,1,p2D,th2D,planetname=planetname)
         pl, font_color = plot_surface(theta, phi, br_surf, clim_fac=clim_fac, bgcolor=bgcolor)
     else:
-        pl = pv.Plotter(window_size=(500, 500))
+        pl = pv.Plotter(window_size=(800, 800))
         font_color = set_plotter_properties(pl, bgcolor)
 
     # Transform vectors to cartesian coordinates
@@ -371,7 +368,7 @@ def render_field_lines(planetname, glm, hlm, idx, lmax, mmax, rplanet,
 
         if max_b_sq > 0:
             radius_scale = b_mag_sq_vals / max_b_sq
-            np.clip(radius_scale, 0.1, 1.0, out=radius_scale)
+            # np.clip(radius_scale, 0.1, 1.0, out=radius_scale)
         else:
             radius_scale = np.ones_like(b_mag_sq_vals) * 0.5
 

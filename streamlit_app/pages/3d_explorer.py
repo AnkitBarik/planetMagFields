@@ -664,17 +664,114 @@ def build_figure(
             xaxis=dict(visible=show_axes, range=axis_range),
             yaxis=dict(visible=show_axes, range=axis_range),
             zaxis=dict(visible=show_axes, range=axis_range),
-            bgcolor="black",
+            bgcolor="#1b1b1b",
             aspectmode="cube",
             camera=dict(eye=dict(x=cam_distance, y=cam_distance, z=cam_distance)),
         ),
-        paper_bgcolor="#0e1117",
+        paper_bgcolor="#1b1b1b",
         margin=dict(l=0, r=0, t=0, b=0),
         height=650,
     )
 
     return fig
 
+@st.cache_data
+def compute_spectrum_data(planet_name, year=None, r=1.0):
+    """Compute power spectrum data for a planet."""
+    if planet_name.lower() == "earth" and year is not None:
+        planet_obj = Planet(planet_name, year=year)
+    else:
+        planet_obj = Planet(planet_name)
+
+    # Compute spectrum at surface (r=1.0)
+    planet_obj.spec(r=r, iplot=False)
+
+    l_values = np.arange(1, planet_obj.lmax + 1)
+    spectrum = planet_obj.emag_spec[1:planet_obj.lmax + 1]  # Skip l=0
+
+    return {
+        'l': l_values,
+        'spectrum': spectrum,
+        'dipolarity': planet_obj.dipolarity,
+        'dip_tot': planet_obj.dip_tot,
+        'emag_tot': planet_obj.emag_tot,
+        'emag_axi': planet_obj.emag_axi,
+        'emag_symm': planet_obj.emag_symm,
+        'emag_antisymm': planet_obj.emag_antisymm,
+        'lmax': planet_obj.lmax
+    }
+
+
+def build_spectrum_figure(spectrum_data):
+    """Build Plotly figure for Lowes power spectrum."""
+
+    fig = go.Figure()
+
+    teal = 'rgb(0, 184, 184)'
+
+    fig.add_trace(go.Scatter(
+        x=spectrum_data['l'],
+        y=spectrum_data['spectrum'],
+        mode='lines+markers',
+        line=dict(color=teal, width=3),
+        marker=dict(color=teal, size=10),
+        showlegend=False
+    ))
+
+    label = "Lowes spectrum"
+
+    fig.update_layout(
+        template=None,  # Let Streamlit handle theming
+        title=dict(
+            text=label,
+            x=0.5,
+            xanchor='center',
+            font=dict(size=24, color="white")
+        ),
+        xaxis=dict(
+            title=dict(text="ℓ", font=dict(size=30, color="white"),standoff=15),
+            range=[0.5, spectrum_data['lmax'] + 2.5],
+            dtick=1 if spectrum_data['lmax'] <= 15 else 2,
+            showgrid=True,
+            gridwidth=1,
+            zeroline=False,
+            gridcolor="white",
+            tickfont=dict(size=20, color="white")
+        ),
+        yaxis=dict(
+            title=dict(text="R<sub>ℓ</sub> (nT²)", font=dict(size=30, color="white"),standoff=20),
+            type="log",
+            showgrid=True,
+            gridwidth=1,
+            gridcolor="white",
+            zeroline=False,
+            exponentformat='power',
+            tickfont=dict(size=20, color="white")
+        ),
+        height=700,
+        margin=dict(l=90, r=30, t=50, b=60),
+        plot_bgcolor='#1b1b1b',
+        paper_bgcolor='#1b1b1b',
+    )
+
+    return fig
+
+
+def display_spectrum_metrics(spectrum_data):
+    """Display spectrum metrics in a wrapped layout."""
+    # Compute percentages for axisymmetric and symmetric components
+    axi_percent = spectrum_data['emag_axi'] / spectrum_data['emag_tot'] * 100
+    symm_percent = spectrum_data['emag_symm'] / spectrum_data['emag_tot'] * 100
+    antisymm_percent = spectrum_data['emag_antisymm'] / spectrum_data['emag_tot'] * 100
+
+    # Use 4 columns that wrap nicely
+    c1, c2 = st.columns(2)
+    c3, c4 = st.columns(2)
+
+    c1.metric("Dipolarity (axial)", f"{spectrum_data['dipolarity']:.1%}")
+    c2.metric("Dipolarity (total)", f"{spectrum_data['dip_tot']:.1%}")
+    c3.metric("Axisymmetric", f"{axi_percent:.1f}%")
+    c4.metric("Equat. symmetric", f"{symm_percent:.1f}%")
 
 # ---------------------------------------------------------------------------
 # Sidebar
@@ -821,117 +918,132 @@ with st.sidebar:
 # Main panel
 # ---------------------------------------------------------------------------
 
-st.title("Planetary Magnetic Fields — 3D Explorer")
+col_3d, _,col_spectrum = st.columns([1.5, 0.1, 1])
 
-planet = load_planet(planet_name, model, year, r, units, resolution)
-p2D, th2D, br_surf = compute_surface_br(planet_name, model, year, r, units, resolution)
+with col_3d:
+    st.title("Planetary Magnetic Fields — 3D Explorer")
 
-st.markdown("""
-<style>
-[data-testid="stMetricLabel"] { font-size: 1.5rem !important; }
-[data-testid="stMetricValue"] { font-size: 1.6rem !important; }
-a { color: #58a6ff !important; text-decoration: none !important; }
-a:hover { text-decoration: underline !important; }
-</style>
-""", unsafe_allow_html=True)
+    planet = load_planet(planet_name, model, year, r, units, resolution)
+    p2D, th2D, br_surf = compute_surface_br(planet_name, model, year, r, units, resolution)
 
-
-def _metric_html(label: str, value: str) -> str:
-    return (
-        f'<div style="text-align:center">'
-        f'<div style="font-size:1.8rem;color:#aaa;margin-bottom:2px">{label}</div>'
-        f'<div style="font-size:1.4rem;font-weight:600">{value}</div>'
-        f'</div>'
-    )
+    st.markdown("""
+    <style>
+    [data-testid="stMetricLabel"] { font-size: 1.5rem !important; }
+    [data-testid="stMetricValue"] { font-size: 1.6rem !important; }
+    a { color: #58a6ff !important; text-decoration: none !important; }
+    a:hover { text-decoration: underline !important; }
+    </style>
+    """, unsafe_allow_html=True)
 
 
-# Adjust columns based on whether year is shown
-if year is not None:
-    c1, c2, c3, c4, c5, c6 = st.columns(6)
-else:
-    c1, c2, c3, c4, c5 = st.columns(5)
-
-c1.markdown(_metric_html("Planet", planet.name.capitalize()), unsafe_allow_html=True)
-c2.markdown(_metric_html("Model", get_model_link_html(planet.model)), unsafe_allow_html=True)
-c3.markdown(_metric_html("ℓ<sub>max</sub>", str(planet.lmax)), unsafe_allow_html=True)
-c4.markdown(_metric_html("Dipole tilt", f"{planet.dipTheta:.2f}°"), unsafe_allow_html=True)
-c5.markdown(_metric_html("r / R<sub>p</sub>", f"{r:.2f}"), unsafe_allow_html=True)
-if year is not None:
-    c6.markdown(_metric_html("Year", f"{year:.1f}"), unsafe_allow_html=True)
-
-# Compute field lines if enabled (cached)
-field_lines = None
-if show_lines and fl_settings:
-    seed_thetas, seed_phis = get_seed_points(
-        planet_name,
-        model,
-        year,
-        units,
-        r,
-        resolution,
-        n_lines=fl_settings["n_lines"],
-    )
-
-    # Check if field lines can be shown
-    if r >= fl_settings["rmax"]:
-        st.warning(
-            f"Surface radius ({r:.1f} Rₚ) ≥ max field line radius "
-            f"({fl_settings['rmax']:.1f} Rₚ). Field lines hidden inside surface."
+    def _metric_html(label: str, value: str) -> str:
+        return (
+            f'<div style="text-align:center">'
+            f'<div style="font-size:1.8rem;color:#aaa;margin-bottom:2px">{label}</div>'
+            f'<div style="font-size:1.4rem;font-weight:600">{value}</div>'
+            f'</div>'
         )
-        field_lines = []
+
+
+    # Adjust columns based on whether year is shown
+    if year is not None:
+        c1, c2, c3, c4, c5, c6 = st.columns(6)
     else:
-        field_lines = compute_field_lines(
+        c1, c2, c3, c4, c5 = st.columns(5)
+
+    c1.markdown(_metric_html("Planet", planet.name.capitalize()), unsafe_allow_html=True)
+    c2.markdown(_metric_html("Model", get_model_link_html(planet.model)), unsafe_allow_html=True)
+    c3.markdown(_metric_html("ℓ<sub>max</sub>", str(planet.lmax)), unsafe_allow_html=True)
+    c4.markdown(_metric_html("Dipole tilt", f"{planet.dipTheta:.2f}°"), unsafe_allow_html=True)
+    c5.markdown(_metric_html("r / R<sub>p</sub>", f"{r:.2f}"), unsafe_allow_html=True)
+    if year is not None:
+        c6.markdown(_metric_html("Year", f"{year:.1f}"), unsafe_allow_html=True)
+
+    # Compute field lines if enabled (cached)
+    field_lines = None
+    if show_lines and fl_settings:
+        seed_thetas, seed_phis = get_seed_points(
             planet_name,
             model,
             year,
             units,
             r,
-            min(resolution, 128),
-            rmax=fl_settings["rmax"],
-            nr=25,
-            seed_thetas=seed_thetas,
-            seed_phis=seed_phis,
-            max_arc_length=80.0,
-            points_per_unit_length=25,
+            resolution,
+            n_lines=fl_settings["n_lines"],
         )
 
-surface_data = compute_surface_trace(
-    units,
-    r,
-    p2D,
-    th2D,
-    br_surf,
-    selected_cmap,
-    use_reversescale,
-    vmin,
-    vmax,
-)
+        # Check if field lines can be shown
+        if r >= fl_settings["rmax"]:
+            st.warning(
+                f"Surface radius ({r:.1f} Rₚ) ≥ max field line radius "
+                f"({fl_settings['rmax']:.1f} Rₚ). Field lines hidden inside surface."
+            )
+            field_lines = []
+        else:
+            field_lines = compute_field_lines(
+                planet_name,
+                model,
+                year,
+                units,
+                r,
+                min(resolution, 128),
+                rmax=fl_settings["rmax"],
+                nr=25,
+                seed_thetas=seed_thetas,
+                seed_phis=seed_phis,
+                max_arc_length=80.0,
+                points_per_unit_length=25,
+            )
 
-field_line_data = compute_field_line_traces(
-    field_lines,
-    fl_settings.get("line_color", "white") if fl_settings else "white",
-    fl_settings.get("line_width", 3) if fl_settings else 3,
-)
+    surface_data = compute_surface_trace(
+        units,
+        r,
+        p2D,
+        th2D,
+        br_surf,
+        selected_cmap,
+        use_reversescale,
+        vmin,
+        vmax,
+    )
 
-# Compute coastlines if Earth and enabled
-coastline_data = []
-if planet_name == "earth" and show_coastlines:
-    coastlines = get_earth_coastlines(r)
-    coastline_data = compute_coastline_traces(coastlines, coastline_color, line_width=1.5)
+    field_line_data = compute_field_line_traces(
+        field_lines,
+        fl_settings.get("line_color", "white") if fl_settings else "white",
+        fl_settings.get("line_width", 3) if fl_settings else 3,
+    )
 
-# Build figure
-rmax_for_layout = fl_settings.get("rmax", 1.0) if fl_settings else 1.0
+    # Compute coastlines if Earth and enabled
+    coastline_data = []
+    if planet_name == "earth" and show_coastlines:
+        coastlines = get_earth_coastlines(r)
+        coastline_data = compute_coastline_traces(coastlines, coastline_color, line_width=1.5)
 
-fig = build_figure(
-    surface_data,
-    field_line_data,
-    coastline_data,
-    show_axes,
-    rmax_for_layout,
-    r
-)
+    # Build figure
+    rmax_for_layout = fl_settings.get("rmax", 1.0) if fl_settings else 1.0
 
-st.plotly_chart(fig, width='stretch')
+    fig3d = build_figure(
+        surface_data,
+        field_line_data,
+        coastline_data,
+        show_axes,
+        rmax_for_layout,
+        r
+    )
+
+    st.plotly_chart(fig3d, width='stretch')
+
+    with col_spectrum:
+        st.markdown('<div style="margin-top: 100px;"></div>', unsafe_allow_html=True)
+
+        spectrum_data = compute_spectrum_data(
+            planet_name,
+            year if planet_name.lower() == "earth" else None,
+            r
+        )
+        fig_spectrum = build_spectrum_figure(spectrum_data)
+        st.plotly_chart(fig_spectrum, width='stretch', theme="streamlit")
+        display_spectrum_metrics(spectrum_data)
 
 st.caption(
     "Drag to rotate · Scroll to zoom · "

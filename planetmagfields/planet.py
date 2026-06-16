@@ -7,6 +7,7 @@ from .libdata import get_data
 from .libgauss import filt_Gauss,getB, get_spec
 from .libbfield import getBr
 from .plotlib import plotSurf, plot_spec
+from .lib3d import plot_surface, render_field_lines, writeVts
 from .utils import stdDatDir, planetlist
 
 
@@ -252,7 +253,6 @@ class Planet:
         -------
         None
         """
-        from .lib3d import writeVts
 
         rout = np.linspace(1,ratio_out,nrout)
         if potExtra:
@@ -266,6 +266,22 @@ class Planet:
             bpout = np.zeros_like(self.Br)
 
         writeVts(self.name,brout,btout,bpout,rout,self.theta,self.phi,r_planet)
+
+    def plot3D(self, fieldlines=False,ratio_out=2,nrout=32,r_planet=1):
+        """
+        Plots the 3D magnetic field of the planet.
+        """
+        if fieldlines:
+            rout = np.linspace(r_planet,ratio_out,nrout)
+            pl = render_field_lines(self.name, self.glm, self.hlm, self.idx, self.lmax, self.mmax, 1,
+                       rout, nphi=128, surf=True, clim_fac=1.0,
+                       units='nT', bgcolor='white', cmap='seismic',
+                       lightweight=False)
+            pl.show()
+        else:
+            pl, _ = plot_surface(self.theta,self.phi,self.Br,fieldname='Br',cmap='seismic',clim_fac=1, bgcolor='white')
+            pl.show()
+
 
     ## Filtered plots
 
