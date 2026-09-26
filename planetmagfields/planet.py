@@ -74,7 +74,7 @@ class Planet:
             elif self.name == 'saturn':
                 model = 'cassini11+'
             elif self.name == 'uranus':
-                model = 'connerney1987'
+                model = 'herbert2009'
             elif self.name == 'neptune':
                 model = 'connerney1991'
             elif self.name == 'ganymede':
