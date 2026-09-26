@@ -73,7 +73,7 @@ def getBr(planet, r=1.0, nphi=256, ntheta=128, info=True):
     return p2D, th2D, Br, dipTheta, dipPhi
 
 def plotAllFields(datDir=stdDatDir,r=1.0,levels=30,cmap='RdBu_r',
-                  proj='Mollweide',unit='muT',vmin=None,vmax=None):
+                  proj='Mollweide',units='muT',vmin=None,vmax=None):
     """
     Plots fields of all the planets for which data is available. It's provided in
     utils.planetlist.
@@ -93,6 +93,8 @@ def plotAllFields(datDir=stdDatDir,r=1.0,levels=30,cmap='RdBu_r',
         Colormap for contours, by default 'RdBu_r'
     proj : str, optional
         Map projection, by default 'Mollweide'
+    units : str, optional
+        Units of magnetic field, can be 'nT', 'muT' or 'Gauss', by default 'muT'
     vmin : float, optional
         Minimum of colorscale, by default None
     vmax : float, optional
@@ -109,7 +111,7 @@ def plotAllFields(datDir=stdDatDir,r=1.0,levels=30,cmap='RdBu_r',
     plt.figure(figsize=(12,12))
 
     for k, name in enumerate(planetlist):
-        planet = Planet(name=name,datDir=datDir,r=r,info=False,unit=unit)
+        planet = Planet(name=name,datDir=datDir,r=r,info=False,units=units)
 
         if name == "ganymede":
             nplot = 8

@@ -197,7 +197,7 @@ def plot_all_planets(args):
         levels=args.levels,
         cmap=args.cmap,
         proj=args.proj,
-        unit=args.unit,
+        units=args.unit,
         vmin=args.vmin,
         vmax=args.vmax
     )
@@ -218,7 +218,7 @@ def plot_single_planet(args):
     logger.info(f"Plotting magnetic field for {args.planet}...")
 
     try:
-        planet = Planet(name=args.planet, r=args.r, model=args.model)
+        planet = Planet(name=args.planet, r=args.r, model=args.model, units=args.unit)
         planet.plot(r=args.r, levels=args.levels, cmap=args.cmap, proj=args.proj)
     except Exception as e:
         logger.error(f"Failed to plot {args.planet}: {e}")
