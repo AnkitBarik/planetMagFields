@@ -230,8 +230,8 @@ def test_extrapot_scipy_matches_surface_field(planet):
 
 
 @pytest.mark.parametrize("planet", ["earth", "jupiter", "saturn"])
-def test_orbit_scipy_matches_grid(planet):
-    p = Planet(name=planet, nphi=32, info=False)
+def test_orbit_matches_grid(planet):
+    p = Planet(name=planet, nphi=64, info=False)
     p.extrapolate([2.0])
     p.orbit_path([2.0], [p.theta[7]], [p.phi[5]])
     np.testing.assert_allclose(p.br_orb[0], p.br_ex[5, 7, 0], rtol=1e-6)
