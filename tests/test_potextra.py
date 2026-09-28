@@ -230,10 +230,12 @@ def test_extrapot_scipy_matches_surface_field(planet):
 
 
 @pytest.mark.parametrize("planet", ["earth", "jupiter", "saturn"])
-def test_orbit_matches_grid(planet):
+def test_orbit_matches_scipy(planet):
     p = Planet(name=planet, nphi=64, info=False)
-    p.extrapolate([2.0])
-    p.orbit_path([2.0], [p.theta[7]], [p.phi[5]])
-    np.testing.assert_allclose(p.br_orb[0], p.br_ex[5, 7, 0], rtol=1e-6)
-    np.testing.assert_allclose(p.btheta_orb[0], p.btheta_ex[5, 7, 0], rtol=1e-6)
-    np.testing.assert_allclose(p.bphi_orb[0], p.bphi_ex[5, 7, 0], rtol=1e-6, atol=1e-9)
+    r, theta, phi = np.array([2.0, 1.5]), np.array([0.7, 2.1]), np.array([0.5, 4.0])
+    p.orbit_path(r, theta, phi)
+    ref = get_field_along_path_scipy(p.glm, p.hlm, p.idx, p.lmax, r, theta, phi,
+                                     mmax=p.mmax, planetname=planet)
+    scale = np.abs(ref[0]).max() * p.unitfac
+    for b, b_ref in zip([p.br_orb, p.btheta_orb, p.bphi_orb], ref):
+        np.testing.assert_allclose(b, b_ref * p.unitfac, rtol=1e-6, atol=1e-9 * scale)
