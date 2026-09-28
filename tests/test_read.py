@@ -1,9 +1,6 @@
 import numpy as np
-import os
-import sys
 import pytest
 
-sys.path.insert(0, os.path.abspath('../'))
 from planetmagfields import Planet, utils
 
 
@@ -18,7 +15,7 @@ class TestPlanetRead:
         ("earth", 6, 3, 13, -121.57, 52.76),
         ("jupiter", 17, 11, 18, -148.9, 176.7),
         ("saturn", 8, 0, 14, -15.5, 0.0),
-        ("uranus", 1, 0, 3, 11893.0, 0.0),
+        ("uranus", 1, 0, 4, 11278.0, 0.0),
         ("neptune", 1, 0, 3, 9732.0, 0.0),
         ("ganymede", 1, 0, 2, -711.0, 0.0),
     ]

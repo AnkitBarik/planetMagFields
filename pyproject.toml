@@ -1,6 +1,6 @@
 [project]
 name = "planetMagFields"
-version = "1.7.1"
+dynamic = ["version"]
 authors = [
   { name="Ankit Barik", email="ankit.barik@gmail.com" },
 ]
@@ -11,7 +11,7 @@ maintainers = [
 description = "Routines to easily access information about magnetic fields of planets in our solar system and visualize them in both 2D and 3D"
 keywords = ['Spherical Harmonics','Planetary Science','Spectra','Magnetic Field','Visualization','3D visualization']
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.10"
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Environment :: Console",
@@ -28,17 +28,19 @@ classifiers = [
 ]
 
 dependencies = [
-  "numpy",
-  "scipy",
-  "matplotlib"
+  "numpy>=1.18",
+  "scipy>=1.15",
+  "matplotlib>=3"
 ]
 
 [project.optional-dependencies]
 map = ["cartopy"]
 potextra = ["shtns"]
 vtk = ["pyevtk"]
-webapp = ["streamlit", "plotly"]
-all = ["cartopy", "shtns", "pyevtk", "streamlit", "plotly"]
+3d = ["pyvista"]
+webapp = ["streamlit", "plotly", "pandas"]
+test = ["pytest"]
+all = ["cartopy", "shtns", "pyevtk", "pyvista", "streamlit", "plotly", "pandas"]
 
 [project.scripts]
 magfield = "planetmagfields.cli:main"
@@ -47,12 +49,18 @@ magfield = "planetmagfields.cli:main"
 Homepage = "https://ankitbarik.github.io/planetMagFields/"
 Issues = "https://github.com/AnkitBarik/planetMagFields/issues"
 
+[tool.setuptools]
+packages = ["planetmagfields"]
+
 [tool.setuptools.package-data]
 planetmagfields = ["config.json", "data/*"]
+
+[tool.setuptools.dynamic]
+version = {attr = "planetmagfields.__version__"}
 
 [build-system]
 requires = ["setuptools >= 61.0"]
 build-backend = "setuptools.build_meta"
 
-[tool.setuptools-git-versioning]
-enabled = true
+[tool.pytest.ini_options]
+testpaths = ["tests"]

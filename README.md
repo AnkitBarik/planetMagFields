@@ -31,7 +31,7 @@ Software to easily access and analyze information about magnetic fields of plane
 
 # Prerequisites
 
-`planetMagFields` requires [NumPy](https://numpy.org/), [Matplotlib](https://matplotlib.org/) and [SciPy](https://www.scipy.org/). Other than that, the following external libraries are used for a few different functions:
+`planetMagFields` requires [NumPy](https://numpy.org/), [Matplotlib](https://matplotlib.org/) and [SciPy](https://www.scipy.org/) (>= 1.15). Other than that, the following external libraries are used for a few different functions:
 
  - 2D plotting for map projections other than Hammer : [Cartopy](https://scitools.org.uk/cartopy/docs/latest/) library
  - Potential extrapolation: It is preferable to have the [SHTns](https://bitbucket.org/nschaeff/shtns) library which can be installed from PyPI, otherwise it falls back to SciPy.
@@ -49,18 +49,7 @@ Software to easily access and analyze information about magnetic fields of plane
 $ python3 -m pip install planetMagFields
 ```
 
-## Using `setup.py`
-
-You can also use `setup.py` to install `planetMagFields`:
-
-```bash
-
-$ git clone https://github.com/AnkitBarik/planetMagFields
-$ cd planetMagFields
-$ python3 setup.py install --user
-```
-
-Or using `pip`:
+## From source
 
 ```bash
 

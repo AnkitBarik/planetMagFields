@@ -13,7 +13,7 @@ Installation
 Prerequisites
 ****************
 
-Most basic functionalities of `planetMagFields` require only `NumPy <https://numpy.org/>`_, `Matplotlib <https://matplotlib.org/>`_ and `SciPy <https://www.scipy.org/>`_. Other than that, the following external libraries are used for a few different functions:
+Most basic functionalities of `planetMagFields` require only `NumPy <https://numpy.org/>`_, `Matplotlib <https://matplotlib.org/>`_ and `SciPy <https://www.scipy.org/>`_ (>= 1.15). Other than that, the following external libraries are used for a few different functions:
 
 - 2D plotting for map projections other than Hammer : `Cartopy <https://scitools.org.uk/cartopy/docs/latest/>`_ library (see more under :ref:`Projections <secproj>`)
 - Potential extrapolation (optional): `SHTns <https://bitbucket.org/nschaeff/shtns>`_ library for fast spherical harmonic transforms, else it falls back to SciPy.
@@ -31,18 +31,8 @@ This is probably the easiest way. `planetMagFields` is available on `PyPI <https
 
    $ python3 -m pip install planetMagFields
 
-Using `setup.py`
-*****************
-
-You can also use `setup.py` to install `planetMagFields`:
-
-.. code-block:: bash
-
-   $ git clone https://github.com/AnkitBarik/planetMagFields
-   $ cd planetMagFields
-   $ python3 setup.py install --user
-
-Or using `pip`:
+From source
+***********
 
 .. code-block:: bash
 

@@ -5,6 +5,43 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 
+
+def _import_cartopy():
+    try:
+        import cartopy.crs as ccrs
+        return ccrs
+    except ImportError:
+        print("cartopy library not available, using Hammer projection")
+        return None
+
+
+def radius_label(r):
+    if r == 1:
+        return '  Surface'
+    return r'  $r/r_{\rm surface}=%.2f$' %r
+
+
+def _range_label(sym, arr, vmin, vmax, lmax):
+    if arr is not None:
+        return r', $%s = %s$' %(sym, str(arr))
+    if vmin > 0:
+        if vmax < lmax:
+            return r', $ %d \leq %s \leq %d$' %(vmin, sym, vmax)
+        return r', $%s \geq %d$' %(sym, vmin)
+    if vmax < lmax:
+        return r', $%s \leq %d$' %(sym, vmax)
+    return ''
+
+
+def filter_label(lmax, larr=None, marr=None, lCutMin=0, lCutMax=None,
+                 mmin=0, mmax=None):
+    """Title suffix describing a spherical harmonic filter."""
+    lCutMax = lmax if lCutMax is None else lCutMax
+    mmax = lmax if mmax is None else mmax
+    return (_range_label('l', larr, lCutMin, lCutMax, lmax)
+            + _range_label('m', marr, mmin, mmax, lmax))
+
+
 def get_color_limits(dat,vmin=None,vmax=None):
     """Computes minimum and maximum of colorbar for plots
 
@@ -122,10 +159,8 @@ def plotSurf(p2D,th2D,B,levels=60,cmap='RdBu_r',
     lon2D = p2D - np.pi
     lat2D = np.pi/2 - th2D
 
-    try:
-        import cartopy.crs as ccrs
-    except:
-        print("cartopy library not available, using Hammer projection")
+    ccrs = _import_cartopy()
+    if ccrs is None:
         proj = 'hammer'
 
     if proj.lower() == 'hammer':
@@ -133,9 +168,7 @@ def plotSurf(p2D,th2D,B,levels=60,cmap='RdBu_r',
         xx,yy = hammer2cart(lat2D,lon2D)
         cont = ax.contourf(xx,yy,B,cs,cmap=cmap,norm=divnorm,extend='both')
     else:
-        projection = eval('ccrs.'+proj+'()')
-
-        ax = plt.axes(projection=projection)
+        ax = plt.axes(projection=getattr(ccrs, proj)())
 
         cont = ax.contourf(lon2D*180/np.pi,lat2D*180/np.pi,B,cs,  \
             transform=ccrs.PlateCarree(),cmap=cmap,norm=divnorm,extend='both')
@@ -187,30 +220,27 @@ def plotB_subplot(ax,p2D,th2D,B,planetname="earth",levels=60,cmap='RdBu_r',
     """
     planetname = planetname.lower()
 
-    p2D -= np.pi
-    th2D -= np.pi/2
-    th2D = -th2D
+    lon2D = p2D - np.pi
+    lat2D = np.pi/2 - th2D
 
     vmin,vmax = get_color_limits(B,vmin,vmax)
     divnorm = colors.TwoSlopeNorm(vmin=vmin, vcenter=0, vmax=vmax)
     cs = np.linspace(vmin,vmax,levels)
 
-    try:
-        import cartopy.crs as ccrs
-    except:
-        print("cartopy library not available, using Hammer projection")
+    ccrs = _import_cartopy()
+    if ccrs is None:
         proj = 'hammer'
 
     if proj.lower() == 'hammer':
-        xx,yy = hammer2cart(th2D,p2D)
+        xx,yy = hammer2cart(lat2D,lon2D)
         cont = ax.contourf(xx,yy,B,cs,cmap=cmap,norm=divnorm,extend='both')
     else:
         if planetname == "earth":
             ax.coastlines()
 
-        cont = ax.contourf(p2D*180/np.pi,th2D*180/np.pi,B,cs,  \
+        cont = ax.contourf(lon2D*180/np.pi,lat2D*180/np.pi,B,cs,  \
             transform=ccrs.PlateCarree(),cmap=cmap,norm=divnorm,extend='both')
-
+    cont.set_edgecolor("face")
     cbar = plt.colorbar(cont,orientation='horizontal',fraction=0.06,
                         pad=0.04,norm=divnorm,ticks=[vmin,0,vmax])
     cbar.ax.tick_params(labelsize=15)
@@ -249,9 +279,4 @@ def plot_spec(l,E,r,planetname):
 
     plt.grid(True,alpha=0.5)
 
-    if r==1:
-        radLabel = '  Surface'
-    else:
-        radLabel = r'  $r/r_{\rm surface}=%.2f$' %r
-
-    plt.title('Lowes spectrum, '+ planetname.capitalize() + radLabel,fontsize=20,pad=10)
+    plt.title('Lowes spectrum, '+ planetname.capitalize() + radius_label(r),fontsize=20,pad=10)

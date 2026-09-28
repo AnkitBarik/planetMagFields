@@ -3,6 +3,51 @@
 
 import numpy as np
 from .libgauss import get_grid
+from .models import phase_factor
+from .utils import has_module, require
+
+
+def _use_shtns():
+    if has_module('shtns'):
+        return True
+    print("SHTns library not found, falling back to scipy!")
+    print("Consider installing SHTns from https://bitbucket.org/nschaeff/shtns")
+    return False
+
+
+def _check_shapes(r, theta, phi):
+    if not (np.shape(r) == np.shape(theta) == np.shape(phi)):
+        raise ValueError("Please make sure all three arrays are of the same shape")
+    return (np.asarray(r, dtype=np.float64),
+            np.asarray(theta, dtype=np.float64),
+            np.asarray(phi, dtype=np.float64))
+
+
+def _potential_field_scipy(glm, hlm, idx, lmax, mmax, r, theta, phi, planetname=None):
+    """Evaluates the potential field at broadcastable arrays r, theta, phi."""
+    from scipy.special import sph_harm_y
+
+    br = 0j
+    bt = 0j
+    bp = 0j
+
+    for l in range(1,lmax+1):
+        fac_l = (1/r)**(l+2)
+        for m in range(min(mmax+1,l+1)):
+            ylm, dylm = sph_harm_y(l,m,theta,phi,diff_n=1)
+            if m == 0:
+                Nlm = np.sqrt(4 * np.pi / (2*l+1))
+            else:
+                Nlm = np.sqrt(8 * np.pi / (2*l+1)) * phase_factor(planetname, m)
+
+            coeff = fac_l * (glm[idx[l,m]] - 1j*hlm[idx[l,m]]) * Nlm
+
+            br = br + coeff * (l+1) * ylm
+            bt = bt - coeff * dylm[...,0]
+            bp = bp - coeff * dylm[...,1] / np.sin(theta)
+
+    return np.real(br), np.real(bt), np.real(bp)
+
 
 def get_pol_from_Gauss(planetname,glm,hlm,lmax,mmax,idx):
 
@@ -11,10 +56,7 @@ def get_pol_from_Gauss(planetname,glm,hlm,lmax,mmax,idx):
     for l in range(1,lmax+1):
         for m in range(min(mmax+1,l+1)):
 
-            if planetname in ["earth"]:
-                fac_m = 1.
-            else:
-                fac_m = (-1)**m
+            fac_m = phase_factor(planetname, m)
 
             if m == 0:
                 norm = np.sqrt((4*np.pi/(2*l+1)))/l
@@ -26,7 +68,7 @@ def get_pol_from_Gauss(planetname,glm,hlm,lmax,mmax,idx):
     return bpol
 
 
-def extrapot_scipy(glm, hlm, idx, lmax, mmax, rplanet, rout, nphi=None):
+def extrapot_scipy(glm, hlm, idx, lmax, mmax, rplanet, rout, nphi=None, planetname=None):
 
     """
     This function extrapolates a potential field to an array of desired radial
@@ -51,6 +93,8 @@ def extrapot_scipy(glm, hlm, idx, lmax, mmax, rplanet, rout, nphi=None):
     nphi : int, optional
         Number of grid points in longitude, can be automatically
         selected, by default None
+    planetname : str, optional
+        Name of the planet, determines the phase convention, by default None
 
     Returns
     -------
@@ -62,44 +106,20 @@ def extrapot_scipy(glm, hlm, idx, lmax, mmax, rplanet, rout, nphi=None):
         3D array of extrapolated azimuthal magnetic field, shape : (nphi,ntheta,nr)
     """
 
-    from scipy.special import sph_harm_y
-
-    nrout = len(rout)
-
     if nphi is None:
         nphi   = int(max(256,lmax*3))
-    ntheta = nphi//2
 
-    phi2d, theta2d, _, _ = get_grid(nphi,ntheta)
+    phi2d, theta2d, _, _ = get_grid(nphi,nphi//2)
+    rout = np.atleast_1d(rout)/rplanet
 
-    brout = np.zeros([nphi,ntheta,nrout], dtype=np.complex128)
-    btout = np.zeros([nphi,ntheta,nrout], dtype=np.complex128)
-    bpout = np.zeros([nphi,ntheta,nrout], dtype=np.complex128)
-
-    for k, r in enumerate(rout/rplanet):
-        for l in range(lmax+1):
-
-            fac_l = (1/r)**(l+1)
-
-            for m in range(min(mmax+1,l+1)):
-
-                ylm = sph_harm_y(l,m,theta2d,phi2d,diff_n=1)
-                dylmdth = ylm[1][...,0]
-                dylmdphi = ylm[1][...,1]
-                ylm = ylm[0]
-                if m == 0:
-                    Nlm = np.sqrt(4 * np.pi / (2*l+1))
-                else:
-                    Nlm = np.sqrt(8 * np.pi / (2*l+1)) * (-1)**m
-
-                glmp = glm[idx[l,m]]
-                hlmp = hlm[idx[l,m]]
-
-                brout[...,k] +=   (1/r) * fac_l * (l+1) * ( glmp - 1j*hlmp ) * Nlm * ylm
-                btout[...,k] += - (1/r) * fac_l      *     (( glmp - 1j*hlmp ) * Nlm * dylmdth )
-                bpout[...,k] += - (1/r) * fac_l      *  1/np.sin(theta2d) *   ( glmp - 1j*hlmp ) * Nlm * dylmdphi
-
-    return np.real(brout), np.real(btout), np.real(bpout)
+    brout, btout, bpout = _potential_field_scipy(glm, hlm, idx, lmax, mmax,
+                                                 rout[None,None,:],
+                                                 theta2d[...,None], phi2d[...,None],
+                                                 planetname=planetname)
+    shape = phi2d.shape + (len(rout),)
+    return (np.broadcast_to(brout, shape).copy(),
+            np.broadcast_to(btout, shape).copy(),
+            np.broadcast_to(bpout, shape).copy())
 
 def extrapot_shtns(bpol,idx,lmax,mmax,rplanet,rout,nphi=None):
     """
@@ -135,7 +155,7 @@ def extrapot_shtns(bpol,idx,lmax,mmax,rplanet,rout,nphi=None):
         3D array of extrapolated azimuthal magnetic field, shape : (nphi,ntheta,nr)
     """
 
-    import shtns
+    shtns = require('shtns')
 
     nrout = len(rout)
     polar_opt = 1e-15
@@ -220,22 +240,14 @@ def extrapot(planetname, glm, hlm, idx, lmax, mmax, rplanet, rout, nphi=None):
         3D array of extrapolated azimuthal magnetic field, shape : (nphi,ntheta,nr)
     """
 
-    bpol = get_pol_from_Gauss(planetname, glm, hlm, lmax, mmax, idx)
+    if _use_shtns():
+        bpol = get_pol_from_Gauss(planetname, glm, hlm, lmax, mmax, idx)
+        return extrapot_shtns(bpol, idx, lmax, mmax, rplanet, rout, nphi=nphi)
 
-    try:
-        import shtns
-        print("Using SHTns for potential extrapolation")
-        brout, btout, bpout = extrapot_shtns(bpol, idx, lmax, mmax,
-                                            rplanet,rout,nphi=nphi)
-    except ImportError:
-        print("SHTns library not found, falling back to scipy!")
-        print("Consider installing SHTns from https://bitbucket.org/nschaeff/shtns")
+    return extrapot_scipy(glm, hlm, idx, lmax, mmax, rplanet, rout,
+                          nphi=nphi, planetname=planetname)
 
-        brout, btout, bpout = extrapot_scipy(glm, hlm, idx, lmax, mmax,
-                                            rplanet,rout,nphi=nphi)
-    return brout, btout, bpout
-
-def get_field_along_path_scipy(glm, hlm, idx, lmax, r, theta, phi):
+def get_field_along_path_scipy(glm, hlm, idx, lmax, r, theta, phi, mmax=None, planetname=None):
 
     """Gets field along a specific trajectory defined by 1-D
        arrays r, theta, phi. Uses scipy for computing spherical harmonics.
@@ -256,6 +268,10 @@ def get_field_along_path_scipy(glm, hlm, idx, lmax, r, theta, phi):
         Array of co-latitudes in radians
     phi : array_like
         Array of longitudes in radians
+    mmax : int, optional
+        Maximum spherical harmonic order of field model, by default lmax
+    planetname : str, optional
+        Name of the planet, determines the phase convention, by default None
 
     Returns
     -------
@@ -272,41 +288,12 @@ def get_field_along_path_scipy(glm, hlm, idx, lmax, r, theta, phi):
         If the shapes of the three arrays r, theta, phi
         are not the same, raises an error.
     """
-    # Check dimensions
-    if ( np.shape(r) != np.shape(theta)  or
-         np.shape(theta) != np.shape(phi)  or
-         np.shape(r) != np.shape(phi) ):
-        raise ValueError("Please make sure all three arrays are of the same shape")
+    r, theta, phi = _check_shapes(r, theta, phi)
+    if mmax is None:
+        mmax = lmax
 
-    from scipy.special import sph_harm_y
-
-    br     = np.zeros(len(r),dtype=np.complex128)
-    btheta = np.zeros(len(r),dtype=np.complex128)
-    bphi   = np.zeros(len(r),dtype=np.complex128)
-
-    for l in range(lmax+1):
-
-        fac_l = (1/r)**(l+1)
-
-        for m in range(l+1):
-
-            ylm = sph_harm_y(l,m,theta,phi,diff_n=1)
-            dylmdth = ylm[1][...,0]
-            dylmdphi = ylm[1][...,1]
-            ylm = ylm[0]
-            if m == 0:
-                Nlm = np.sqrt(4 * np.pi / (2*l+1))
-            else:
-                Nlm = np.sqrt(8 * np.pi / (2*l+1)) * (-1)**m
-
-            glmp = glm[idx[l,m]]
-            hlmp = hlm[idx[l,m]]
-
-            br     +=   (1/r) * fac_l * (l+1) * ( glmp - 1j*hlmp ) * Nlm * ylm
-            btheta += - (1/r) * fac_l      *     (( glmp - 1j*hlmp ) * Nlm * dylmdth )
-            bphi   += - (1/r) * fac_l      *  1/np.sin(theta) *   ( glmp - 1j*hlmp ) * Nlm * dylmdphi
-
-    return np.real(br), np.real(btheta), np.real(bphi)
+    return _potential_field_scipy(glm, hlm, idx, lmax, mmax, r, theta, phi,
+                                  planetname=planetname)
 
 
 def get_field_along_path_shtns(bpol,idx,lmax,mmax,
@@ -349,22 +336,8 @@ def get_field_along_path_shtns(bpol,idx,lmax,mmax,
         are not the same, raises an error.
     """
 
-    # Check dimensions
-    if ( np.shape(r) != np.shape(theta)  or
-         np.shape(theta) != np.shape(phi)  or
-         np.shape(r) != np.shape(phi) ):
-        raise ValueError("Please make sure all three arrays are of the same shape")
-
-    # Ensure float array (np.float64(seq) collapses to scalar; use asarray)
-    r     = np.asarray(r,     dtype=np.float64)
-    theta = np.asarray(theta, dtype=np.float64)
-    phi   = np.asarray(phi,   dtype=np.float64)
-
-    try:
-        import shtns
-    except ImportError:
-        print("Orbit track extrapolation requires the SHTns library")
-        print("It can be obtained here: https://bitbucket.org/nschaeff/shtns")
+    r, theta, phi = _check_shapes(r, theta, phi)
+    shtns = require('shtns')
 
     mmax = lmax
     norm=shtns.sht_orthonormal
@@ -439,38 +412,14 @@ def get_field_along_path(planetname, glm, hlm, idx, lmax, mmax, r, theta, phi):
         are not the same, raises an error.
     """
 
-    # Check dimensions
-    if ( np.shape(r) != np.shape(theta)  or
-         np.shape(theta) != np.shape(phi)  or
-         np.shape(r) != np.shape(phi) ):
-        raise ValueError("Please make sure all three arrays are of the same shape")
+    r, theta, phi = _check_shapes(r, theta, phi)
 
-    # Ensure float
-    r     = np.float64(r)
-    theta = np.float64(theta)
-    phi   = np.float64(phi)
-
-    brout = np.zeros_like(r)
-    btout = np.zeros_like(r)
-    bpout = np.zeros_like(r)
-
-    shtns_present = False
-
-    try:
-        import shtns
-        shtns_present = True
-    except ImportError:
-        pass
-
-    if shtns_present:
+    if _use_shtns():
         bpol = get_pol_from_Gauss(planetname, glm, hlm, lmax, mmax, idx)
-        brout, btout, bpout = get_field_along_path_shtns(bpol, idx, lmax, mmax, 1.0, r, theta, phi)
-    else:
-        print("SHTns library not found, falling back to scipy!")
-        print("Consider installing SHTns from https://bitbucket.org/nschaeff/shtns")
-        brout, btout, bpout = get_field_along_path_scipy(glm, hlm, idx, lmax, mmax, r, theta, phi)
+        return get_field_along_path_shtns(bpol, idx, lmax, mmax, 1.0, r, theta, phi)
 
-    return brout, btout, bpout
+    return get_field_along_path_scipy(glm, hlm, idx, lmax, r, theta, phi,
+                                      mmax=mmax, planetname=planetname)
 
 
 def export_xshells(planet, filename, r=1.0, info=True):
@@ -515,12 +464,11 @@ def export_xshells(planet, filename, r=1.0, info=True):
             bpol[i] = (glm[ix] + 1.j*hlm[ix]) * f / l
             i+=1
 
-    f = open(filename,"w")
-    f.write("%%XS Pol lmax=%d mmax=%d\n" % (lmax,mmax))
-    f.write("%%XS %s surface magnetic field from model %s, exported by planetMagFields, see https://github.com/AnkitBarik/planetMagFields\n" % (planet.name, planet.model))
-    for q in bpol:
-        f.write("%10.7g %10.7g\n" % (np.real(q),np.imag(q)))
-    f.close()
+    with open(filename,"w") as f:
+        f.write("%%XS Pol lmax=%d mmax=%d\n" % (lmax,mmax))
+        f.write("%%XS %s surface magnetic field from model %s, exported by planetMagFields, see https://github.com/AnkitBarik/planetMagFields\n" % (planet.name, planet.model))
+        for q in bpol:
+            f.write("%10.7g %10.7g\n" % (np.real(q),np.imag(q)))
 
     if info:
         print(("Planet: %s" %planet.name.capitalize()))

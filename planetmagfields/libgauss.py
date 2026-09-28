@@ -4,7 +4,7 @@
 import numpy as np
 from scipy.special import sph_harm_y
 from scipy.special import roots_legendre
-from copy import deepcopy
+from .models import phase_factor
 
 def gen_idx(lmax):
 
@@ -66,68 +66,6 @@ def get_grid(nphi=256,ntheta=128):
 
     return p2D, th2D, phi, theta
 
-def gen_arr(lmax, l1,m1,mode='g'):
-
-    """
-    Generate Gauss coefficient arrays for testing
-    purposes. Coefficients are given a value of 1 or 0.
-
-    Parameters
-    ----------
-    lmax : int
-        Maximum spherical harmonic degree for truncation
-
-    l1 : int array
-        Array of spherical harmonic degrees to produce coefficients
-        for.
-    m1 : int array
-        Array of spherical harmonic orders to produce coefficients
-        for.
-    mode : str
-        Can be 'g','h' or 'gh'. This controls which coefficients are generated,
-        only glm,hlm or both.
-    """
-
-    idx = np.zeros([lmax+1,lmax+1])
-    lArr = []
-    mArr = []
-
-    count = 0
-
-    glm = []
-    hlm = []
-
-    for l in range(lmax+1):
-        for m in range(l+1):
-
-            if l in l1 and m in m1:
-                if mode == 'g' or mode == 'gh':
-                    glm.append(1.)
-                else:
-                    glm.append(0.)
-                if mode == 'h' or mode == 'gh':
-                    hlm.append(1.)
-                else:
-                    hlm.append(0.)
-            else:
-                glm.append(0.)
-                hlm.append(0.)
-
-            idx[l,m] = count
-            lArr.append(l)
-            mArr.append(m)
-
-            count += 1
-
-    glm  = np.array(glm)
-    hlm  = np.array(hlm)
-    lArr = np.array(lArr)
-    mArr = np.array(mArr)
-    idx =  np.int32(idx)
-
-    return glm, hlm, lArr, mArr, idx
-
-
 def getB(lmax,mmax,glm,hlm,idx,r,p2D,th2D,planetname="earth"):
     """
     This function computes the radial magnetic field from arrays of Gauss
@@ -155,7 +93,7 @@ def getB(lmax,mmax,glm,hlm,idx,r,p2D,th2D,planetname="earth"):
     th2D : ndarray(float, ndim=2)
         2D array defining co-latitude (theta).
         This ranges from 0 to pi and has a shape (nphi,ntheta)
-    planet : str, optional
+    planetname : str, optional
         Name of the planet, by default "earth"
 
     Returns
@@ -171,13 +109,8 @@ def getB(lmax,mmax,glm,hlm,idx,r,p2D,th2D,planetname="earth"):
             for m in range(l+1):
                 ylm = sph_harm_y(l, m, th2D, p2D)
 
-                # Include Condon-Shortley Phase for Earth but not other planets
-                # Scipy sph_harm has the phase included by default
-
-                if planetname in ["earth"]:
-                    fac_m = 1.
-                else:
-                    fac_m = (-1)**m
+                # Scipy includes the Condon-Shortley phase, which only Earth models use
+                fac_m = phase_factor(planetname, m)
 
                 if m != 0:
                     fac_m *= np.sqrt(2)
@@ -302,71 +235,40 @@ def filt_Gauss(glm,hlm,lmax,model_mmax,idx,larr=None,marr=None,
         Array of filtered Gauss coefficients of sin(m*phi)
     """
 
-    glm_filt = deepcopy(glm)
-    hlm_filt = deepcopy(hlm)
+    glm_filt = np.copy(glm)
+    hlm_filt = np.copy(hlm)
 
     if lCutMax is None:
         lCutMax = lmax
     if mmax is None:
         mmax = model_mmax
 
-    if model_mmax > 0:
-        if larr is not None:
-            if max(larr) > lmax:
-                print("Error! Values in filter array must be <= lmax=%d" %lmax)
-            else:
-                for ell in range(lmax+1):
-                    if ell not in larr:
-                        glm_filt[idx[ell,:]] = 0.
-                        hlm_filt[idx[ell,:]] = 0.
-        else:
-            if lCutMax > lmax or lCutMin > lmax:
-                print("Error! lCutMin/lCutMax must be <= lmax = %d" %lmax)
-            else:
-                for ell in range(lCutMin):
-                        glm_filt[idx[ell,:]] = 0.
-                        hlm_filt[idx[ell,:]] = 0.
-                for ell in range(lCutMax+1,lmax+1):
-                        glm_filt[idx[ell,:]] = 0.
-                        hlm_filt[idx[ell,:]] = 0.
+    if larr is not None:
+        if max(larr) > lmax:
+            raise ValueError("Values in filter array must be <= lmax = %d" %lmax)
+        lkeep = np.isin(np.arange(lmax+1), larr)
+    else:
+        if lCutMax > lmax or lCutMin > lmax:
+            raise ValueError("lCutMin/lCutMax must be <= lmax = %d" %lmax)
+        lkeep = (np.arange(lmax+1) >= lCutMin) & (np.arange(lmax+1) <= lCutMax)
 
+    if model_mmax > 0:
         if marr is not None:
             if max(marr) > lmax:
-                print("Error! Values in filter array must be <= lmax=%d" %lmax)
-            else:
-                for m in range(lmax+1):
-                    if m not in marr:
-                        glm_filt[idx[:,m]] = 0.
-                        hlm_filt[idx[:,m]] = 0.
+                raise ValueError("Values in filter array must be <= lmax = %d" %lmax)
+            mkeep = np.isin(np.arange(lmax+1), marr)
         else:
             if mmin > lmax or mmax > lmax:
-                print("Error! mmin/mmax must be <= lmax = %d" %lmax)
-            else:
-                for m in range(mmin):
-                        glm_filt[idx[:,m]] = 0.
-                        hlm_filt[idx[:,m]] = 0.
-                for m in range(mmax+1,lmax+1):
-                        glm_filt[idx[:,m]] = 0.
-                        hlm_filt[idx[:,m]] = 0.
+                raise ValueError("mmin/mmax must be <= lmax = %d" %lmax)
+            mkeep = (np.arange(lmax+1) >= mmin) & (np.arange(lmax+1) <= mmax)
     else:
-        if larr is not None:
-            if max(larr) > lmax:
-                print("Error! Values in filter array must be <= lmax=%d" %lmax)
-            else:
-                for ell in range(lmax+1):
-                    if ell not in larr:
-                        glm_filt[idx[ell,0]] = 0.
-                        hlm_filt[idx[ell,0]] = 0.
-        else:
-            if lCutMax > lmax or lCutMin > lmax:
-                print("Error! lCutMin/lCutMax must be <= lmax = %d" %lmax)
-            else:
-                for ell in range(lCutMin):
-                        glm_filt[idx[ell,0]] = 0.
-                        hlm_filt[idx[ell,0]] = 0.
-                for ell in range(lCutMax+1,lmax+1):
-                        glm_filt[idx[ell,0]] = 0.
-                        hlm_filt[idx[ell,0]] = 0.
+        mkeep = np.ones(lmax+1, dtype=bool)
+
+    for l in range(lmax+1):
+        for m in range(l+1):
+            if not (lkeep[l] and mkeep[m]):
+                glm_filt[idx[l,m]] = 0.
+                hlm_filt[idx[l,m]] = 0.
 
     return glm_filt,hlm_filt
 
@@ -402,9 +304,10 @@ def sphInt(f,g,phi,th2D,theta):
     return phiInt
 
 
-def getGauss(lmax,Br,r,phi,theta,th2D,p2D):
+def getGauss(lmax,Br,r,phi,theta,th2D,p2D,planetname="earth"):
     """
-    Get Gauss coefficients from a surface field.
+    Get Gauss coefficients from a surface field defined on the grid produced
+    by get_grid. This is the inverse of getB.
 
     Parameters
     ----------
@@ -422,6 +325,8 @@ def getGauss(lmax,Br,r,phi,theta,th2D,p2D):
         Co-latitude defined on (longitude,co-latitude) grid
     p2D : ndarray(float, ndim=2)
         Longitude defined on (longitude,co-latitude) grid
+    planetname : str, optional
+        Name of the planet, by default "earth"
 
     Returns
     -------
@@ -430,33 +335,47 @@ def getGauss(lmax,Br,r,phi,theta,th2D,p2D):
     hlm : array_like
         Gauss coefficients of sin(m*phi)
     """
+    _, wtheta = roots_legendre(len(theta))
+    wphi = np.full(len(phi), phi[1] - phi[0])
+    wphi[[0,-1]] *= 0.5
+    weights = wphi[:,None] * wtheta[None,:]
+
     glm = []
     hlm = []
 
-    comp = complex(0,1)
+    for l in range(lmax+1):
+        for m in range(l+1):
+            if l == 0:
+                glm.append(0.)
+                hlm.append(0.)
+                continue
 
-    for l in range(0,lmax+1):
-        for m in range(0,l+1):
+            ylm = sph_harm_y(l, m, th2D, p2D)
+            fac = phase_factor(planetname, m) * (l+1) * r**(-l-2) * np.sqrt((4.*np.pi)/(2*l+1))
+            if m != 0:
+                fac *= np.sqrt(2) * 0.5
 
-            ylm = (-1)**m * spherical_harmonic(l, m, th2D, p2D)
+            glm.append(np.sum(weights * Br * np.real(ylm)) / fac)
+            hlm.append(np.sum(weights * Br * np.imag(ylm)) / fac)
 
-            ylm_conj = np.conjugate(ylm)
+    return np.array(glm), np.array(hlm)
 
-            fac = r**(l+2)/(l+1)
 
-            if m==0:
-                fac *= 0.5
+def get_dipole_tilt(glm,hlm,idx,mmax):
+    """
+    Computes dipole tilt co-latitude and longitude in degrees.
 
-            I1 = sphInt(Br,ylm,phi,th2D,theta)
-            I2 = sphInt(Br,ylm_conj,phi,th2D,theta)
+    Returns
+    -------
+    dipTheta : float
+        Dipole tilt co-latitude in degrees
+    dipPhi : float
+        Dipole longitude in degrees
+    """
+    if mmax == 0:
+        return 0, 0
 
-            g = fac * (I2 + I1)
-            h = comp * fac * (I2 - I1)
-
-            glm.append(g)
-            hlm.append(h)
-
-    glm = np.array(glm)
-    hlm = np.array(hlm)
-
-    return glm, hlm
+    g10, g11, h11 = glm[idx[1,0]], glm[idx[1,1]], hlm[idx[1,1]]
+    dipTheta = np.arctan(np.sqrt(g11**2 + h11**2)/g10) * 180./np.pi
+    dipPhi = np.arctan(h11/g11) * 180./np.pi
+    return dipTheta, dipPhi

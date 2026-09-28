@@ -1,9 +1,9 @@
 import numpy as np
-import os
-import sys
 from copy import deepcopy
-sys.path.insert(0, os.path.abspath('../'))
+from pathlib import Path
 from planetmagfields import Planet
+
+DATA = Path(__file__).parent
 
 
 class TestFiltering:
@@ -11,7 +11,7 @@ class TestFiltering:
         p = Planet(name='saturn', nphi=256, info=False, model='cassini11+')
         p.plot_filt(r=0.9, lCutMin=3, iplot=False)
 
-        br_ref = np.loadtxt('./saturn/br_filt_ref_sat.dat')
+        br_ref = np.loadtxt(DATA / 'saturn/br_filt_ref_sat.dat')
         percent_err = np.abs((br_ref - p.Br_filt) / br_ref) * 100
 
         np.testing.assert_allclose(percent_err, 0, rtol=0.1, atol=0.1)
@@ -20,7 +20,7 @@ class TestFiltering:
         p = Planet(name='earth', nphi=256, year=2020, info=False, model='igrf14')
         p.plot_filt(larr=[1, 2, 4], marr=[4], iplot=False)
 
-        br_ref = np.loadtxt('./earth/br_filt_ref_earth.dat')
+        br_ref = np.loadtxt(DATA / 'earth/br_filt_ref_earth.dat')
         percent_err = np.abs((br_ref - p.Br_filt) / br_ref) * 100
 
         np.testing.assert_allclose(percent_err, 0, rtol=0.1, atol=0.1)

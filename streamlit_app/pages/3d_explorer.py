@@ -5,8 +5,6 @@ Uses planetmagfields' built-in potential extrapolation for fast field line traci
 """
 
 import datetime
-import json
-from pathlib import Path
 import warnings
 
 import numpy as np
@@ -16,9 +14,9 @@ import streamlit as st
 from scipy.integrate import solve_ivp
 from scipy.interpolate import RegularGridInterpolator
 
-from planetmagfields import Planet, get_models
-from planetmagfields.libgauss import getB
-from planetmagfields.utils import planetlist
+from planetmagfields import Planet, get_models, getB, planetlist, default_model
+from planetmagfields.models import MODELS as MODEL_INFO
+from planetmagfields.utils import unit_text
 
 # ---------------------------------------------------------------------------
 # Page config
@@ -30,29 +28,8 @@ st.set_page_config(
 )
 
 # ---------------------------------------------------------------------------
-# Model display names and references (loaded from JSON)
+# Model display names and references
 # ---------------------------------------------------------------------------
-
-@st.cache_data(show_spinner=False)
-def load_model_info() -> dict:
-    """Load model info from JSON file."""
-    possible_paths = [
-        Path("data/model_info.json"),
-        Path(__file__).parent / "data" / "model_info.json",
-        Path(__file__).parent.parent / "data" / "model_info.json",
-    ]
-
-    for filepath in possible_paths:
-        if filepath.exists():
-            with open(filepath, "r") as f:
-                return json.load(f)
-
-    st.warning("Model info not found. Using default names.")
-    return {}
-
-
-MODEL_INFO = load_model_info()
-
 
 def get_model_display_name(model: str) -> str:
     """Get display name for a model."""
@@ -441,14 +418,7 @@ def compute_surface_trace(
         np.char.add(np.char.add("Br: ", np.char.mod("%.3f", br)), f" {planet_units}"),
     )
 
-    if planet_units == "nT":
-        cbar_title = "Bᵣ (nT)"
-    elif planet_units == "muT":
-        cbar_title = "Bᵣ (μT)"
-    elif planet_units == "Gauss":
-        cbar_title = "Bᵣ (G)"
-    else:
-        cbar_title = f"Bᵣ ({planet_units})"
+    cbar_title = f"Bᵣ ({unit_text(planet_units)})"
 
     return {
         "x": x,
@@ -777,16 +747,6 @@ def display_spectrum_metrics(spectrum_data):
 # Sidebar
 # ---------------------------------------------------------------------------
 
-_DEFAULT_MODELS = {
-    "earth": "igrf14",
-    "mercury": "wardinski2019",
-    "jupiter": "jrm33",
-    "saturn": "cassini11+",
-    "uranus": "holme1996",
-    "neptune": "connerney1991",
-    "ganymede": "kivelson2002",
-}
-
 with st.sidebar:
     st.title("Controls")
 
@@ -798,8 +758,8 @@ with st.sidebar:
     )
 
     models = fetch_models(planet_name)
-    default_model = _DEFAULT_MODELS.get(planet_name, models[-1])
-    default_idx = models.index(default_model) if default_model in models else len(models) - 1
+    default = default_model(planet_name)
+    default_idx = models.index(default) if default in models else len(models) - 1
     model = st.selectbox(
         "Model",
         options=models,

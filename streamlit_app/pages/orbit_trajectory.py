@@ -11,9 +11,8 @@ from plotly.subplots import make_subplots
 import streamlit as st
 import io
 
-from planetmagfields import Planet, get_models
-from planetmagfields.libgauss import getB
-from planetmagfields.utils import planetlist
+from planetmagfields import Planet, get_models, getB, planetlist, default_model
+from planetmagfields.utils import unit_text
 
 # ---------------------------------------------------------------------------
 # Page config
@@ -161,13 +160,7 @@ def build_trajectory_figure(
         color_data = np.sqrt(br**2 + btheta**2 + bphi**2)
         cbar_title = "|B|"
 
-    # Unit label
-    if units == "nT":
-        unit_label = "nT"
-    elif units == "muT":
-        unit_label = "μT"
-    else:
-        unit_label = "G"
+    unit_label = unit_text(units)
 
     cbar_title_traj = f"{cbar_title} ({unit_label})"
 
@@ -278,12 +271,7 @@ def build_timeseries_figure(
 ) -> go.Figure:
     """Build figure showing field components vs point index."""
 
-    if units == "nT":
-        unit_label = "nT"
-    elif units == "muT":
-        unit_label = "μT"
-    else:
-        unit_label = "G"
+    unit_label = unit_text(units)
 
     n_points = len(br)
     x = np.arange(n_points)
@@ -328,16 +316,6 @@ def build_timeseries_figure(
 # Sidebar
 # ---------------------------------------------------------------------------
 
-_DEFAULT_MODELS = {
-    "earth": "igrf14",
-    "mercury": "wardinski2019",
-    "jupiter": "jrm33",
-    "saturn": "cassini11+",
-    "uranus": "holme1996",
-    "neptune": "connerny1991",
-    "ganymede": "kivelson2002",
-}
-
 with st.sidebar:
     st.title("Orbit Settings")
 
@@ -349,8 +327,8 @@ with st.sidebar:
     )
 
     models = fetch_models(planet_name)
-    default_model = _DEFAULT_MODELS.get(planet_name, models[-1])
-    default_idx = models.index(default_model) if default_model in models else len(models) - 1
+    default = default_model(planet_name)
+    default_idx = models.index(default) if default in models else len(models) - 1
     model = st.selectbox("Model", options=models, index=default_idx)
 
     units = st.selectbox("Field units", ["muT", "nT", "Gauss"])
@@ -537,13 +515,7 @@ if df is not None:
     output_df['Bphi'] = bphi
     output_df['Bmag'] = np.sqrt(br**2 + btheta**2 + bphi**2)
 
-    # Unit label
-    if units == "muT":
-        unit_label = "μT"
-    elif units == "nT":
-        unit_label = "nT"
-    else:
-        unit_label = "G"
+    unit_label = unit_text(units)
 
     # Results header
     res_col1, res_col2 = st.columns([1, 3])

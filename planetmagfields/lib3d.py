@@ -4,7 +4,7 @@
 import numpy as np
 from .libgauss import get_grid, getB
 from .potextra import extrapot
-from .utils import is_dark_color
+from .utils import is_dark_color, get_unit, require
 
 def get_grid3d(r,theta,phi):
     """
@@ -118,11 +118,7 @@ def writeVts(name,br,btheta,bphi,r,theta,phi,r_planet=1):
 
     bx,by,bz = get_cart(br, btheta, bphi,th3D,p3D)
 
-    try:
-        from pyevtk.hl import gridToVTK
-    except:
-        print("This requires the use of pyevtk library!")
-        print("You can get it from https://github.com/paulo-herrera/PyEVTK")
+    gridToVTK = require('pyevtk.hl').gridToVTK
 
     br = np.asfortranarray(br)
     bx = np.asfortranarray(bx)
@@ -230,11 +226,7 @@ def plot_surface(theta,phi,dat,fieldname='Br',cmap='seismic',clim_fac=1.0, bgcol
     th_bounds = _cell_bounds(theta * 180/np.pi)
     ph_bounds = _cell_bounds(phi * 180/np.pi)
 
-    try:
-        import pyvista as pv
-    except ImportError:
-        print("This requires the use of pyvista library!")
-        print("You can install it with pip install pyvista")
+    pv = require('pyvista')
 
     grid = pv.grid_from_sph_coords(ph_bounds,th_bounds,r=1)
 
@@ -289,15 +281,8 @@ def render_field_lines(planetname, glm, hlm, idx, lmax, mmax, rplanet,
 
     p2D, th2D, phi, theta = get_grid(nphi, nphi//2)
 
-    if units.lower() == 'mut':
-        unitfac = 1e-3
-        cbar_title = r'$B_r (\mu$T)'
-    elif units.lower() == 'nt':
-        unitfac = 1.
-        cbar_title = r'$B_r$ (nT)'
-    elif units.lower() == 'gauss':
-        unitfac = 1e-5
-        cbar_title = r'$B_r$ (Gauss)'
+    unitfac, unitlabel = get_unit(units)
+    cbar_title = r'$B_r$ (%s)' %unitlabel
 
     glm = glm * unitfac
     hlm = hlm * unitfac
@@ -307,11 +292,7 @@ def render_field_lines(planetname, glm, hlm, idx, lmax, mmax, rplanet,
 
     r = np.atleast_1d(rout * rplanet)
 
-    try:
-        import pyvista as pv
-    except ImportError:
-        print("This requires the use of pyvista library!")
-        print("You can install it with pip install pyvista")
+    pv = require('pyvista')
 
     grid = pv.grid_from_sph_coords(phi * 180/np.pi, theta * 180/np.pi, r)
 

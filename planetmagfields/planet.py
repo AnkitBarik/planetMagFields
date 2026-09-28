@@ -4,11 +4,11 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from .libdata import get_data
-from .libgauss import filt_Gauss,getB, get_spec
-from .libbfield import getBr
-from .plotlib import plotSurf, plot_spec
-from .lib3d import plot_surface, render_field_lines, writeVts
-from .utils import stdDatDir, planetlist
+from .libgauss import filt_Gauss, getB, get_grid, get_spec, get_dipole_tilt
+from .plotlib import (plotSurf, plotB_subplot, plot_spec, radius_label,
+                      filter_label, _import_cartopy)
+from .models import check_planet, default_model, planetlist
+from .utils import stdDatDir, get_unit
 
 
 class Planet:
@@ -48,65 +48,60 @@ class Planet:
             If True, prints some information about the planet, by default True
         """
 
-        self.name   = name.lower()
+        self.name   = check_planet(name)
         self.nphi   = nphi
         self.ntheta = nphi//2
-        self.units   = units
+        self.units  = units
+        self.unitfac, self.unitlabel = get_unit(units)
 
-        if self.units.lower() == 'mut':
-            self.unitfac = 1e-3
-            self.unitlabel = '$\mu$T'
-        elif self.units.lower() == 'nt':
-            self.unitfac = 1.
-            self.unitlabel = 'nT'
-        elif self.units.lower() == 'gauss':
-            self.unitfac = 1e-5
-            self.unitlabel = 'Gauss'
-
-        #Automatic selection of latest model
-        if model is None:
-            if self.name =='earth':
-                model = 'igrf14'
-            elif self.name =='mercury':
-                model = 'wardinski2019'
-            elif self.name == 'jupiter':
-                model = 'jrm33'
-            elif self.name == 'saturn':
-                model = 'cassini11+'
-            elif self.name == 'uranus':
-                model = 'herbert2009'
-            elif self.name == 'neptune':
-                model = 'connerney1991'
-            elif self.name == 'ganymede':
-                model = 'kivelson2002'
-
-        self.model = model
-
-        if year is None:
-            self.year = 2020
-        else:
-            self.year = year
-
-        if self.name not in planetlist:
-            print("Planet must be one of the following!")
-            print(planetlist)
+        self.model = model if model is not None else default_model(self.name)
+        self.year = 2020 if year is None else year
 
         self.datDir = datDir
         self.glm, self.hlm, self.lmax, self.idx, self.mmax = get_data(self.datDir,
                                                            planetname=self.name,
-                                                           model = self.model,
+                                                           model=self.model,
                                                            year=self.year)
 
-        self.p2D, self.th2D, self.Br, self.dipTheta, self.dipPhi = getBr(self,r=r,
-                                                                        nphi=self.nphi,
-                                                                        ntheta=self.ntheta,
-                                                                        info=info)
-
-        self.Br *= self.unitfac
-
-        self.phi = self.p2D[:,0]
-        self.theta = self.th2D[0,:]
+        self.p2D, self.th2D, self.phi, self.theta = get_grid(nphi=self.nphi,
+                                                             ntheta=self.ntheta)
+        self.dipTheta, self.dipPhi = get_dipole_tilt(self.glm, self.hlm,
+                                                     self.idx, self.mmax)
         self.r = r
+        self.Br = self.get_Br(r)
+
+        if info:
+            self.print_info()
+
+    def get_Br(self, r):
+        """Radial magnetic field in self.units at radial level r on the
+        (p2D, th2D) grid."""
+        return getB(self.lmax, self.mmax, self.glm, self.hlm, self.idx, r,
+                    self.p2D, self.th2D, planetname=self.name) * self.unitfac
+
+    def print_info(self):
+        print("Planet: %s" %self.name.capitalize())
+        print("Model: %s" %self.model)
+        print("l_max = %d" %self.lmax)
+        print("Dipole tilt (degrees) = %f" %self.dipTheta)
+        if self.name == 'earth':
+            print("Year = %d" %self.year)
+
+    def _plot_map(self, Br, title, levels, cmap, proj, vmin, vmax):
+        fig = plt.figure(figsize=(12,6.75))
+        ax,cbar,proj = plotSurf(self.p2D,self.th2D,Br,levels=levels,cmap=cmap,
+                                proj=proj,vmin=vmin,vmax=vmax)
+
+        cbar.ax.set_xlabel(r'Radial magnetic field (%s)' %self.unitlabel,fontsize=25)
+        cbar.ax.tick_params(labelsize=20)
+
+        if proj.lower() != 'hammer' and self.name == 'earth':
+            ax.coastlines()
+
+        ax.set_title(title,fontsize=25,pad=20)
+        plt.tight_layout()
+
+        return fig, ax, cbar
 
     def plot(self,r=None,levels=30,cmap='RdBu_r',
              proj='Mollweide',vmin=None,vmax=None):
@@ -138,49 +133,16 @@ class Planet:
             Colorbar axis
         """
 
-        fig = plt.figure(figsize=(12,6.75))
-
         if r is None:
             r = self.r
 
-        if r == self.r:
-            ax,cbar,proj = plotSurf(self.p2D,self.th2D,self.Br,
-                                    levels=levels,cmap=cmap,proj=proj,
-                                    vmin=vmin,vmax=vmax)
-        else:
-            self.p2D, self.th2D, self.Br, self.dipTheta, self.dipPhi = \
-                    getBr(planet=self,r=r,info=False)
-            self.r = r
-            self.Br *= self.unitfac
-            ax,cbar,proj = plotSurf(self.p2D,self.th2D,self.Br,
-                                    levels=levels,cmap=cmap,proj=proj,
-                                    vmin=vmin,vmax=vmax)
+        Br = self.Br if r == self.r else self.get_Br(r)
 
-        cbar.ax.set_xlabel(r'Radial magnetic field (%s)' %self.unitlabel,fontsize=25)
-        cbar.ax.tick_params(labelsize=20)
-
-        if r==1:
-            radLabel = '  Surface'
-        else:
-            radLabel = r'  $r/r_{\rm surface}=%.2f$' %r
-
-        if proj.lower() != 'hammer' and self.name == 'earth':
-            ax.coastlines()
-
-        if r==1:
-            radLabel = '  Surface'
-        else:
-            radLabel = r'  $r/r_{\rm surface}=%.2f$' %r
-
-        title = self.name.capitalize() + radLabel
-
+        title = self.name.capitalize() + radius_label(r)
         if self.name == 'earth':
             title = title + ', %d' %self.year
 
-        ax.set_title(title,fontsize=25,pad=20)
-        plt.tight_layout()
-
-        return fig, ax, cbar
+        return self._plot_map(Br, title, levels, cmap, proj, vmin, vmax)
 
 
     def extrapolate(self,rout):
@@ -265,17 +227,20 @@ class Planet:
             btout = np.zeros_like(self.Br)
             bpout = np.zeros_like(self.Br)
 
+        from .lib3d import writeVts
         writeVts(self.name,brout,btout,bpout,rout,self.theta,self.phi,r_planet)
 
     def plot3D(self, fieldlines=False,ratio_out=2,nrout=32,r_planet=1):
         """
         Plots the 3D magnetic field of the planet.
         """
+        from .lib3d import plot_surface, render_field_lines
+
         if fieldlines:
             rout = np.linspace(r_planet,ratio_out,nrout)
             pl = render_field_lines(self.name, self.glm, self.hlm, self.idx, self.lmax, self.mmax, 1,
                        rout, nphi=128, surf=True, clim_fac=1.0,
-                       units='nT', bgcolor='white', cmap='seismic',
+                       units=self.units, bgcolor='white', cmap='seismic',
                        lightweight=False)
             pl.show()
         else:
@@ -352,53 +317,15 @@ class Planet:
                            marr=self.marr_filt,lCutMin=self.lCutMin,lCutMax=self.lCutMax,
                            mmin=self.mmin_filt,mmax=self.mmax_filt)
 
-        self.Br_filt = getB(self.lmax,self.mmax,self.glm_filt,self.hlm_filt,
+        self.Br_filt = self.unitfac * getB(self.lmax,self.mmax,self.glm_filt,self.hlm_filt,
                             self.idx,self.r_filt,self.p2D,self.th2D,planetname=self.name)
-        self.Br_filt *= self.unitfac
 
         if iplot:
-            fig = plt.figure(figsize=(12,6.75))
-
-            ax,cbar,proj = plotSurf(self.p2D,self.th2D,self.Br_filt,levels=levels,
-                                    cmap=cmap,proj=proj,vmin=vmin,vmax=vmax)
-
-            if r==1:
-                radLabel = '  Surface'
-            else:
-                radLabel = r'  $r/r_{\rm surface}=%.2f$' %r
-
-            if self.larr_filt is not None:
-                elllabel = r', $l = %s$' %str(self.larr_filt)
-            else:
-                if self.lCutMin > 0:
-                    if self.lCutMax < self.lmax:
-                        elllabel = r', $ %d \leq l \leq %d$' %(self.lCutMin,self.lCutMax)
-                    else:
-                        elllabel = r', $l \geq %d$' %self.lCutMin
-
-                elif self.lCutMax < self.lmax:
-                    elllabel = r', $l \leq %d$' %self.lCutMax
-
-            if self.marr_filt is not None:
-                elllabel += r', $m = %s$' %str(self.marr_filt)
-            else:
-                if self.mmin_filt > 0:
-                    if self.mmax_filt < self.lmax:
-                        elllabel += r', $ %d \leq m \leq %d$' %(self.mmin_filt,self.mmax_filt)
-                    else:
-                        elllabel += r', $m \geq %d$' %self.mmin_filt
-                elif self.mmax_filt < self.lmax:
-                    elllabel += r', $m \leq %d$' %self.mmax_filt
-
-            cbar.ax.set_xlabel(r'Radial magnetic field (%s)' %self.unitlabel,fontsize=25)
-            cbar.ax.tick_params(labelsize=20)
-
-            if proj.lower() != 'hammer' and self.name == 'earth':
-                ax.coastlines()
-            ax.set_title(self.name.capitalize() + radLabel + elllabel,fontsize=25,pad=20)
-            plt.tight_layout()
-
-            return fig, ax, cbar
+            title = (self.name.capitalize() + radius_label(r)
+                     + filter_label(self.lmax, self.larr_filt, self.marr_filt,
+                                    self.lCutMin, self.lCutMax,
+                                    self.mmin_filt, self.mmax_filt))
+            return self._plot_map(self.Br_filt, title, levels, cmap, proj, vmin, vmax)
 
 
     def spec(self,r=1.0,iplot=True):
@@ -433,3 +360,76 @@ class Planet:
             plot_spec(l,self.emag_spec,r,self.name)
             plt.tight_layout()
             plt.show()
+
+
+def plotAllFields(datDir=stdDatDir,r=1.0,levels=30,cmap='RdBu_r',
+                  proj='Mollweide',units='muT',vmin=None,vmax=None):
+    """
+    Plots fields of all the planets for which data is available. It's provided in
+    models.planetlist.
+
+    Parameters
+    ----------
+    datDir : str, optional
+        Data directory, where the Gauss coefficient data is present,
+        named as <planetname>_<modelname>.dat, by default stdDatDir
+    r : float, optional
+        Radial level to compute and plot field on, scaled by the planetary
+        radius, by default 1.0
+    levels : int, optional
+        Number of contour levels, by default 30
+    cmap : str, optional
+        Colormap for contours, by default 'RdBu_r'
+    proj : str, optional
+        Map projection, by default 'Mollweide'
+    units : str, optional
+        Units of magnetic field, can be 'nT', 'muT' or 'Gauss', by default 'muT'
+    vmin : float, optional
+        Minimum of colorscale, by default None
+    vmax : float, optional
+        Maximum of colorscale, by default None
+    """
+
+    print("")
+    print('|=========|======|=======|')
+    print(('|%-8s | %-2s| %-5s |' %('Planet','Theta','Phi')))
+    print('|=========|======|=======|')
+
+    plt.figure(figsize=(12,12))
+
+    ccrs = None if proj.lower() == 'hammer' else _import_cartopy()
+    if ccrs is None:
+        proj = 'hammer'
+
+    for k, name in enumerate(planetlist):
+        planet = Planet(name=name,datDir=datDir,r=r,info=False,units=units)
+
+        nplot = 8 if name == "ganymede" else k+1
+
+        if ccrs is None:
+            ax = plt.subplot(3,3,nplot)
+        else:
+            ax = plt.subplot(3,3,nplot,projection=getattr(ccrs, proj)())
+
+        plotB_subplot(ax,planet.p2D,
+                      planet.th2D,
+                      planet.Br,
+                      planetname=name,
+                      levels=levels,
+                      cmap=cmap,
+                      proj=proj,
+                      vmin=vmin,
+                      vmax=vmax)
+
+        if name in ["mercury","saturn"]:
+            print(('|%-8s | %-4.1f | %-5.1f |' %(name.capitalize(),planet.dipTheta, planet.dipPhi)))
+        else:
+            print(('|%-8s | %-3.1f | %-5.1f |' %(name.capitalize(),planet.dipTheta, planet.dipPhi)))
+
+    print('|---------|------|-------|')
+
+    unitlabel = get_unit(units)[1]
+    if r == 1:
+        plt.suptitle(r'Radial magnetic field (%s) at surface' %unitlabel, fontsize=20)
+    else:
+        plt.suptitle(r'Radial magnetic field (%s) at $r/r_{\rm surface} = %.2f$' %(unitlabel,r), fontsize=20)

@@ -16,8 +16,7 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 
-from .libbfield import plotAllFields
-from .planet import Planet
+from .planet import Planet, plotAllFields
 from . import __version__
 
 # Configure logging
@@ -165,12 +164,12 @@ def run_trajectory(args):
         raise ValueError(f"Could not read trajectory file: {exc}") from exc
 
     logger.info(f"Running orbit_path for {args.planet} over {len(r)} points...")
-    planet = Planet(name=args.planet, model=args.model)
+    planet = Planet(name=args.planet, model=args.model, units=args.unit, info=False)
     planet.orbit_path(r, theta, phi)
 
     out = np.column_stack([r, theta, phi,
                            planet.br_orb, planet.btheta_orb, planet.bphi_orb])
-    header = f"r,theta,phi,Br,Btheta,Bphi  (field unit: {planet.unit})"
+    header = f"r,theta,phi,Br,Btheta,Bphi  (field unit: {planet.units})"
 
     if args.save_path:
         out_path = Path(args.save_path)
@@ -185,14 +184,9 @@ def run_trajectory(args):
 
 def plot_all_planets(args):
     """Plot magnetic fields for all planets."""
-    import importlib.resources as pkg_resources
-
     logger.info("Plotting magnetic fields for all planets...")
 
-    data_dir = Path(pkg_resources.files("planetmagfields") / "data")
-
     plotAllFields(
-        datDir=str(data_dir) + "/",
         r=args.r,
         levels=args.levels,
         cmap=args.cmap,
@@ -219,7 +213,8 @@ def plot_single_planet(args):
 
     try:
         planet = Planet(name=args.planet, r=args.r, model=args.model, units=args.unit)
-        planet.plot(r=args.r, levels=args.levels, cmap=args.cmap, proj=args.proj)
+        planet.plot(r=args.r, levels=args.levels, cmap=args.cmap, proj=args.proj,
+                    vmin=args.vmin, vmax=args.vmax)
     except Exception as e:
         logger.error(f"Failed to plot {args.planet}: {e}")
         raise

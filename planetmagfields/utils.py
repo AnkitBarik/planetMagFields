@@ -2,11 +2,58 @@
 # -*- coding: utf-8 -*-
 
 import os
+import importlib
+import importlib.util
 import numpy as np
+from .models import planetlist
 
 stdDatDir = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'data/')
-planetlist = ["mercury", "earth", "jupiter", "saturn", "uranus", "neptune",
-              "ganymede"]
+
+UNITS = {
+    'nt':    (1.,   'nT'),
+    'mut':   (1e-3, r'$\mu$T'),
+    'gauss': (1e-5, 'Gauss'),
+}
+
+UNIT_TEXT = {'nt': 'nT', 'mut': 'μT', 'gauss': 'G'}
+
+INSTALL_HINTS = {
+    'shtns':   'https://bitbucket.org/nschaeff/shtns',
+    'pyevtk':  'pip install pyevtk',
+    'pyvista': 'pip install pyvista',
+    'cartopy': 'pip install cartopy',
+}
+
+
+def get_unit(units):
+    """Returns (factor, label) converting nT to the requested units."""
+    try:
+        return UNITS[units.lower()]
+    except KeyError:
+        raise ValueError("Unknown units '%s', must be one of 'nT', 'muT' or 'Gauss'"
+                         % units) from None
+
+
+def unit_text(units):
+    """Plain text unit label, e.g. for plotly figures."""
+    get_unit(units)
+    return UNIT_TEXT[units.lower()]
+
+
+def has_module(name):
+    return importlib.util.find_spec(name) is not None
+
+
+def require(name):
+    """Imports an optional dependency, raising an ImportError with an
+    installation hint if it is missing."""
+    try:
+        return importlib.import_module(name)
+    except ImportError as exc:
+        pkg = name.split('.')[0]
+        raise ImportError("This requires the %s library: %s"
+                          % (pkg, INSTALL_HINTS.get(pkg, 'pip install ' + pkg))) from exc
+
 
 def get_models(planetname,datDir=stdDatDir):
     """Prints available models for a planet.
@@ -28,13 +75,9 @@ def get_models(planetname,datDir=stdDatDir):
 
     from glob import glob
     planetname = planetname.lower()
-    dataFiles = glob(datDir+'/'+planetname+"*.dat")
-    models = []
-    for k,filename in enumerate(dataFiles):
-        modelname = filename.split('_')[1].split('.dat')[0]
-        models.append(modelname)
-    models = np.sort(models)
-    return models
+    dataFiles = glob(os.path.join(datDir, planetname+"_*.dat"))
+    models = [os.path.basename(f)[len(planetname)+1:-len('.dat')] for f in dataFiles]
+    return np.sort(models)
 
 def is_dark_color(color):
     """

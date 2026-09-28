@@ -1,10 +1,69 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import numpy as np
 import os
+import warnings
+import numpy as np
 from .libgauss import gen_idx
+from .models import model_format, model_info
 from .utils import get_models
+
+
+def _insert_hm0(h, m):
+    """Inserts h(l,0) = 0 before every h(l,1) entry."""
+    return np.insert(h, np.where(m == 1.)[0], 0.)
+
+
+def _read_jrm(datfile):
+    dat = np.loadtxt(datfile,dtype=object)
+    gh = dat[:,3]
+    ghlm = np.float32(dat[:,1])
+    gmask = gh == 'g'
+    hmask = gh == 'h'
+    g = ghlm[gmask]
+    h = _insert_hm0(ghlm[hmask], np.int32(dat[hmask,-1]))
+    lmax = np.int32(dat[:,-2]).max()
+    return g, h, lmax
+
+
+def _read_axisymmetric(datfile):
+    g = np.loadtxt(datfile,usecols=[3]).flatten()
+    return g, np.zeros_like(g), len(g)
+
+
+def _split_gh(gh, dat, vals):
+    gmask = gh == 'g'
+    hmask = gh == 'h'
+    return vals[gmask], _insert_hm0(vals[hmask], dat[hmask,1])
+
+
+def _read_generic(datfile):
+    dat = np.loadtxt(datfile,dtype=object)
+    gh  = dat[:,0]
+    dat = np.float32(dat[:,1:])
+    g, h = _split_gh(gh, dat, dat[:,-1])
+    return g, h, np.int32(dat[:,0]).max()
+
+
+def _read_igrf(datfile, year):
+    if year < 1900:
+        warnings.warn("IGRF-14 is only defined from 1900, please be careful while selecting year!")
+    elif year > 2030:
+        warnings.warn("IGRF-14 is only defined till 2030, please be careful while selecting year!")
+
+    dat = np.loadtxt(datfile,dtype=object)
+    gh  = dat[:,0]
+    dat = np.float32(dat[:,1:])
+
+    # Columns 0,1 are l,m; columns 2:-1 are year data; last column is secular variation
+    year_data = dat[:, 2:-1]
+    years = 1900 + 5 * np.arange(year_data.shape[1])
+
+    from scipy import interpolate
+    f = interpolate.interp1d(years, year_data, fill_value='extrapolate')
+    g, h = _split_gh(gh, dat, f(year))
+    return g, h, np.int32(dat[:,0]).max()
+
 
 def get_data(datDir,planetname="earth",model=None,year=2020):
     """
@@ -19,6 +78,10 @@ def get_data(datDir,planetname="earth",model=None,year=2020):
         e.g.: earth_igrf13.dat, jupiter_jrm09.dat etc.
     planetname : str
         Name of the planet
+    model : str
+        Name of the model
+    year : float
+        Year for time dependent models (Earth)
 
     Returns
     -------
@@ -30,123 +93,48 @@ def get_data(datDir,planetname="earth",model=None,year=2020):
         literature)
     lmax : int
         Maximum spherical harmonic degree
-    mmax : int
-        Maximum spherical harmonic order. This is required to distinguish cases
-        with maximum order of zero.
     idx : int array
         Array of indices that correspond to an (l,m) combination. For example,
         g(0,0) -> 0, g(1,0) -> 1, g(1,1) -> 2 etc.
+    mmax : int
+        Maximum spherical harmonic order. This is required to distinguish cases
+        with maximum order of zero.
     """
 
-    models_avail = get_models(datDir,planetname)
-    datfile = datDir + planetname + '_' + model.lower() + '.dat'
-    try:
-        tmpdat = np.loadtxt(datfile,dtype=object)
-        del tmpdat
-    except FileNotFoundError:
-        print("Could not read datafile, please double check path, planet and model!")
-        print("For selected planet %s, the following models are available:" %planetname)
-        print(models_avail)
-        print("Use get_models to get a list of models!")
+    model = model.lower()
+    datfile = os.path.join(datDir, planetname + '_' + model + '.dat')
+    if not os.path.exists(datfile):
+        raise FileNotFoundError(
+            "Could not find %s. Models available for %s: %s"
+            % (datfile, planetname, [str(m) for m in get_models(planetname, datDir)]))
 
-    if ( (planetname == "mercury" and model == "anderson2012")
-        or (planetname == "saturn") ):
-        mmax = 0
+    fmt = model_format(planetname, model)
+    if fmt == 'jrm':
+        g, h, lmax = _read_jrm(datfile)
+    elif fmt == 'axisymmetric':
+        g, h, lmax = _read_axisymmetric(datfile)
+    elif fmt == 'igrf':
+        g, h, lmax = _read_igrf(datfile, year)
     else:
-        mmax = None
+        g, h, lmax = _read_generic(datfile)
 
-    if planetname == "jupiter" and model in ['jrm09','jrm33']:
-        dat = np.loadtxt(datfile,dtype=object)
-        gh = dat[:,3]
-        l_dat = np.int32(dat[:,-2])
-        ghlm = np.float32(dat[:,1])
-
-        lmax = l_dat.max()
-        if model == 'jrm33':
-            lmax = 18
-
-        gmask = gh == 'g'
-        hmask = gh == 'h'
-        g = ghlm[gmask]
-        h = ghlm[hmask]
-
-        m = np.int32(dat[hmask,-1])
-        m1Idx = np.where(m == 1.)[0]
-        h   = np.insert(h,m1Idx,0.)
-
-    elif mmax == 0:
-
-        dat = np.loadtxt(datfile,usecols=[3])
-        g   = dat.flatten()
-        lmax = len(g)
-        h = np.zeros_like(g)
-
-    else:
-        dat = np.loadtxt(datfile,dtype=object)
-        gh  = dat[:,0]
-        dat = np.float32(dat[:,1:])
-        lmax = np.int32(dat[:,0]).max()
-
-        if planetname != "earth":
-
-            mask = gh == 'g'
-            gDat = dat[mask,:]
-            g   = gDat[:,-1]
-
-            mask = gh == 'h'
-            hDat = dat[mask,:]
-            h   = hDat[:,-1]
-
-            m = dat[mask,1]
-            m1Idx = np.where(m == 1.)[0]
-            h   = np.insert(h,m1Idx,0.)
-
-        else: # Earth, accounting for linear SV
-
-            if year < 1900:
-                print("IGRF-14 is only defined from 1900, please be careful while selecting year!")
-            elif year > 2030:
-                print("IGRF-14 is only defined till 2030, please be careful while selecting year!")
-
-            # Columns 0,1 are l,m; columns 2:-1 are year data; last column is secular variation
-            year_data = dat[:, 2:-1]
-            n_epochs = year_data.shape[1]
-            years = 1900 + 5 * np.arange(n_epochs)
-
-            from scipy import interpolate
-            f = interpolate.interp1d(years, year_data, fill_value='extrapolate')
-            selected_dat = f(year)
-
-            mask = gh == 'g'
-            g = selected_dat[mask]
-            mask = gh == 'h'
-            h = selected_dat[mask]
-
-            m = dat[mask, 1]
-            m1Idx = np.where(m == 1.)[0]
-            h = np.insert(h, m1Idx, 0.)
-
+    lmax = int(model_info(model).get('lmax', lmax))
 
     # Insert (0,0) -> 0 for less confusion
-
     glm = np.insert(g,0,0.)
     hlm = np.insert(h,0,0.)
 
-    # Ensure type int
-    lmax = int(lmax)
-
     idx = gen_idx(lmax)
-    if mmax == 0:
-        # glm/hlm were built with only lmax+1 entries (one per degree).
+
+    if fmt == 'axisymmetric':
         # Expand to the full triangular size so idx[l,0] is always in bounds.
+        mmax = 0
         ncoeff = (lmax+1)*(lmax+2)//2
         glm_full = np.zeros(ncoeff)
         hlm_full = np.zeros(ncoeff)
-        for ll in range(lmax+1):
-            glm_full[idx[ll,0]] = glm[ll]
-            hlm_full[idx[ll,0]] = hlm[ll]
-        glm = glm_full
-        hlm = hlm_full
+        glm_full[idx[:,0]] = glm[:lmax+1]
+        hlm_full[idx[:,0]] = hlm[:lmax+1]
+        glm, hlm = glm_full, hlm_full
     else:
         mmax = lmax
 

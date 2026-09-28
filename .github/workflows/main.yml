@@ -40,10 +40,6 @@ jobs:
           export CC=gcc
           wget https://bootstrap.pypa.io/get-pip.py
           python3 get-pip.py
-          python3 -m pip install numpy scipy matplotlib pytest
-          python3 -m pip install pyevtk
-          python3 -m pip install shtns
+          python3 -m pip install ".[potextra,vtk,test]"
       - name: Run test
-        run: |
-          cd ${{github.workspace}}/tests
-          python3 -m pytest
+        run: python3 -m pytest

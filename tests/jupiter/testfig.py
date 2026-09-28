@@ -5,9 +5,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 import matplotlib.colors as colors
-import os
 import sys
-sys.path.append(os.path.abspath('../../'))
+from pathlib import Path
+HERE = Path(__file__).resolve().parent
+sys.path.insert(0, str(HERE.parents[1]))
 from planetmagfields import Planet
 from planetmagfields.libgauss import get_grid
 import cartopy.crs as ccrs
@@ -33,8 +34,7 @@ def plot_surface(ax,p2D,th2D,B,levels=21,cmap='RdBu_r'):
         transform=ccrs.PlateCarree(),cmap=cmap,norm=divnorm,extend='both',
         zorder=-9)
 
-    for c in cont.collections:
-        c.set_edgecolor('face')
+    cont.set_edgecolor('face')
 
     ax.axis('equal')
     ax.axis('off')
@@ -48,7 +48,7 @@ p = Planet(name='jupiter',r=0.85,nphi=256,info=False,model='jrm33')
 proj = ccrs.Mollweide()
 fig,ax = plt.subplots(figsize=(16,6),nrows=1,ncols=2,subplot_kw={'projection': proj})
 
-br_ref = np.loadtxt('./Br_reference085.dat')
+br_ref = np.loadtxt(HERE / 'Br_reference085.dat')
 
 bmax, im = plot_surface(ax[0],p2D,th2D,br_ref)
 bmax, im = plot_surface(ax[1],p2D,th2D,p.Br)
@@ -65,6 +65,6 @@ cbar.ax.set_xlabel(r'Radial magnetic field ($\mu$T)',fontsize=20)
 cbar.ax.tick_params(labelsize=20)
 
 plt.tight_layout()
-#plt.savefig('../../paper/figures/jup_bench.pdf',
+#plt.savefig(HERE / 'jup_bench.pdf',
 #            dpi=200,bbox_inches='tight')
 plt.show()
