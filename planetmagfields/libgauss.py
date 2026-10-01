@@ -174,8 +174,8 @@ def get_spec(glm,hlm,idx,lmax,mmax,r=1.0):
         for l in range(1,lmax+1):
             E[l] = (l+1) * r**(-2*l-4) *(np.abs(glm[idx[l,0]])**2 + np.abs(hlm[idx[l,0]])**2)
         emag_10 = E[1]
-        E_symm = np.sum(E[1::2])
-        E_antisymm = np.sum(E[::2])
+        E_symm = np.sum(E[::2])
+        E_antisymm = np.sum(E[1::2])
         E_axisymm = np.sum(E)
     else:
         for l in range(1,lmax+1):
