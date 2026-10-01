@@ -16,7 +16,7 @@ PLANETS = {
     "jupiter":  {"default_model": "jrm33"},
     "saturn":   {"default_model": "cassini11+", "format": "axisymmetric"},
     "uranus":   {"default_model": "herbert2009"},
-    "neptune":  {"default_model": "connerney1991"},
+    "neptune":  {"default_model": "holme1996"},
     "ganymede": {"default_model": "kivelson2002"},
 }
 
