@@ -80,6 +80,47 @@ def get_color_limits(dat,vmin=None,vmax=None):
         vmax = bmax
     return vmin, vmax
 
+def lonlat_grid(p2D, th2D, B):
+    """
+    Convert a (phi, theta) grid to longitude/latitude arrays for map plotting.
+
+    phi is east longitude, so longitude is phi wrapped into [-pi, pi]. Columns
+    are reordered so longitude increases monotonically, and exact columns at
+    -pi and +pi (interpolated across the seam) are added so filled contours
+    cover the whole map without a gap.
+
+    Parameters
+    ----------
+    p2D : ndarray(float, ndim=2)
+        Longitude (phi) on a (nphi, ntheta) grid, ranging over [0, 2*pi]
+    th2D : ndarray(float, ndim=2)
+        Co-latitude on the same grid
+    B : ndarray(float, ndim=2)
+        Data on the same grid
+
+    Returns
+    -------
+    lon2D, lat2D, B : ndarray(float, ndim=2)
+        Longitude and latitude in radians and the reordered data
+    """
+    phi = p2D[:, 0]
+    th = th2D[0, :]
+    # Drop the duplicated periodic end point (phi = 2 pi) if present
+    if np.isclose(phi[-1] - phi[0], 2*np.pi):
+        phi, B = phi[:-1], B[:-1]
+    lon = (phi + np.pi) % (2*np.pi) - np.pi
+    order = np.argsort(lon, kind='stable')
+    lon, B = lon[order], B[order]
+    # Linear interpolation across the seam to get the values at exactly +-pi
+    gap = lon[0] + 2*np.pi - lon[-1]
+    w = (np.pi - lon[-1]) / gap if gap > 0 else 0.
+    B_seam = (1 - w) * B[-1] + w * B[0]
+    lon = np.concatenate([[-np.pi], lon, [np.pi]])
+    B = np.concatenate([B_seam[None], B, B_seam[None]])
+    lon2D, th2D = np.meshgrid(lon, th, indexing='ij')
+    return lon2D, np.pi/2 - th2D, B
+
+
 def hammer2cart(ttheta, pphi, colat=False):
     """
     This function is used to define the Hammer projection for
@@ -120,7 +161,7 @@ def plotSurf(p2D,th2D,B,levels=60,cmap='RdBu_r',
     Parameters
     ----------
     p2D : ndarray(float, ndim=2)
-        2D array defining longitude (phi)
+        2D array defining east longitude (phi)
         This ranges from 0 to 2*pi and has a shape (nphi,ntheta)
     th2D : ndarray(float, ndim=2)
         2D array defining co-latitude (theta)
@@ -156,8 +197,7 @@ def plotSurf(p2D,th2D,B,levels=60,cmap='RdBu_r',
     cs = np.linspace(vmin,vmax,levels)
 
 
-    lon2D = p2D - np.pi
-    lat2D = np.pi/2 - th2D
+    lon2D, lat2D, B = lonlat_grid(p2D, th2D, B)
 
     ccrs = _import_cartopy()
     if ccrs is None:
@@ -192,7 +232,7 @@ def plotB_subplot(ax,p2D,th2D,B,planetname="earth",levels=60,cmap='RdBu_r',
     ax :  matplotlib.axes instance
         Axes of the subplot
     p2D : ndarray(float, ndim=2)
-        2D array defining longitude (phi)
+        2D array defining east longitude (phi)
         This ranges from 0 to 2*pi and has a shape (nphi,ntheta)
     th2D : ndarray(float, ndim=2)
         2D array defining co-latitude (theta)
@@ -220,8 +260,7 @@ def plotB_subplot(ax,p2D,th2D,B,planetname="earth",levels=60,cmap='RdBu_r',
     """
     planetname = planetname.lower()
 
-    lon2D = p2D - np.pi
-    lat2D = np.pi/2 - th2D
+    lon2D, lat2D, B = lonlat_grid(p2D, th2D, B)
 
     vmin,vmax = get_color_limits(B,vmin,vmax)
     divnorm = colors.TwoSlopeNorm(vmin=vmin, vcenter=0, vmax=vmax)

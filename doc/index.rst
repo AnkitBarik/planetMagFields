@@ -6,7 +6,7 @@
 Welcome to planetMagFields' documentation!
 ===========================================
 
-`planetMagFields` is a package that provides an easy interface to plot and analyze planetary magnetic field data. `planetMagFields` is free and open source and is available at https://github.com/AnkitBarik/planetMagFields . The web application for `planetMagFields` is available at https://planetmagfields.streamlit.app/ . Head there to start visualizing magnetic fields of planets.
+`planetMagFields` is a package that provides an easy interface to plot and analyze planetary magnetic field data. `planetMagFields` is free and open source and is available at https://github.com/AnkitBarik/planetMagFields . The interactive 3D web application for `planetMagFields` is available at https://ankitbarik.github.io/planetMagFields/app/ . Head there to start visualizing magnetic fields of planets. A Streamlit version, which also computes fields along orbit trajectories, is available at https://planetmagfields.streamlit.app/ .
 
 Documentation
 -------------
@@ -22,6 +22,7 @@ The prerequisites, installation and features are described in the pages below. T
    cli
    math
    models
+   coordinates
    projections
    jupyter
    api

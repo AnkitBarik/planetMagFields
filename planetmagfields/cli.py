@@ -283,7 +283,8 @@ def create_parser():
         dest='trajectory',
         metavar='FILE',
         help=(
-            'CSV file with columns r, theta, phi (co-latitude and longitude in radians). '
+            'CSV file with columns r, theta, phi (co-latitude and east longitude in radians, '
+            'in the frame of the field model; geographic longitude for Earth). '
             'Computes Br, Btheta, Bphi along the path instead of plotting. '
             'Output is written to stdout or to --save FILE as a CSV.'
         )

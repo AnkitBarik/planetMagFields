@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-from scipy.special import sph_harm_y
+from scipy.special import sph_harm_y, sph_legendre_p_all
 from scipy.special import roots_legendre
 from .models import phase_factor
 
@@ -69,15 +69,28 @@ def get_grid(nphi=256,ntheta=128):
 def getB(lmax,mmax,glm,hlm,idx,r,p2D,th2D,planetname="earth"):
     """
     This function computes the radial magnetic field from arrays of Gauss
-    coefficients glm and hlm. It uses scipy's sph_harm function for spherical
-    harmonics.
+    coefficients glm and hlm:
+
+    .. math::
+
+        B_r = \\sum_{l=1}^{l_{max}} (l+1) r^{-(l+2)} \\sum_{m=0}^{l}
+              \\left(g_l^m \\cos m\\phi + h_l^m \\sin m\\phi\\right) P_l^m(\\cos\\theta)
+
+    with Schmidt semi-normalised Legendre functions (no Condon-Shortley
+    phase) and phi the east longitude in the frame of the field model.
+
+    The field separates into a co-latitude part and a longitude part, so the
+    Legendre functions (from scipy's sph_legendre_p_all) are computed once per
+    distinct co-latitude and cos/sin(m phi) once per distinct longitude. On a
+    regular grid this is orders of magnitude faster than evaluating every
+    spherical harmonic at every grid point.
 
     Parameters
     ----------
     lmax : int
         Maximum degree of spherical harmonic
-    lmax : int
-        Maximum order of spherical harmonic
+    mmax : int
+        Maximum order of spherical harmonic (0 for axisymmetric models)
     glm : array_like
         Gauss coefficients of cos(m*phi)
     hlm : array_like
@@ -87,48 +100,63 @@ def getB(lmax,mmax,glm,hlm,idx,r,p2D,th2D,planetname="earth"):
         g(0,0) -> 0, g(1,0) -> 1, g(1,1) -> 2 etc.
     r : float
         Radial level scaled to planetary surface
-    p2D : ndarray(float, ndim=2)
-        2D array defining longitude (phi).
-        This ranges from 0 to 2*pi and has a shape (nphi,ntheta)
-    th2D : ndarray(float, ndim=2)
-        2D array defining co-latitude (theta).
-        This ranges from 0 to pi and has a shape (nphi,ntheta)
+    p2D : array_like
+        Longitude (phi) in radians, e.g. a 2D grid of shape (nphi,ntheta).
+        Any shape broadcastable with th2D works, including scattered points.
+    th2D : array_like
+        Co-latitude (theta) in radians, same shape as p2D.
     planetname : str, optional
-        Name of the planet, by default "earth"
+        Unused, kept for backward compatibility. All planets use the same
+        convention.
 
     Returns
     -------
-    Br : ndarray(float, ndim=2)
-        Radial magnetic field on the grid defined by p2D and th2D
+    Br : ndarray(float)
+        Radial magnetic field at the points defined by p2D and th2D
     """
 
-    Br = np.zeros_like(p2D)
+    # Coefficients are often stored as float32; work in float64 throughout.
+    glm = np.asarray(glm, dtype=np.float64)
+    hlm = np.asarray(hlm, dtype=np.float64)
+    r = np.float64(r)
 
-    if mmax > 0:
-        for l in range(1,lmax+1):
-            for m in range(l+1):
-                ylm = sph_harm_y(l, m, th2D, p2D)
+    p2D, th2D = np.broadcast_arrays(np.asarray(p2D, dtype=np.float64),
+                                    np.asarray(th2D, dtype=np.float64))
+    shape = p2D.shape
+    th_u, th_inv = np.unique(th2D.ravel(), return_inverse=True)
+    ph_u, ph_inv = np.unique(p2D.ravel(), return_inverse=True)
 
-                # Scipy includes the Condon-Shortley phase, which only Earth models use
-                fac_m = phase_factor(planetname, m)
+    # Coefficient tables G[l,m], H[l,m] including the radial factor and the
+    # conversion from scipy's orthonormal Legendre functions (which carry the
+    # Condon-Shortley phase) to Schmidt semi-normalisation.
+    mtop = lmax if mmax > 0 else 0
+    l = np.arange(lmax+1)[:, None]
+    m = np.arange(mtop+1)[None, :]
+    keep = (m <= l) & (l >= 1)
+    lm = np.asarray(idx)[:lmax+1, :mtop+1]
+    fac = (l+1) * r**(-(l+2)) * (-1.)**m * np.sqrt(4*np.pi/(2*l+1)) \
+          * np.where(m > 0, np.sqrt(2.), 1.)
+    G = np.where(keep, fac * glm[lm], 0.)
+    H = np.where(keep, fac * hlm[lm], 0.)
 
-                if m != 0:
-                    fac_m *= np.sqrt(2)
+    # Co-latitude part: A[m,j] = sum_l G[l,m] P_l^m(cos theta_j), same for B.
+    A = np.empty((mtop+1, th_u.size))
+    B = np.empty((mtop+1, th_u.size))
+    chunk = 4096  # bounds memory for scattered points such as trajectories
+    for j0 in range(0, th_u.size, chunk):
+        sl = slice(j0, j0 + chunk)
+        P = sph_legendre_p_all(lmax, mtop, th_u[sl])[0][:, :mtop+1]  # (l, m, n)
+        A[:, sl] = np.einsum('lm,lmn->mn', G, P)
+        B[:, sl] = np.einsum('lm,lmn->mn', H, P)
 
-                fac = fac_m * (l+1) * r**(-l-2) * np.sqrt((4.*np.pi)/(2*l+1))
+    # Longitude part and combination.
+    mphi = np.outer(np.arange(mtop+1), ph_u)
+    cosm, sinm = np.cos(mphi), np.sin(mphi)
+    Br = np.zeros(p2D.size)
+    for mm in range(mtop+1):
+        Br += A[mm, th_inv] * cosm[mm, ph_inv] + B[mm, th_inv] * sinm[mm, ph_inv]
 
-                G = glm[idx[l,m]] * np.real(ylm)
-                H = hlm[idx[l,m]] * np.imag(ylm)
-
-                Br +=   np.real(fac * (G + H))
-    else:
-        for l in range(1,lmax+1):
-            ylm = sph_harm_y(l, 0, th2D, p2D)
-            fac = (l + 1) * r**(-l-2) * np.sqrt((4.*np.pi)/(2*l+1))
-
-            Br += fac * glm[idx[l,0]] * np.real(ylm)
-
-    return Br
+    return Br.reshape(shape)
 
 def get_spec(glm,hlm,idx,lmax,mmax,r=1.0):
     """

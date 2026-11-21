@@ -11,6 +11,7 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parents[1]))
 from planetmagfields import Planet
 from planetmagfields.libgauss import get_grid
+from planetmagfields.plotlib import lonlat_grid
 import cartopy.crs as ccrs
 
 def plot_surface(ax,p2D,th2D,B,levels=21,cmap='RdBu_r'):
@@ -27,8 +28,7 @@ def plot_surface(ax,p2D,th2D,B,levels=21,cmap='RdBu_r'):
     cs = np.linspace(-bmax,bmax,levels)
     im = cm.ScalarMappable(norm=divnorm)
 
-    lon2D = p2D - np.pi
-    lat2D = np.pi/2 - th2D
+    lon2D, lat2D, B = lonlat_grid(p2D, th2D, B)
 
     cont = ax.contourf(lon2D*180/np.pi,lat2D*180/np.pi,B,cs,  \
         transform=ccrs.PlateCarree(),cmap=cmap,norm=divnorm,extend='both',

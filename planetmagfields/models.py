@@ -3,16 +3,19 @@
 """
 Registry of planets and field models.
 
-Each planet entry holds its default model, the file format of its data files
-("generic", "igrf", "jrm" or "axisymmetric") and whether its Gauss coefficients
-use the Condon-Shortley phase. Model entries can override the format and lmax
-and carry citation information.
+Each planet entry holds its default model and the file format of its data files
+("generic", "igrf", "jrm" or "axisymmetric"). Model entries can override the
+format and lmax and carry citation information.
+
+Coordinate convention: for every planet the Gauss coefficients are for Schmidt
+semi-normalised Legendre functions without the Condon-Shortley phase, and the
+longitude phi is east longitude in the body-fixed frame of the field model
+(e.g. geographic longitude for Earth, System III for Jupiter).
 """
 
 PLANETS = {
     "mercury":  {"default_model": "wardinski2019"},
-    "earth":    {"default_model": "igrf14", "format": "igrf",
-                 "condon_shortley": True},
+    "earth":    {"default_model": "igrf14", "format": "igrf"},
     "jupiter":  {"default_model": "jrm33"},
     "saturn":   {"default_model": "cassini11+", "format": "axisymmetric"},
     "uranus":   {"default_model": "herbert2009"},
@@ -82,9 +85,8 @@ def model_format(planetname, model):
 
 
 def phase_factor(planetname, m):
-    """Factor that removes scipy's Condon-Shortley phase for planets whose
-    Gauss coefficients do not use it."""
-    if planetname is not None and \
-            PLANETS.get(planetname.lower(), {}).get("condon_shortley", False):
-        return 1.
+    """Factor that removes the Condon-Shortley phase included in scipy's
+    spherical harmonics. Gauss coefficients of all planets are defined
+    without it, so this is (-1)**m for every planet; planetname is kept for
+    backward compatibility."""
     return (-1)**m

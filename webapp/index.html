@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>planetMagFields 3D Explorer</title>
+  <meta name="description" content="Interactive 3D visualization of the magnetic fields of planets and moons in the Solar System, powered by planetMagFields.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🪐</text></svg>">
+  <link rel="stylesheet" href="style.css">
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <aside id="sidebar">
+    <div class="side-head">
+      <h1>planetMagFields</h1>
+      <button id="close-side" class="icon-btn mobile-only" aria-label="Close controls">✕</button>
+    </div>
+
+    <section>
+      <label>Planet
+        <select id="planet"></select>
+      </label>
+      <label>Model
+        <select id="model"></select>
+      </label>
+      <a id="model-ref" class="ref" target="_blank" rel="noopener">📄 Paper reference</a>
+
+      <div id="year-row">
+        <label>Year <output id="year-out"></output>
+          <input id="year" type="range" min="1900" max="2030" step="0.1">
+        </label>
+        <div class="anim">
+          <button id="play" class="icon-btn play-btn" aria-label="Play animation" title="Animate the field through time (1900–2030)"></button>
+          <label class="inline">Speed
+            <select id="speed">
+              <option value="2">2 yr/s</option>
+              <option value="5" selected>5 yr/s</option>
+              <option value="10">10 yr/s</option>
+              <option value="20">20 yr/s</option>
+            </select>
+          </label>
+        </div>
+      </div>
+
+      <label>Radius (r / R<sub>p</sub>) <output id="r-out"></output>
+        <span class="with-reset">
+          <input id="r" type="range" min="0.5" max="5" step="0.05" value="1">
+          <button class="icon-btn" data-reset="r" title="Reset radius to 1.0">↺</button>
+        </span>
+      </label>
+
+      <label>Field units
+        <select id="units">
+          <option value="muT">μT</option>
+          <option value="nT">nT</option>
+          <option value="Gauss">Gauss</option>
+        </select>
+      </label>
+
+      <label>Resolution (n<sub>φ</sub>)
+        <select id="resolution">
+          <option>64</option><option>128</option><option selected>256</option><option>512</option>
+        </select>
+      </label>
+
+      <label class="check"><input id="show-spectrum" type="checkbox"> Show spectrum</label>
+      <label class="check"><input id="show-axes" type="checkbox"> Show axes</label>
+      <div id="coast-row">
+        <label class="check"><input id="show-coast" type="checkbox" checked> Show coastlines</label>
+        <label>Coastline colour
+          <select id="coast-color">
+            <option value="#ffffff">white</option><option value="#000000">black</option><option value="#00ffff">cyan</option>
+          </select>
+        </label>
+      </div>
+    </section>
+
+    <section>
+      <h2>Colour scale</h2>
+      <div class="field">
+        <span class="field-label" id="cmap-label">Colormap</span>
+        <div class="cmap-picker">
+          <button id="cmap-btn" type="button" class="cmap-btn" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="cmap-label cmap-btn">
+            <span class="cmap-swatch" aria-hidden="true"></span>
+            <span class="cmap-name"></span>
+            <svg class="caret" width="10" height="6" viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
+          </button>
+          <ul id="cmap-list" class="cmap-list" role="listbox" aria-labelledby="cmap-label" tabindex="-1" hidden></ul>
+        </div>
+        <!-- Holds the selected value; the picker above drives it. -->
+        <select id="cmap" hidden aria-hidden="true" tabindex="-1"></select>
+      </div>
+      <label class="check"><input id="invert" type="checkbox"> Invert colormap</label>
+      <label class="check"><input id="sym" type="checkbox" checked> Symmetric (auto ±max)</label>
+      <div id="range-row" class="pair" hidden>
+        <label>vmin <input id="vmin" type="number" step="any" value="0"></label>
+        <label>vmax <input id="vmax" type="number" step="any" value="0"></label>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="with-action">Filter <button id="filter-reset" class="link-btn" title="Show all degrees and orders">Reset</button></h2>
+      <p class="hint">Keep only some spherical harmonic degrees ℓ and orders m. Applies to the surface, field lines, hover readout and spectrum.</p>
+      <label>ℓ min <output id="lmin-out"></output>
+        <input id="lmin" type="range" min="1" max="13" value="1">
+      </label>
+      <label>ℓ max <output id="lmaxf-out"></output>
+        <input id="lmaxf" type="range" min="1" max="13" value="13">
+      </label>
+      <div id="m-filter">
+        <label>m min <output id="mmin-out"></output>
+          <input id="mmin" type="range" min="0" max="13" value="0">
+        </label>
+        <label>m max <output id="mmaxf-out"></output>
+          <input id="mmaxf" type="range" min="0" max="13" value="13">
+        </label>
+      </div>
+    </section>
+
+    <section>
+      <h2>Field lines</h2>
+      <label class="check"><input id="show-lines" type="checkbox" checked> Show field lines</label>
+      <div id="lines-opts">
+        <label>Number of field lines <output id="nlines-out"></output>
+          <input id="nlines" type="range" min="1" max="300" value="100">
+        </label>
+        <label>Seeding
+          <select id="seeding">
+            <option value="fibonacci">Fibonacci lattice (uniform)</option>
+            <option value="weighted">Weighted by |Br|</option>
+          </select>
+        </label>
+        <label>Max radius (R<sub>p</sub>) <output id="rmax-out"></output>
+          <input id="rmax" type="range" min="1.5" max="10" step="0.5" value="4">
+        </label>
+        <label>Line colour
+          <select id="line-color">
+            <option value="#ffffff">white</option><option value="rainbow">rainbow</option>
+            <option value="#ffff00">yellow</option><option value="#00ffff">cyan</option>
+            <option value="#00ff00">lime</option><option value="#000000">black</option>
+          </select>
+        </label>
+        <label>Line width <output id="lw-out"></output>
+          <input id="lw" type="range" min="0.5" max="6" step="0.5" value="2">
+        </label>
+      </div>
+    </section>
+
+    <footer>
+      <a href="https://github.com/AnkitBarik/planetMagFields" target="_blank" rel="noopener">Source</a> ·
+      <a href="../" >Documentation</a>
+    </footer>
+  </aside>
+
+  <main>
+    <header id="metrics">
+      <button id="open-side" class="icon-btn mobile-only" aria-label="Open controls">☰</button>
+      <div class="metric"><span>Planet</span><b id="m-planet"></b></div>
+      <div class="metric"><span>Model</span><b id="m-model"></b></div>
+      <div class="metric"><span>ℓ<sub>max</sub></span><b id="m-lmax"></b></div>
+      <div class="metric"><span>Dipole tilt</span><b id="m-tilt"></b></div>
+      <div class="metric"><span>r / R<sub>p</sub></span><b id="m-r"></b></div>
+      <div class="metric" id="m-year-box"><span>Year</span><b id="m-year"></b></div>
+    </header>
+
+    <div id="content">
+      <div id="viewport">
+        <canvas id="scene"></canvas>
+        <div id="colorbar"><div id="cb-title"></div><div id="cb-body"><div id="cb-grad"></div><div id="cb-ticks"></div></div></div>
+        <div id="tooltip" hidden></div>
+        <div id="status" hidden></div>
+        <div id="hint">Drag to rotate · Scroll to zoom · Right-drag to pan · <button id="reset-view" class="link-btn">Reset view</button></div>
+      </div>
+      <div id="spectrum-panel" hidden>
+        <h2>Lowes spectrum</h2>
+        <svg id="spectrum"></svg>
+        <div class="stats">
+          <div class="metric"><span>Dipolarity (axial)</span><b id="s-dip"></b></div>
+          <div class="metric"><span>Dipolarity (total)</span><b id="s-diptot"></b></div>
+          <div class="metric"><span>Axisymmetric</span><b id="s-axi"></b></div>
+          <div class="metric"><span>Equat. symmetric</span><b id="s-symm"></b></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <noscript>This app needs JavaScript and WebGL.</noscript>
+
+  <div id="load-error" hidden>
+    <div class="card">
+      <h2 id="load-error-title">The app could not start</h2>
+      <div id="load-error-body"></div>
+    </div>
+  </div>
+  <script>
+    window.showLoadError = function (title, html) {
+      document.getElementById('load-error-title').textContent = title;
+      document.getElementById('load-error-body').innerHTML = html;
+      document.getElementById('load-error').hidden = false;
+    };
+  </script>
+  <!-- Classic scripts only (no local ES modules), so the app also runs when
+       this file is opened directly from disk. three.js comes from the CDN. -->
+  <script src="data/models.js"></script>
+  <script src="data/coastlines_110m.js"></script>
+  <script src="js/field.js"></script>
+  <script src="js/colormaps.js"></script>
+  <script src="js/spectrum.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

@@ -24,7 +24,7 @@ where, :math:`g_l^m` and :math:`h_l^m` are called the Gauss coefficients, usuall
 
    V = R_p \sum_{l,m} \left(\dfrac{R_p}{r}\right)^{l+1} [g_l^m \mathrm{Re}(Y_l^m (\theta,\phi)) + h_l^m \mathrm{Im}(Y_l^m (\theta,\phi))]\, ,
 
-where, :math:`\mathrm{Re}` and :math:`\mathrm{Im}` represent real and imaginary parts of the spherical harmonic :math:`Y_l^m (\theta,\phi)` of order :math:`l` and degree :math:`m`. All the Gauss coefficients in the collected data are `Schmidt semi-normalized <https://adsabs.harvard.edu/full/2005GeoJI.160..487W>`_. Only the data for Earth uses a `Condon-Shortley phase <https://mathworld.wolfram.com/Condon-ShortleyPhase.html>`_, the others do not. The radial magnetic field is easily obtained using
+where, :math:`\mathrm{Re}` and :math:`\mathrm{Im}` represent real and imaginary parts of the spherical harmonic :math:`Y_l^m (\theta,\phi)` of order :math:`l` and degree :math:`m`. All the Gauss coefficients in the collected data are `Schmidt semi-normalized <https://adsabs.harvard.edu/full/2005GeoJI.160..487W>`_. None of them include the `Condon-Shortley phase <https://mathworld.wolfram.com/Condon-ShortleyPhase.html>`_, and :math:`\phi` is east longitude in the frame of each model (see :ref:`seccoords`). The radial magnetic field is easily obtained using
 
 .. math::
    :label: eqBr

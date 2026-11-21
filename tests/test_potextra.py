@@ -145,17 +145,16 @@ class TestGetPolFromGauss:
         bpol[idx[1, 0]] = 0.0
         np.testing.assert_allclose(bpol, 0.0, atol=1e-14)
 
-    def test_fac_m_earth_vs_nonearth(self):
-        """For m>0, earth uses fac_m=1 while other planets use (-1)^m."""
+    def test_fac_m_same_for_all_planets(self):
+        """For m>0 every planet uses fac_m = (-1)^m (no Condon-Shortley phase
+        in the Gauss coefficients), Earth included."""
         lmax = 2
         glm, hlm, idx = _make_single_mode(lmax, 1, 1)
         norm_m1 = np.sqrt(2 * np.pi / 3) / 1
 
-        bpol_earth = get_pol_from_Gauss('earth',   glm, hlm, lmax, lmax, idx)
-        bpol_jup   = get_pol_from_Gauss('jupiter', glm, hlm, lmax, lmax, idx)
-
-        np.testing.assert_allclose(bpol_earth[idx[1, 1]],  norm_m1, rtol=1e-14)
-        np.testing.assert_allclose(bpol_jup[idx[1, 1]],   -norm_m1, rtol=1e-14)
+        for planet in ['earth', 'jupiter', 'uranus']:
+            bpol = get_pol_from_Gauss(planet, glm, hlm, lmax, lmax, idx)
+            np.testing.assert_allclose(bpol[idx[1, 1]], -norm_m1, rtol=1e-14)
 
     def test_mmax0_ignores_nonzero_m(self):
         """When mmax=0, modes with m>0 must not contribute."""
@@ -221,8 +220,8 @@ def test_get_field_along_path_scipy_shape_mismatch():
 
 @pytest.mark.parametrize("planet", ["earth", "jupiter", "saturn"])
 def test_extrapot_scipy_matches_surface_field(planet):
-    """At r=1 the extrapolated radial field must equal getB, including the
-    Condon-Shortley phase convention for Earth."""
+    """At r=1 the extrapolated radial field must equal getB (same phase and
+    longitude convention for every planet)."""
     p = Planet(name=planet, nphi=32, info=False, units='nT')
     br, _, _ = extrapot_scipy(p.glm, p.hlm, p.idx, p.lmax, p.mmax, 1.0,
                               np.array([1.0]), nphi=32, planetname=planet)

@@ -472,7 +472,7 @@ def get_earth_coastlines(
     Get Earth coastline coordinates as 3D line segments.
 
     Coordinate convention (matching planetmagfields):
-    - phi: 0 to 2π (0 at Greenwich, increasing eastward)
+    - phi: east longitude, 0 at Greenwich
     - theta: 0 to π (0 at North pole, π at South pole)
 
     Natural Earth uses:
@@ -504,9 +504,8 @@ def get_earth_coastlines(
         lon_deg = coords[:, 0]
         lat_deg = coords[:, 1]
 
-        # Convert longitude to phi (0 to 2π)
-        phi = np.radians(lon_deg) + np.pi  # Add 180° shift
-        phi = phi % (2 * np.pi)  # Wrap to 0-2π
+        # Longitude is phi directly (east longitude), wrapped to 0-2π
+        phi = np.radians(lon_deg) % (2 * np.pi)
 
         # Convert latitude to colatitude theta (0 to π)
         theta = np.pi / 2 - np.radians(lat_deg)

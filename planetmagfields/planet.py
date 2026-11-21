@@ -182,7 +182,8 @@ class Planet:
        theta : array_like
            Array of co-latitudes in radians
        phi : array_like
-           Array of longitudes in radians
+           Array of east longitudes in radians, in the body-fixed frame of
+           the field model (geographic longitude for Earth)
        """
        from .potextra import get_field_along_path
 

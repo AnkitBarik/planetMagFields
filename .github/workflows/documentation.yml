@@ -2,6 +2,9 @@ name: documentation
 
 on: [push, pull_request, workflow_dispatch]
 
+# Deploys the Sphinx docs to https://ankitbarik.github.io/planetMagFields/
+# and the web app to https://ankitbarik.github.io/planetMagFields/app/
+
 permissions:
   contents: write
 
@@ -21,6 +24,10 @@ jobs:
         run: |
           python3 -m pip install .
           sphinx-build doc _build
+      - name: Build three.js web app
+        run: |
+          python3 webapp/build_data.py --out _build/app/data
+          cp -r webapp/index.html webapp/style.css webapp/js _build/app/
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}

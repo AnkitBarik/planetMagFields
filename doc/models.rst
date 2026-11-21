@@ -43,6 +43,13 @@ We have support for different field models for planets. They are listed below:
 
  * *Ganymede*: `Kivelson et al. 2002 <https://doi.org/10.1006/icar.2002.6834>`_
 
+Positions are given as radius, co-latitude and **east** longitude in the
+body-fixed frame of each model, and all Gauss coefficients are Schmidt
+semi-normalised without the Condon-Shortley phase. See
+:ref:`Coordinate conventions <seccoords>` for details, including field
+component directions and how longitude is defined for each planet.
+
+
 A list of models and keywords for them can be obtained using the :py:func:`get_models <planetmagfields.get_models>` function. For example:
 
 .. code-block:: python
