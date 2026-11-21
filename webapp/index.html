@@ -99,6 +99,9 @@
       </div>
       <label class="check"><input id="invert" type="checkbox"> Invert colormap</label>
       <label class="check"><input id="sym" type="checkbox" checked> Symmetric (auto ±max)</label>
+      <label id="sat-row" title="Colours saturate below the field maximum, bringing out weaker structure">Saturation <output id="sat-out"></output>
+        <input id="sat" type="range" min="0" max="0.95" step="0.01" value="0">
+      </label>
       <div id="range-row" class="pair" hidden>
         <label>vmin <input id="vmin" type="number" step="any" value="0"></label>
         <label>vmax <input id="vmax" type="number" step="any" value="0"></label>

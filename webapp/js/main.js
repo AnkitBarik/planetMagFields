@@ -133,7 +133,7 @@ function buildAxes(limit) {
 // ---------------------------------------------------------------------------
 const ui = {};
 for (const id of ['planet', 'model', 'year', 'r', 'units', 'resolution', 'show-spectrum', 'show-axes',
-  'show-coast', 'coast-color', 'cmap', 'invert', 'sym', 'vmin', 'vmax', 'show-lines', 'nlines',
+  'show-coast', 'coast-color', 'cmap', 'invert', 'sym', 'sat', 'vmin', 'vmax', 'show-lines', 'nlines',
   'seeding', 'rmax', 'line-color', 'lw', 'lmin', 'lmaxf', 'mmin', 'mmaxf', 'play', 'speed']) ui[id] = $(id);
 
 const val = {
@@ -165,6 +165,7 @@ for (const k of ['year', 'r', 'rmax', 'nlines']) if (params.has(k)) ui[k].value 
 if (params.has('units') && UNITS[params.get('units')]) ui.units.value = params.get('units');
 if (params.has('cmap') && COLORMAPS[params.get('cmap')]) ui.cmap.value = params.get('cmap');
 if (params.has('seeding')) ui.seeding.value = params.get('seeding');
+if (params.has('sat')) ui.sat.value = params.get('sat');
 
 // Colormap picker: shows a preview of every colormap (following "Invert") and
 // drives the hidden <select id="cmap">, so the rest of the app reads ui.cmap.
@@ -302,6 +303,7 @@ function syncURL() {
   if (val.year !== null) q.set('year', ui.year.value);
   if (ui.units.value !== 'muT') q.set('units', ui.units.value);
   if (ui.cmap.value !== 'RdBu') q.set('cmap', ui.cmap.value);
+  if (ui.sym.checked && +ui.sat.value > 0) q.set('sat', ui.sat.value);
   if (ui['show-lines'].checked) {
     q.set('nlines', ui.nlines.value);
     q.set('rmax', ui.rmax.value);
@@ -374,14 +376,22 @@ function animAbsMax() {
 
 function recolor() {
   const [fac, label] = val.unit;
-  let absmax = 0;
-  for (const v of brGrid) absmax = Math.max(absmax, Math.abs(v));
-  absmax *= fac;
+  let absmax = 0, dmin = Infinity, dmax = -Infinity;
+  for (const v of brGrid) {
+    if (v < dmin) dmin = v;
+    if (v > dmax) dmax = v;
+  }
+  dmin *= fac;
+  dmax *= fac;
+  absmax = Math.max(-dmin, dmax);
   if (ui.sym.checked) {
     // While animating, use the largest |Br| over the whole time span so the
     // colours mean the same thing in every frame.
     if (playing) absmax = animAbsMax() * fac;
+    // Saturation: colours saturate at (1 - s) of the maximum.
+    absmax *= 1 - parseFloat(ui.sat.value);
     range = [-absmax, absmax];
+    $('sat-out').textContent = +ui.sat.value > 0 ? `${Math.round(100 * ui.sat.value)}% · ±${fmt(absmax)} ${label}` : '0%';
   } else {
     const lo = parseFloat(ui.vmin.value), hi = parseFloat(ui.vmax.value);
     range = hi > lo ? [lo, hi] : [-absmax, absmax];
@@ -397,7 +407,8 @@ function recolor() {
     data[4 * n + 3] = 255;
   }
   texture.needsUpdate = true;
-  drawColorbar(table, label);
+  // Mark the colorbar ends when the field goes beyond the colour range.
+  drawColorbar(table, label, dmin < range[0] - 1e-9 * span, dmax > range[1] + 1e-9 * span);
   requestRender();
 }
 
@@ -407,7 +418,7 @@ function fmt(v) {
   return v.toFixed(a >= 100 ? 0 : a >= 10 ? 1 : 2);
 }
 
-function drawColorbar(table, label) {
+function drawColorbar(table, label, clipLow = false, clipHigh = false) {
   const stops = [];
   for (let k = 0; k <= 16; k++) {
     const i = Math.round((k / 16) * 255);
@@ -420,7 +431,8 @@ function drawColorbar(table, label) {
   for (let k = 0; k <= 4; k++) {
     const d = document.createElement('div');
     d.style.top = `${100 - k * 25}%`;
-    d.textContent = fmt(range[0] + (k / 4) * (range[1] - range[0]));
+    const prefix = k === 4 && clipHigh ? '≥ ' : k === 0 && clipLow ? '≤ ' : '';
+    d.textContent = prefix + fmt(range[0] + (k / 4) * (range[1] - range[0]));
     ticks.append(d);
   }
 }
@@ -558,6 +570,7 @@ function updateMeta() {
   if (!earth && playing) stopAnimation();
   $('lines-opts').hidden = !ui['show-lines'].checked;
   $('range-row').hidden = ui.sym.checked;
+  $('sat-row').hidden = !ui.sym.checked;
   $('spectrum-panel').hidden = !ui['show-spectrum'].checked;
   axesGroup.visible = ui['show-axes'].checked;
 
@@ -676,7 +689,7 @@ ui.play.addEventListener('click', () => {
 ui.r.addEventListener('input', () => schedule(updateSurface, updateLines, updateSpectrum));
 ui.resolution.addEventListener('change', () => schedule(updateSurface));
 ui.units.addEventListener('change', () => schedule(recolor));
-for (const id of ['cmap', 'invert', 'sym', 'vmin', 'vmax']) ui[id].addEventListener('input', () => schedule(recolor));
+for (const id of ['cmap', 'invert', 'sym', 'sat', 'vmin', 'vmax']) ui[id].addEventListener('input', () => schedule(recolor));
 ui['show-spectrum'].addEventListener('change', () => {
   schedule(updateSpectrum);
   requestAnimationFrame(() => { resize(); fitView(); });
