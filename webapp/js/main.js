@@ -10,7 +10,8 @@ const [{ OrbitControls }, { Line2 }, { LineGeometry }, { LineMaterial }] = await
   import('three/addons/lines/LineGeometry.js'),
   import('three/addons/lines/LineMaterial.js'),
 ]);
-const { FieldModel, seedPoints, fibonacciSeeds, traceLine, COLORMAPS, PLASMA, lut, sample, drawSpectrum } = self.PMF;
+const { FieldModel, seedPoints, fibonacciSeeds, traceLine, COLORMAPS, PLASMA, lut, sample, drawSpectrum,
+  drawTrajectoryPlot } = self.PMF;
 
 const $ = (id) => document.getElementById(id);
 const UNITS = { nT: [1, 'nT'], muT: [1e-3, 'μT'], Gauss: [1e-5, 'G'] };
@@ -134,7 +135,7 @@ function buildAxes(limit) {
 const ui = {};
 for (const id of ['planet', 'model', 'year', 'r', 'units', 'resolution', 'show-spectrum', 'show-axes',
   'show-coast', 'coast-color', 'cmap', 'invert', 'sym', 'sat', 'vmin', 'vmax', 'show-lines', 'nlines',
-  'seeding', 'rmax', 'line-color', 'lw', 'lmin', 'lmaxf', 'mmin', 'mmaxf', 'play', 'speed']) ui[id] = $(id);
+  'seeding', 'rmax', 'line-color', 'lw', 'lmin', 'lmaxf', 'mmin', 'mmaxf', 'play', 'speed', 'traj-angles']) ui[id] = $(id);
 
 const val = {
   get planet() { return ui.planet.value; },
@@ -303,6 +304,7 @@ function syncURL() {
   if (val.year !== null) q.set('year', ui.year.value);
   if (ui.units.value !== 'muT') q.set('units', ui.units.value);
   if (ui.cmap.value !== 'RdBu') q.set('cmap', ui.cmap.value);
+  if (traj && (traj.source === 'synthetic' || EXAMPLES.some((e) => e.id === traj.source))) q.set('traj', traj.source);
   if (ui.sym.checked && +ui.sat.value > 0) q.set('sat', ui.sat.value);
   if (ui['show-lines'].checked) {
     q.set('nlines', ui.nlines.value);
@@ -409,6 +411,7 @@ function recolor() {
   texture.needsUpdate = true;
   // Mark the colorbar ends when the field goes beyond the colour range.
   drawColorbar(table, label, dmin < range[0] - 1e-9 * span, dmax > range[1] + 1e-9 * span);
+  colorTrajectory(); // follows colormap / invert changes
   requestRender();
 }
 
@@ -550,6 +553,399 @@ function updateSpectrum() {
   $('s-symm').textContent = pct(s.symm / s.tot);
 }
 
+// ---------------------------------------------------------------------------
+// Trajectory: the field along a user-supplied path (r, theta, phi), drawn on
+// the globe and plotted in the side panel. Data never leaves the browser.
+// ---------------------------------------------------------------------------
+// Components use the first three dark-mode categorical slots (validated for
+// colour-blind separation on this surface); |B|, a magnitude, is neutral ink.
+const TRAJ_SERIES = [
+  { key: 'br', label: 'Bᵣ', color: '#3987e5' },
+  { key: 'bt', label: 'Bθ', color: '#d95926' },
+  { key: 'bp', label: 'Bφ', color: '#199e70' },
+  { key: 'b', label: '|B|', color: '#e6e6e6', width: 2.5 },
+];
+const TRAJ_COLOR = 0xf5b400;
+let traj = null;   // { r, th, ph (as in file), t, tLabel, dropped, source, unit, theta, phi (radians), xyz, rmaxPath }
+let trajB = null;  // { br, bt, bp, b } in nT
+const trajGroup = new THREE.Group();
+scene.add(trajGroup);
+// The path is coloured by Br / max|Br| along it with the surface colormap,
+// over a dark outline so it stays visible against the coloured globe.
+const TRAJ_WIDTH = 3.5;
+const trajMat = new LineMaterial({ color: 0xffffff, linewidth: TRAJ_WIDTH, vertexColors: true });
+// No depth writes: the outline can't cover the coloured line drawn after it,
+// but the globe still hides it where the path goes behind the planet.
+const trajOutlineMat = new LineMaterial({ color: 0x0b0b0b, linewidth: TRAJ_WIDTH + 3, depthWrite: false });
+const markerGeo = new THREE.SphereGeometry(1, 20, 14);
+const trajStart = new THREE.Mesh(markerGeo, new THREE.MeshBasicMaterial({ color: TRAJ_COLOR }));
+const trajHover = new THREE.Mesh(markerGeo, new THREE.MeshBasicMaterial({ color: 0xffffff }));
+trajStart.visible = trajHover.visible = false;
+scene.add(trajStart, trajHover);
+
+const minmax = (a) => {
+  let lo = Infinity, hi = -Infinity;
+  for (const v of a) { if (v < lo) lo = v; if (v > hi) hi = v; }
+  return [lo, hi];
+};
+
+function parseTrajectoryCSV(text) {
+  const lines = text.split(/\r?\n/).map((l) => l.trim()).filter((l) => l && !l.startsWith('#'));
+  if (!lines.length) throw new Error('No data found.');
+  const split = (l) => l.split(/[\s,;]+/).filter(Boolean).map((c) => c.replace(/^["']|["']$/g, ''));
+  const isNum = (c) => c !== '' && Number.isFinite(Number(c));
+  let header = split(lines[0]);
+  let start = 1;
+  if (header.every(isNum)) { header = ['r', 'theta', 'phi', 't'].slice(0, header.length); start = 0; }
+  const names = header.map((h) => h.toLowerCase());
+  const col = (...alts) => names.findIndex((n) => alts.includes(n));
+  const ir = col('r', 'radius'), it = col('theta', 'colat', 'colatitude'), ip = col('phi', 'lon', 'longitude');
+  const itime = col('t', 'time');
+  const ipass = col('pass', 'segment');
+  // Optional measured field (nT): plotted as dots and used to colour the path.
+  const im = [col('br', 'b_r'), col('btheta', 'bt', 'b_theta'), col('bphi', 'bp', 'b_phi')];
+  const hasM = im.every((k) => k >= 0);
+  if (ir < 0 || it < 0 || ip < 0) throw new Error(`Need columns r, theta and phi; found: ${header.join(', ')}.`);
+  const r = [], th = [], ph = [], t = [], mbr = [], mbt = [], mbp = [], pass = [];
+  let dropped = 0;
+  for (let k = start; k < lines.length; k++) {
+    const c = split(lines[k]);
+    const v = [c[ir], c[it], c[ip]].map(Number);
+    if (!v.every(Number.isFinite)) { dropped++; continue; }
+    r.push(v[0]); th.push(v[1]); ph.push(v[2]);
+    if (itime >= 0) t.push(Number(c[itime]));
+    if (ipass >= 0) pass.push(c[ipass]);
+    if (hasM) { mbr.push(Number(c[im[0]])); mbt.push(Number(c[im[1]])); mbp.push(Number(c[im[2]])); }
+  }
+  if (!r.length) throw new Error('No valid numeric rows found.');
+  const hasT = itime >= 0 && t.every(Number.isFinite);
+  const measured = hasM && [mbr, mbt, mbp].every((a) => a.every(Number.isFinite))
+    ? { br: mbr, bt: mbt, bp: mbp } : null;
+  return { r, th, ph, t: hasT ? t : null, tLabel: hasT ? header[itime] : null, dropped, measured,
+    pass: ipass >= 0 ? pass : null };
+}
+
+// The one built-in example: a Juno-like, near-polar flyby with closest approach
+// 0.1 planetary radii above the surface at about 70 N (nearly parabolic,
+// inclination 85 degrees), in degrees. Distances are in planetary radii, so it
+// works for every body.
+function exampleFlyby() {
+  const q = 1.1, e = 1.05, rFar = 6, n = 361;
+  const p = q * (1 + e);
+  const nuMax = Math.acos((p / rFar - 1) / e);
+  const d2r = Math.PI / 180;
+  const inc = 85 * d2r, node = 30 * d2r, argp = 70 * d2r;
+  const r = [], th = [], ph = [];
+  for (let k = 0; k < n; k++) {
+    const nu = -nuMax + (2 * nuMax * k) / (n - 1);
+    const rr = p / (1 + e * Math.cos(nu));
+    const u = argp + nu;
+    const x = rr * (Math.cos(node) * Math.cos(u) - Math.sin(node) * Math.sin(u) * Math.cos(inc));
+    const y = rr * (Math.sin(node) * Math.cos(u) + Math.cos(node) * Math.sin(u) * Math.cos(inc));
+    const z = rr * Math.sin(u) * Math.sin(inc);
+    r.push(+rr.toFixed(5));
+    th.push(+(Math.acos(z / rr) / d2r).toFixed(4));
+    ph.push(+(Math.atan2(y, x) / d2r).toFixed(4));
+  }
+  return { r, th, ph, t: null, tLabel: null, dropped: 0, measured: null, fixedUnit: 'deg', name: 'Synthetic flyby' };
+}
+
+function trajAngleUnit() {
+  if (traj.fixedUnit) return traj.fixedUnit;
+  if (ui['traj-angles'].value !== 'auto') return ui['traj-angles'].value;
+  const [tlo, thi] = minmax(traj.th), [plo, phi] = minmax(traj.ph);
+  return Math.max(-tlo, thi) > Math.PI + 1e-6 || Math.max(-plo, phi) > 2 * Math.PI + 1e-6 ? 'deg' : 'rad';
+}
+
+function prepareTrajectory() {
+  traj.unit = trajAngleUnit();
+  const f = traj.unit === 'deg' ? Math.PI / 180 : 1;
+  const n = traj.r.length;
+  traj.theta = Float64Array.from(traj.th, (v) => v * f);
+  traj.phi = Float64Array.from(traj.ph, (v) => v * f);
+  traj.xyz = new Float32Array(3 * n);
+  for (let i = 0; i < n; i++) {
+    const r = traj.r[i], st = Math.sin(traj.theta[i]);
+    traj.xyz.set([r * st * Math.cos(traj.phi[i]), r * st * Math.sin(traj.phi[i]), r * Math.cos(traj.theta[i])], 3 * i);
+  }
+  traj.rmaxPath = minmax(traj.r)[1];
+  // The path itself is drawn by colorTrajectory once the field is known.
+  const size = 0.03 * Math.max(1, Math.min(traj.rmaxPath, 12) / 3);
+  trajStart.scale.setScalar(size);
+  trajStart.position.fromArray(traj.xyz, 0);
+  trajStart.visible = true;
+  trajHover.scale.setScalar(size * 1.25);
+}
+
+// Split the trajectory into segments (separate passes): where the pass column
+// changes, or where time runs backwards or jumps by far more than its usual step.
+function trajSegments() {
+  const n = traj.r.length;
+  const cuts = [0];
+  let typical = Infinity;
+  if (traj.t && n > 2) {
+    const dts = [];
+    for (let i = 1; i < n; i++) dts.push(Math.abs(traj.t[i] - traj.t[i - 1]));
+    dts.sort((a, b) => a - b);
+    typical = dts[Math.floor(dts.length / 2)] || Infinity;
+  }
+  for (let i = 1; i < n; i++) {
+    const passChange = traj.pass && traj.pass[i] !== traj.pass[i - 1];
+    const timeBreak = traj.t && (traj.t[i] < traj.t[i - 1] || traj.t[i] - traj.t[i - 1] > 20 * typical);
+    if (passChange || timeBreak) cuts.push(i);
+  }
+  cuts.push(n);
+  const segs = [];
+  for (let k = 0; k + 1 < cuts.length; k++) {
+    segs.push({ start: cuts[k], end: cuts[k + 1], label: traj.passLabels ? traj.passLabels[k] : null });
+  }
+  return segs;
+}
+
+// (Re)draw the path, coloured by Br / max|Br| along it with the current
+// colormap (blue negative, red positive for RdBu; follows Invert).
+function colorTrajectory() {
+  for (const o of trajGroup.children) o.geometry.dispose();
+  trajGroup.clear();
+  if (!traj || !trajB || traj.r.length < 2) return;
+  const n = traj.r.length;
+  let mx = 0;
+  const measuredBr = traj.measured ? traj.measured.br : null;
+  const brPath = measuredBr || trajB.br; // measured Br when the file has it
+  for (const v of brPath) mx = Math.max(mx, Math.abs(v));
+  const table = lut(ui.cmap.value, ui.invert.checked);
+  const linear = new Float32Array(256 * 3);
+  const c = new THREE.Color();
+  for (let k = 0; k < 256; k++) {
+    c.setRGB(table[3 * k] / 255, table[3 * k + 1] / 255, table[3 * k + 2] / 255, THREE.SRGBColorSpace);
+    linear.set([c.r, c.g, c.b], 3 * k);
+  }
+  const colors = new Float32Array(3 * n);
+  for (let i = 0; i < n; i++) {
+    const u = mx > 0 ? brPath[i] / mx : 0; // in [-1, 1]
+    const k = Math.round(((u + 1) / 2) * 255);
+    colors.set(linear.subarray(3 * k, 3 * k + 3), 3 * i);
+  }
+  for (const sg of trajSegments()) {
+    if (sg.end - sg.start < 2) continue;
+    const pos = traj.xyz.subarray(3 * sg.start, 3 * sg.end);
+    const outlineGeo = new LineGeometry();
+    outlineGeo.setPositions(pos);
+    const outline = new Line2(outlineGeo, trajOutlineMat);
+    outline.renderOrder = 1;
+    const geo = new LineGeometry();
+    geo.setPositions(pos);
+    geo.setColors(colors.subarray(3 * sg.start, 3 * sg.end));
+    const line = new Line2(geo, trajMat);
+    line.renderOrder = 2;
+    trajGroup.add(outline, line);
+  }
+
+  // Key in the side panel.
+  const stops = [];
+  for (let k = 0; k <= 8; k++) {
+    const i = Math.round((k / 8) * 255);
+    stops.push(`rgb(${table[3 * i]},${table[3 * i + 1]},${table[3 * i + 2]}) ${(k / 8) * 100}%`);
+  }
+  $('traj-key-grad').style.background = `linear-gradient(to right, ${stops.join(',')})`;
+  const [fac, label] = val.unit;
+  $('traj-key-text').innerHTML = `${measuredBr ? 'measured ' : ''}B<sub>r</sub> / max|B<sub>r</sub>| along the path ` +
+    `(max |B<sub>r</sub>| = ${fmt(mx * fac)} ${label})`;
+  requestRender();
+}
+
+function loadTrajectory(parsed, source) {
+  traj = { ...parsed, source };
+  prepareTrajectory();
+  schedule(updateTrajectory);
+  // Re-frame once the side panel has appeared (next frame, after schedule).
+  requestAnimationFrame(() => { resize(); fitView(); });
+}
+
+function clearTrajectory() {
+  traj = trajB = null;
+  for (const o of trajGroup.children) o.geometry.dispose();
+  trajGroup.clear();
+  trajStart.visible = trajHover.visible = false;
+  schedule(updateTrajectory);
+  requestAnimationFrame(resize);
+}
+
+function setTrajInfo(text, warn = false) {
+  const info = $('traj-info');
+  info.hidden = !text;
+  info.textContent = text || '';
+  info.classList.toggle('warn', warn);
+}
+
+function updateTrajectory() {
+  const has = !!traj;
+  $('traj-clear').hidden = !has;
+  $('traj-download').hidden = !has;
+  if (!has) { setTrajInfo(''); return; }
+  const n = traj.r.length;
+  const br = new Float64Array(n), bt = new Float64Array(n), bp = new Float64Array(n), b = new Float64Array(n);
+  for (let i = 0; i < n; i++) {
+    const v = model.evalB(traj.r[i], traj.theta[i], traj.phi[i]);
+    br[i] = v[0]; bt[i] = v[1]; bp[i] = v[2]; b[i] = Math.hypot(v[0], v[1], v[2]);
+  }
+  trajB = { br, bt, bp, b };
+  colorTrajectory();
+
+  const [fac, label] = val.unit;
+  const [rlo, rhi] = minmax(traj.r);
+  const [tlo, thi] = minmax(traj.theta);
+  const notes = [];
+  if (traj.dropped) notes.push(`${traj.dropped} invalid row${traj.dropped > 1 ? 's' : ''} skipped`);
+  if (tlo < -1e-9 || thi > Math.PI + 1e-9) notes.push('theta outside 0–180°: is it latitude instead of co-latitude?');
+  const inside = traj.r.filter((r) => r < 1).length;
+  if (inside) notes.push(`${inside} point${inside > 1 ? 's' : ''} below the surface`);
+  if (traj.planet && traj.planet !== val.planet) notes.push(`recorded at ${cap(traj.planet)}, shown in ${cap(val.planet)}'s field`);
+  const unitNote = traj.name ? traj.name
+    : `angles in ${traj.unit === 'deg' ? 'degrees' : 'radians'}${ui['traj-angles'].value === 'auto' ? ' (auto-detected)' : ''}`;
+  setTrajInfo(`${n} points · r ${fmt(rlo)}–${fmt(rhi)} Rₚ · ${unitNote}` + (notes.length ? ` · ${notes.join(' · ')}` : ''), notes.length > 0);
+
+  // Show the panel before drawing so the plot can measure its width.
+  $('traj-block').hidden = false;
+  $('side-panel').hidden = false;
+  const credit = $('traj-credit');
+  credit.hidden = !traj.credit;
+  if (traj.credit) {
+    credit.replaceChildren(traj.credit + (traj.url ? ', ' : '.'));
+    if (traj.url) {
+      const a = document.createElement('a');
+      a.href = traj.url; a.target = '_blank'; a.rel = 'noopener';
+      a.textContent = traj.url.replace('https://doi.org/', 'doi:');
+      credit.append(a);
+    }
+  }
+  const x = traj.t ? Float64Array.from(traj.t) : Float64Array.from({ length: n }, (_, i) => i);
+  const scaled = { br, bt, bp, b };
+  let measured = null;
+  const misfit = $('traj-misfit');
+  misfit.hidden = !traj.measured;
+  if (traj.measured) {
+    const M = traj.measured;
+    measured = { br: M.br, bt: M.bt, bp: M.bp, b: M.br.map((v, i) => Math.hypot(v, M.bt[i], M.bp[i])) };
+    // Optionally only near the planet, where the internal field dominates.
+    const rlim = traj.misfitRmax || Infinity;
+    let se = 0, sb = 0, nm = 0;
+    for (let i = 0; i < n; i++) {
+      if (traj.r[i] > rlim) continue;
+      se += (br[i] - M.br[i]) ** 2 + (bt[i] - M.bt[i]) ** 2 + (bp[i] - M.bp[i]) ** 2;
+      sb += measured.b[i] ** 2;
+      nm++;
+    }
+    const where = Number.isFinite(rlim) ? ` within r ≤ ${+rlim.toPrecision(4)} Rₚ` : '';
+    misfit.textContent = nm
+      ? `RMS model − measured${where}: ${fmt(Math.sqrt(se / nm) * fac)} ${label} ` +
+        `(RMS measured |B|: ${fmt(Math.sqrt(sb / nm) * fac)} ${label})`
+      : `No points within r ≤ ${+rlim.toPrecision(4)} Rₚ for the misfit.`;
+  }
+  drawTrajectoryPlot($('traj-plot'), $('traj-legend'), $('traj-tip'), {
+    x,
+    xLabel: traj.t ? traj.tLabel : 'Point along trajectory',
+    segments: trajSegments(),
+    unit: label,
+    series: TRAJ_SERIES.map((s) => ({
+      ...s,
+      values: Float64Array.from(scaled[s.key], (v) => v * fac),
+      measured: measured ? Float64Array.from(measured[s.key], (v) => v * fac) : null,
+    })),
+    onHover: (i) => {
+      trajHover.visible = i !== null;
+      if (i !== null) trajHover.position.fromArray(traj.xyz, 3 * i);
+      requestRender();
+    },
+  });
+}
+
+function downloadTrajectory() {
+  if (!traj || !trajB) return;
+  const [fac] = val.unit;
+  const u = { nT: 'nT', muT: 'muT', Gauss: 'G' }[ui.units.value];
+  const angle = traj.unit === 'deg' ? 'deg' : 'rad';
+  const head = ['r', `theta_${angle}`, `phi_${angle}`];
+  if (traj.t) head.push(traj.tLabel);
+  head.push(`Br_${u}`, `Btheta_${u}`, `Bphi_${u}`, `B_${u}`);
+  if (traj.measured) head.push(`Br_measured_${u}`, `Btheta_measured_${u}`, `Bphi_measured_${u}`);
+  const rows = [
+    `# planetMagFields: ${val.planet} ${val.model}${val.year !== null ? ` year ${val.year}` : ''}` +
+      `${filterActive() ? ' (filtered)' : ''}; r in planetary radii, theta co-latitude, phi east longitude`,
+    head.join(','),
+  ];
+  const g = (v) => +v.toPrecision(8);
+  for (let i = 0; i < traj.r.length; i++) {
+    const row = [traj.r[i], traj.th[i], traj.ph[i]];
+    if (traj.t) row.push(traj.t[i]);
+    row.push(g(trajB.br[i] * fac), g(trajB.bt[i] * fac), g(trajB.bp[i] * fac), g(trajB.b[i] * fac));
+    if (traj.measured) {
+      const M = traj.measured;
+      row.push(g(M.br[i] * fac), g(M.bt[i] * fac), g(M.bp[i] * fac));
+    }
+    rows.push(row.join(','));
+  }
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([rows.join('\n') + '\n'], { type: 'text/csv' }));
+  a.download = `trajectory_${val.planet}_${val.model}.csv`;
+  document.body.append(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
+function readTrajectoryText(text, source) {
+  try {
+    loadTrajectory(parseTrajectoryCSV(text), source);
+  } catch (err) {
+    setTrajInfo(err.message, true);
+  }
+}
+$('traj-file').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => readTrajectoryText(String(reader.result), 'file');
+  reader.onerror = () => setTrajInfo('Could not read the file.', true);
+  reader.readAsText(file);
+  e.target.value = ''; // allow re-loading the same file
+});
+$('traj-apply').addEventListener('click', () => readTrajectoryText($('traj-text').value, 'paste'));
+// Examples: real spacecraft data bundled by build_data.py, plus the synthetic
+// flyby (which works for any planet).
+const EXAMPLES = self.PMF_EXAMPLES || [];
+for (const ex of EXAMPLES) $('traj-example').add(new Option(ex.name, ex.id));
+$('traj-example').add(new Option('Synthetic flyby (any planet)', 'synthetic'));
+function loadExample(id) {
+  if (id === 'synthetic') { loadTrajectory(exampleFlyby(), 'synthetic'); return; }
+  const ex = EXAMPLES.find((e) => e.id === id);
+  if (!ex) return;
+  if (ex.planet && val.planet !== ex.planet) {
+    ui.planet.value = ex.planet;
+    ui.planet.dispatchEvent(new Event('change'));
+  }
+  if (ex.units && UNITS[ex.units] && ui.units.value !== ex.units) {
+    ui.units.value = ex.units;
+    schedule(recolor);
+  }
+  const parsed = parseTrajectoryCSV(ex.csv);
+  loadTrajectory({ ...parsed, fixedUnit: ex.angles, tLabel: ex.tLabel || parsed.tLabel, name: ex.name,
+    credit: ex.credit, url: ex.url, planet: ex.planet, passLabels: ex.passes, misfitRmax: ex.misfitRmax }, id);
+}
+$('traj-example').addEventListener('change', (e) => {
+  loadExample(e.target.value);
+  e.target.selectedIndex = 0; // back to "Examples…" so the same one can be re-picked
+});
+$('traj-clear').addEventListener('click', clearTrajectory);
+$('traj-download').addEventListener('click', downloadTrajectory);
+$('traj-angles').addEventListener('change', () => { if (traj) { prepareTrajectory(); schedule(updateTrajectory); } });
+// Redraw the plot at the new size when the side panel is resized.
+let trajPlotWidth = 0;
+new ResizeObserver(([entry]) => {
+  const w = Math.round(entry.contentRect.width);
+  if (traj && w && Math.abs(w - trajPlotWidth) > 2) { trajPlotWidth = w; schedule(updateTrajectory); }
+}).observe(document.querySelector('.traj-plot-wrap'));
+
 function updateMeta() {
   const m = DATA.planets[val.planet].models[val.model];
   const earth = val.planet === 'earth';
@@ -571,7 +967,9 @@ function updateMeta() {
   $('lines-opts').hidden = !ui['show-lines'].checked;
   $('range-row').hidden = ui.sym.checked;
   $('sat-row').hidden = !ui.sym.checked;
-  $('spectrum-panel').hidden = !ui['show-spectrum'].checked;
+  $('spectrum-block').hidden = !ui['show-spectrum'].checked;
+  $('traj-block').hidden = !traj;
+  $('side-panel').hidden = !ui['show-spectrum'].checked && !traj;
   axesGroup.visible = ui['show-axes'].checked;
 
   const ref = $('model-ref');
@@ -618,6 +1016,7 @@ function schedule(...steps) {
     run(updateLines);
     run(buildLines);
     run(updateSpectrum);
+    run(updateTrajectory);
     updateMeta();
     pending.clear();
     if (firstFit) {
@@ -629,13 +1028,13 @@ function schedule(...steps) {
   });
 }
 
-const ALL = [buildModel, updateSurface, updateLines, updateSpectrum];
+const ALL = [buildModel, updateSurface, updateLines, updateSpectrum, updateTrajectory];
 ui.planet.addEventListener('change', () => { fillModels(); resetFilter(); schedule(...ALL); fitView(); });
 ui.model.addEventListener('change', () => { resetFilter(); schedule(...ALL); });
 ui.year.addEventListener('input', () => { stopAnimation(); schedule(...ALL); });
 
 // Filter sliders: keep min <= max by pushing the partner slider along.
-const FILTER_STEPS = [applyFilter, updateSurface, updateLines, updateSpectrum];
+const FILTER_STEPS = [applyFilter, updateSurface, updateLines, updateSpectrum, updateTrajectory];
 for (const [lo, hi] of [['lmin', 'lmaxf'], ['mmin', 'mmaxf']]) {
   ui[lo].addEventListener('input', () => {
     if (+ui[lo].value > +ui[hi].value) ui[hi].value = ui[lo].value;
@@ -688,7 +1087,7 @@ ui.play.addEventListener('click', () => {
 });
 ui.r.addEventListener('input', () => schedule(updateSurface, updateLines, updateSpectrum));
 ui.resolution.addEventListener('change', () => schedule(updateSurface));
-ui.units.addEventListener('change', () => schedule(recolor));
+ui.units.addEventListener('change', () => schedule(recolor, updateTrajectory));
 for (const id of ['cmap', 'invert', 'sym', 'sat', 'vmin', 'vmax']) ui[id].addEventListener('input', () => schedule(recolor));
 ui['show-spectrum'].addEventListener('change', () => {
   schedule(updateSpectrum);
@@ -710,13 +1109,14 @@ $('close-side').addEventListener('click', () => document.body.classList.remove('
 // View, hover readout and rendering
 // ---------------------------------------------------------------------------
 const axisLimit = () => Math.max(ui['show-lines'].checked ? val.rmax : 1, val.r) + 0.5;
+const trajExtent = () => (traj ? Math.min(traj.rmaxPath, 24) : 0);
 
 // Width taken by the colorbar on the right; the view is shifted left by half
 // of it so the planet is centred in the free area instead of under the bar.
 const colorbarSpace = () => $('colorbar').offsetWidth + 24;
 
 function fitView() {
-  const lim = Math.max(val.r * 1.4, Math.min(axisLimit(), 6) * 0.62);
+  const lim = Math.max(val.r * 1.4, Math.min(axisLimit(), 6) * 0.62, trajExtent() * 1.1);
   // Fit whichever field of view is tighter, so narrow (laptop + spectrum)
   // and very wide (ultrawide) viewports both frame the scene sensibly.
   const w = Math.max(1, viewport.clientWidth - colorbarSpace()), h = Math.max(1, viewport.clientHeight);
@@ -769,6 +1169,8 @@ function resize() {
   camera.setViewOffset(w, h, colorbarSpace() / 2, 0, w, h);
   camera.updateProjectionMatrix();
   lineMat.resolution.set(w, h);
+  trajMat.resolution.set(w, h);
+  trajOutlineMat.resolution.set(w, h);
   requestRender();
 }
 new ResizeObserver(resize).observe(viewport);
@@ -789,6 +1191,7 @@ ui['show-spectrum'].checked = params.get('spectrum') === '1';
 buildAxes(axisLimit());
 resize();
 schedule(...ALL);
+if (params.has('traj')) loadExample(params.get('traj') === 'example' ? 'synthetic' : params.get('traj'));
 })().catch((err) => {
   console.error(err);
   if (err instanceof LoadError) return showLoadError(err.title, err.html);

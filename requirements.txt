@@ -1,8 +1,7 @@
-# Streamlit app deployment requirements
+# Binder environment for the Jupyter notebook (the Streamlit app has its own
+# streamlit_app/requirements.txt and only redirects to the web app)
 numpy
 scipy
 matplotlib
-streamlit
-plotly
 shtns
 -e .

@@ -43,6 +43,7 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
 html_theme = 'furo'
 html_static_path = ['_static']
+html_css_files = ['custom.css']
 
 pygments_style = 'sphinx'
 pygments_dark_style = "monokai"

@@ -38,9 +38,8 @@ map = ["cartopy"]
 potextra = ["shtns"]
 vtk = ["pyevtk"]
 3d = ["pyvista"]
-webapp = ["streamlit", "plotly", "pandas"]
 test = ["pytest"]
-all = ["cartopy", "shtns", "pyevtk", "pyvista", "streamlit", "plotly", "pandas"]
+all = ["cartopy", "shtns", "pyevtk", "pyvista"]
 
 [project.scripts]
 magfield = "planetmagfields.cli:main"

@@ -6,7 +6,32 @@
 Welcome to planetMagFields' documentation!
 ===========================================
 
-`planetMagFields` is a package that provides an easy interface to plot and analyze planetary magnetic field data. `planetMagFields` is free and open source and is available at https://github.com/AnkitBarik/planetMagFields . The interactive 3D web application for `planetMagFields` is available at https://ankitbarik.github.io/planetMagFields/app/ . Head there to start visualizing magnetic fields of planets. A Streamlit version, which also computes fields along orbit trajectories, is available at https://planetmagfields.streamlit.app/ .
+`planetMagFields` is a package that provides an easy interface to plot and analyze planetary magnetic field data. `planetMagFields` is free and open source and is available at https://github.com/AnkitBarik/planetMagFields .
+
+.. raw:: html
+
+   <div class="pmf-showcase">
+     <a class="pmf-shot" href="https://ankitbarik.github.io/planetMagFields/app/" title="Open the 3D explorer">
+       <img src="_static/images/webapp_explorer.jpg" width="2400" height="1350"
+            alt="The planetMagFields 3D explorer showing Earth's magnetic field in 2025: the radial field on the surface with coastlines, 100 field lines, and the Lowes spectrum.">
+     </a>
+     <div class="pmf-cta">
+       <a class="pmf-button" href="https://ankitbarik.github.io/planetMagFields/app/">Launch the 3D explorer</a>
+       <span class="pmf-cta-note">Runs in your browser. Nothing to install.</span>
+     </div>
+   </div>
+
+Explore planetary magnetic fields in 3D
+---------------------------------------
+
+The interactive `3D explorer <https://ankitbarik.github.io/planetMagFields/app/>`_ computes everything in your browser from the same Gauss coefficients as the package:
+
+* **Every planet and model:** Mercury, Earth, Jupiter, Saturn, Uranus, Neptune and Ganymede, with all :ref:`supported field models <secmodels>`.
+* **Field lines** traced live from the surface out to 10 planetary radii, with the surface field at any radius from 0.5 to 5.
+* **Earth through time:** animate the IGRF field from 1900 to 2030.
+* **Live filtering** by spherical harmonic degree and order, alongside the Lowes spectrum.
+* **Spacecraft trajectories:** load a CSV of positions to see the path on the globe and plot :math:`B_r`, :math:`B_\theta`, :math:`B_\phi` and :math:`|B|` along it, then download the values. Your data stays on your computer. Built-in examples compare the models with real magnetometer data from Voyager 2 at Uranus, Juno at Jupiter and Cassini's Grand Finale at Saturn.
+* **Shareable views:** the page address records the planet, model, radius and settings.
 
 Documentation
 -------------

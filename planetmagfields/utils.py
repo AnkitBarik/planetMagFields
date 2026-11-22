@@ -35,7 +35,7 @@ def get_unit(units):
 
 
 def unit_text(units):
-    """Plain text unit label, e.g. for plotly figures."""
+    """Plain text unit label, e.g. for non-LaTeX plot labels."""
     get_unit(units)
     return UNIT_TEXT[units.lower()]
 

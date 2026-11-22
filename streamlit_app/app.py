@@ -1,14 +1,18 @@
 # app.py
+"""
+The planetMagFields web app has moved to GitHub Pages. This Streamlit app only
+points visitors there, for old links and bookmarks.
+"""
 import streamlit as st
 
-st.set_page_config(
-    page_title="planetMagFields App",
-    page_icon="🚀",
-    layout="wide"
-)
+NEW_URL = "https://ankitbarik.github.io/planetMagFields/app/"
 
-pg = st.navigation([
-    st.Page("pages/3d_explorer.py", title="3D Explorer", icon="🌍"),
-    st.Page("pages/orbit_trajectory.py", title="Orbit Trajectory", icon="🛰️"),
-])
-pg.run()
+st.set_page_config(page_title="planetMagFields has moved", page_icon="🪐", layout="centered")
+
+st.title("planetMagFields has moved")
+st.markdown(
+    f"The interactive 3D explorer now runs directly in your browser at "
+    f"**[{NEW_URL}]({NEW_URL})**. It is faster, never sleeps, and includes "
+    f"everything this app did, including magnetic fields along spacecraft trajectories."
+)
+st.link_button("Open the new app", NEW_URL, type="primary")

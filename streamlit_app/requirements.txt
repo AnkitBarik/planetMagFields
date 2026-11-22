@@ -1,0 +1,2 @@
+# The Streamlit app only redirects to the GitHub Pages web app.
+streamlit

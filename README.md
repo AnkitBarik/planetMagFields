@@ -3,7 +3,6 @@
 Interactive visualization and analysis of planetary magnetic fields of the Solar System. Try out the [interactive 3D web app](https://ankitbarik.github.io/planetMagFields/app/).
 
 [![Web App](https://img.shields.io/badge/web%20app-3D%20explorer-58a6ff)](https://ankitbarik.github.io/planetMagFields/app/)
-[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://planetmagfields.streamlit.app)
 ![Build workflow](https://github.com/AnkitBarik/planetMagFields/actions/workflows/main.yml/badge.svg)
 ![Docs](https://github.com/AnkitBarik/planetMagFields/actions/workflows/documentation.yml/badge.svg)
 [![DOI](https://joss.theoj.org/papers/10.21105/joss.06677/status.svg)](https://doi.org/10.21105/joss.06677)
