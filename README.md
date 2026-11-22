@@ -6,7 +6,6 @@ Interactive visualization and analysis of planetary magnetic fields of the Solar
 ![Build workflow](https://github.com/AnkitBarik/planetMagFields/actions/workflows/main.yml/badge.svg)
 ![Docs](https://github.com/AnkitBarik/planetMagFields/actions/workflows/documentation.yml/badge.svg)
 [![DOI](https://joss.theoj.org/papers/10.21105/joss.06677/status.svg)](https://doi.org/10.21105/joss.06677)
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/AnkitBarik/planetMagFields/HEAD?labpath=%2FExploreFieldsInteractively.ipynb)
 [![PyPI version](https://badge.fury.io/py/planetMagFields.svg?)](https://badge.fury.io/py/planetMagFields)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![DOI](https://zenodo.org/badge/323851583.svg)](https://doi.org/10.5281/zenodo.4690524)
@@ -18,8 +17,6 @@ Software to easily access and analyze information about magnetic fields of plane
 [Installation](#installation)
 
 [Features and examples](#features-and-examples)
-
-[Jupyter notebook](#jupyter-notebook)
 
 [Documentation](#documentation)
 
@@ -132,22 +129,6 @@ library.
 
 <p align="center" width="100%">
 <img src="https://raw.githubusercontent.com/AnkitBarik/planetMagFields/main/doc/_static/images/3d/jupiter3d.png" width=500>
-</p>
-
-# Jupyter notebook
-
-For quick and easy visualization we include a [Jupyter](https://jupyter.org/) notebook with a binder link (see badge at the top).
-This makes use of [Jupyter widgets](https://ipywidgets.readthedocs.io/) to provide dropdown lists of planets and available magnetic
-field models for each as well as a slider for radial level, as shown below
-
-<p align="center" width="100%">
-<img src="https://raw.githubusercontent.com/AnkitBarik/planetMagFields/main/doc/_static/images/jupyter_screenshot2.png" width="500">
-</p>
-
-This plots the radial magnetic field at the chosen radial level and the corresponding magnetic field spectrum,
-
-<p align="center" width="100%">
-<img src="https://raw.githubusercontent.com/AnkitBarik/planetMagFields/main/doc/_static/images/jupyter_screenshot3.png" width="500">
 </p>
 
 # Documentation

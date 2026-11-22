@@ -49,7 +49,6 @@ The prerequisites, installation and features are described in the pages below. T
    models
    coordinates
    projections
-   jupyter
    api
 
 
