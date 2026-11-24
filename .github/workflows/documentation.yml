@@ -27,7 +27,7 @@ jobs:
       - name: Build three.js web app
         run: |
           python3 webapp/build_data.py --out _build/app/data
-          cp -r webapp/index.html webapp/style.css webapp/js _build/app/
+          cp -r webapp/index.html webapp/style.css webapp/js webapp/og-image.jpg _build/app/
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}

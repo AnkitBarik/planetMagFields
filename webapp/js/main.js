@@ -1102,8 +1102,149 @@ document.querySelector('[data-reset="r"]').addEventListener('click', () => {
   schedule(updateSurface, updateLines, updateSpectrum);
 });
 $('reset-view').addEventListener('click', fitView);
+
+// Save the view as a PNG: the scene re-rendered at `scale` output pixels per
+// CSS pixel, with the colorbar and a caption drawn on top. `font` scales the
+// overlay text relative to its on-screen size; the colorbar is laid out from
+// that size (not copied from the page) so larger text fits. Both are picked in
+// a popover on the PNG button and remembered per browser; PNG_EXPORT holds the
+// defaults for people who have not picked yet.
+const PNG_EXPORT = { scale: 3, font: 1.5 };
+const PNG_KEY = 'planetMagFields.pngScale', PNG_FONT_KEY = 'planetMagFields.pngFont';
+const pngScale = $('png-scale'), pngFont = $('png-font'), pngMenu = $('png-menu'), pngBtn = $('save-png');
+const stored = (key) => { try { return localStorage.getItem(key); } catch { return null; } };
+const store = (key, v) => { try { localStorage.setItem(key, v); } catch { /* storage disabled */ } };
+pngScale.value = stored(PNG_KEY) ?? PNG_EXPORT.scale;
+pngFont.value = stored(PNG_FONT_KEY) ?? PNG_EXPORT.font;
+const showPngFont = () => { $('png-font-out').textContent = `${+pngFont.value}×`; };
+showPngFont();
+const maxPngScale = () => renderer.capabilities.maxTextureSize / Math.max(canvas.clientWidth, canvas.clientHeight);
+function showPngSize() {
+  const s = Math.min(+pngScale.value, maxPngScale());
+  $('png-scale-out').textContent = `${+pngScale.value}×`;
+  $('png-size').textContent = `${Math.round(canvas.clientWidth * s)} × ${Math.round(canvas.clientHeight * s)} px`
+    + (s < +pngScale.value ? ' (GPU limit)' : '');
+}
+const togglePng = (open) => {
+  pngMenu.hidden = !open;
+  pngBtn.setAttribute('aria-expanded', open);
+  if (open) showPngSize();
+};
+pngBtn.addEventListener('click', (e) => { e.stopPropagation(); togglePng(pngMenu.hidden); });
+document.addEventListener('click', (e) => { if (!pngMenu.contains(e.target)) togglePng(false); });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') togglePng(false); });
+pngScale.addEventListener('input', () => {
+  showPngSize();
+  store(PNG_KEY, pngScale.value);
+});
+pngFont.addEventListener('input', () => {
+  showPngFont();
+  store(PNG_FONT_KEY, pngFont.value);
+});
+$('png-go').addEventListener('click', () => {
+  togglePng(false);
+  savePNG(+pngScale.value, +pngFont.value);
+});
+
+function savePNG(scale, font) {
+  const w = canvas.clientWidth, h = canvas.clientHeight;
+  const s = Math.min(scale, maxPngScale());
+  const screenRatio = renderer.getPixelRatio();
+  renderer.setPixelRatio(s); // resizes only the drawing buffer; CSS size and line widths stay as on screen
+  renderer.render(scene, camera);
+  const out = document.createElement('canvas');
+  out.width = canvas.width;
+  out.height = canvas.height;
+  const ctx = out.getContext('2d');
+  ctx.drawImage(canvas, 0, 0);
+  renderer.setPixelRatio(screenRatio);
+  requestRender();
+  ctx.scale(s, s); // draw the overlay in CSS pixels from here on
+
+  const f = font;
+  const css = getComputedStyle(viewport);
+  const family = css.fontFamily;
+  const text = css.color;
+  const muted = getComputedStyle(document.body).getPropertyValue('--muted').trim() || '#999';
+  const base = viewport.getBoundingClientRect();
+  const gr = $('cb-grad').getBoundingClientRect();
+  const g = { x: gr.left - base.left, y: gr.top - base.top, w: gr.width * f, h: gr.height };
+
+  // Measure, then shift the colorbar left if the larger text would leave the image.
+  const title = $('cb-title').textContent;
+  const ticks = [...$('cb-ticks').children].map((t) => t.textContent); // bottom to top
+  ctx.font = `${12 * f}px ${family}`;
+  const tickW = Math.max(...ticks.map((t) => ctx.measureText(t).width));
+  ctx.font = `${14 * f}px ${family}`;
+  const titleW = ctx.measureText(title).width;
+  const gap = 6 * f, margin = 12;
+  const right = Math.max(g.x + g.w + gap + tickW, g.x + titleW);
+  if (right > w - margin) g.x -= right - (w - margin);
+
+  ctx.fillStyle = text;
+  ctx.textBaseline = 'bottom';
+  ctx.fillText(title, g.x, g.y - 8 * f);
+
+  const grad = ctx.createLinearGradient(0, g.y + g.h, 0, g.y);
+  const stops = getComputedStyle($('cb-grad')).backgroundImage.match(/rgba?\([^)]*\)/g) || [];
+  stops.forEach((c, i) => grad.addColorStop(i / Math.max(1, stops.length - 1), c));
+  ctx.fillStyle = grad;
+  ctx.fillRect(g.x, g.y, g.w, g.h);
+  ctx.strokeStyle = '#555';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(g.x, g.y, g.w, g.h);
+
+  ctx.fillStyle = text;
+  ctx.font = `${12 * f}px ${family}`;
+  ctx.textBaseline = 'middle';
+  ticks.forEach((t, k) => {
+    ctx.fillText(t, g.x + g.w + gap, g.y + g.h * (1 - k / Math.max(1, ticks.length - 1)));
+  });
+
+  const parts = [cap(val.planet), $('m-model').textContent];
+  if (val.year !== null) parts.push(val.year.toFixed(1));
+  parts.push(`r/Rp = ${(+ui.r.value).toFixed(2)}`);
+  ctx.font = `${13 * f}px ${family}`;
+  ctx.fillStyle = muted;
+  ctx.textBaseline = 'bottom';
+  ctx.fillText(`${parts.join(' · ')} — planetMagFields`, 16, h - 12);
+
+  const name = ['planetMagFields', val.planet, val.model, val.year !== null ? val.year.toFixed(1) : '']
+    .filter(Boolean).join('_').replace(/[^\w.-]+/g, '');
+  out.toBlob((blob) => {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `${name}.png`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  }, 'image/png');
+}
 $('open-side').addEventListener('click', () => document.body.classList.add('side-open'));
 $('close-side').addEventListener('click', () => document.body.classList.remove('side-open'));
+
+// Share: the bare app URL, or the current URL (which encodes the view).
+// Built from location so it is also right on a local server or file://.
+const appURL = location.href.split(/[?#]/)[0];
+const shareBtn = $('share'), shareMenu = $('share-menu');
+const toggleShare = (open) => {
+  shareMenu.hidden = !open;
+  shareBtn.setAttribute('aria-expanded', open);
+};
+shareBtn.addEventListener('click', (e) => { e.stopPropagation(); toggleShare(shareMenu.hidden); });
+document.addEventListener('click', (e) => { if (!shareMenu.contains(e.target)) toggleShare(false); });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') toggleShare(false); });
+shareMenu.addEventListener('click', async (e) => {
+  const kind = e.target.dataset.share;
+  if (!kind) return;
+  if (kind === 'view') syncURL(); // make sure the URL reflects the latest state
+  const url = kind === 'app' ? appURL : location.href;
+  toggleShare(false);
+  let ok = false;
+  try { await navigator.clipboard.writeText(url); ok = true; } catch { /* insecure context etc. */ }
+  if (!ok) { window.prompt('Copy this link:', url); return; }
+  shareBtn.textContent = 'Copied ✓';
+  setTimeout(() => { shareBtn.textContent = 'Share'; }, 1500);
+});
 
 // ---------------------------------------------------------------------------
 // View, hover readout and rendering
