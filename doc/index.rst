@@ -16,7 +16,7 @@ Welcome to planetMagFields' documentation!
             alt="The planetMagFields 3D explorer showing Earth's magnetic field in 2025: the radial field on the surface with coastlines, 100 field lines, and the Lowes spectrum.">
      </a>
      <div class="pmf-cta">
-       <a class="pmf-button" href="https://ankitbarik.github.io/planetMagFields/app/">Launch the 3D explorer</a>
+       <a class="pmf-button" href="https://ankitbarik.github.io/planetMagFields/app/" target="_blank">Launch the 3D explorer</a>
        <span class="pmf-cta-note">Runs in your browser. Nothing to install.</span>
      </div>
    </div>
