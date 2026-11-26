@@ -1,0 +1,49 @@
+/* Showcase of the 3D web app on the documentation homepage. */
+.pmf-showcase {
+  margin: 1.5rem 0 1rem;
+}
+.pmf-shot {
+  display: block;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--color-background-border);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.18);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.pmf-shot:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.26);
+}
+.pmf-shot img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.pmf-cta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  margin-top: 1rem;
+}
+/* Green from the web app (a brighter shade of the MPG green); dark text on
+   it has 6.7:1 contrast in both light and dark themes. */
+.pmf-button,
+.pmf-button:visited {
+  display: inline-block;
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  background: #1daf93;
+  color: #141414;
+  font-weight: 600;
+  text-decoration: none;
+}
+.pmf-button:hover {
+  background: #21c5a6;
+  color: #141414;
+  text-decoration: none;
+}
+.pmf-cta-note {
+  color: var(--color-foreground-secondary);
+  font-size: 0.95em;
+}
