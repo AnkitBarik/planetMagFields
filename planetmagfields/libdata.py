@@ -3,10 +3,12 @@
 
 import os
 import warnings
+import sys
 import numpy as np
 from .libgauss import gen_idx
 from .models import model_format, model_info
 from .utils import get_models
+from .termcolors import red
 
 
 def _insert_hm0(h, m):
@@ -104,9 +106,11 @@ def get_data(datDir,planetname="earth",model=None,year=2020):
     model = model.lower()
     datfile = os.path.join(datDir, planetname + '_' + model + '.dat')
     if not os.path.exists(datfile):
+        available = ", ".join(str(m) for m in get_models(planetname, datDir))
         raise FileNotFoundError(
-            "Could not find %s. Models available for %s: %s"
-            % (datfile, planetname, [str(m) for m in get_models(planetname, datDir)]))
+            "Could not find %s.\n%s"
+            % (datfile, red("\nModels available for %s: %s\n" % (planetname, available),
+                            sys.stderr)))
 
     fmt = model_format(planetname, model)
     if fmt == 'jrm':
@@ -118,7 +122,7 @@ def get_data(datDir,planetname="earth",model=None,year=2020):
     else:
         g, h, lmax = _read_generic(datfile)
 
-    lmax = int(model_info(model).get('lmax', lmax))
+    lmax = int(model_info(model, planetname).get('lmax', lmax))
 
     # Insert (0,0) -> 0 for less confusion
     glm = np.insert(g,0,0.)

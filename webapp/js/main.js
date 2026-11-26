@@ -101,6 +101,29 @@ const coastMat = new THREE.LineBasicMaterial({ color: 0xffffff });
   coastGroup.add(new THREE.LineSegments(geo, coastMat));
 }
 
+// Latitude/longitude grid every 30 deg on the unit sphere (scaled with r).
+// The equator and prime meridian are drawn a little stronger.
+const gridGroup = new THREE.Group();
+scene.add(gridGroup);
+{
+  const STEP = 30, N = 180; // grid spacing (deg), points per circle
+  const xyz = (th, ph) => [Math.sin(th) * Math.cos(ph), Math.sin(th) * Math.sin(ph), Math.cos(th)];
+  const minor = [], major = [];
+  for (let lat = -90 + STEP; lat < 90; lat += STEP) {
+    const th = THREE.MathUtils.degToRad(90 - lat), out = lat === 0 ? major : minor;
+    for (let k = 0; k < N; k++) out.push(...xyz(th, (k / N) * 2 * Math.PI), ...xyz(th, ((k + 1) / N) * 2 * Math.PI));
+  }
+  for (let lon = 0; lon < 360; lon += STEP) {
+    const ph = THREE.MathUtils.degToRad(lon), out = lon === 0 ? major : minor;
+    for (let k = 0; k < N / 2; k++) out.push(...xyz((k / (N / 2)) * Math.PI, ph), ...xyz(((k + 1) / (N / 2)) * Math.PI, ph));
+  }
+  for (const [pts, opacity] of [[minor, 0.45], [major, 0.8]]) {
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
+    gridGroup.add(new THREE.LineSegments(geo, new THREE.LineBasicMaterial({ color: 0x1a1a1a, transparent: true, opacity })));
+  }
+}
+
 const linesGroup = new THREE.Group();
 scene.add(linesGroup);
 const lineMat = new LineMaterial({ color: 0xffffff, linewidth: 3, vertexColors: true });
@@ -134,7 +157,7 @@ function buildAxes(limit) {
 // ---------------------------------------------------------------------------
 const ui = {};
 for (const id of ['planet', 'model', 'year', 'r', 'units', 'resolution', 'show-spectrum', 'show-axes',
-  'show-coast', 'coast-color', 'cmap', 'invert', 'sym', 'sat', 'vmin', 'vmax', 'show-lines', 'nlines',
+  'show-grid', 'show-coast', 'coast-color', 'cmap', 'invert', 'sym', 'sat', 'vmin', 'vmax', 'show-lines', 'nlines',
   'seeding', 'rmax', 'line-color', 'lw', 'lmin', 'lmaxf', 'mmin', 'mmaxf', 'play', 'speed', 'traj-angles']) ui[id] = $(id);
 
 const val = {
@@ -167,6 +190,7 @@ if (params.has('units') && UNITS[params.get('units')]) ui.units.value = params.g
 if (params.has('cmap') && COLORMAPS[params.get('cmap')]) ui.cmap.value = params.get('cmap');
 if (params.has('seeding')) ui.seeding.value = params.get('seeding');
 if (params.has('sat')) ui.sat.value = params.get('sat');
+if (params.get('grid') === '0') ui['show-grid'].checked = false;
 
 // Colormap picker: shows a preview of every colormap (following "Invert") and
 // drives the hidden <select id="cmap">, so the rest of the app reads ui.cmap.
@@ -306,6 +330,7 @@ function syncURL() {
   if (ui.cmap.value !== 'RdBu') q.set('cmap', ui.cmap.value);
   if (traj && (traj.source === 'synthetic' || EXAMPLES.some((e) => e.id === traj.source))) q.set('traj', traj.source);
   if (ui.sym.checked && +ui.sat.value > 0) q.set('sat', ui.sat.value);
+  if (!ui['show-grid'].checked) q.set('grid', '0');
   if (ui['show-lines'].checked) {
     q.set('nlines', ui.nlines.value);
     q.set('rmax', ui.rmax.value);
@@ -356,6 +381,7 @@ function updateSurface() {
   const r = val.r;
   surface.scale.setScalar(r);
   coastGroup.scale.setScalar(r * 1.002);
+  gridGroup.scale.setScalar(r * 1.001);
   recolor();
 }
 
@@ -971,6 +997,7 @@ function updateMeta() {
   $('traj-block').hidden = !traj;
   $('side-panel').hidden = !ui['show-spectrum'].checked && !traj;
   axesGroup.visible = ui['show-axes'].checked;
+  gridGroup.visible = ui['show-grid'].checked;
 
   const ref = $('model-ref');
   ref.hidden = !m.url;
@@ -1085,7 +1112,7 @@ ui.play.addEventListener('click', () => {
   setStatus(null);
   requestAnimationFrame(animate);
 });
-ui.r.addEventListener('input', () => schedule(updateSurface, updateLines, updateSpectrum));
+ui.r.addEventListener('input', () => { schedule(updateSurface, updateLines, updateSpectrum); buildAxes(axesLength()); });
 ui.resolution.addEventListener('change', () => schedule(updateSurface));
 ui.units.addEventListener('change', () => schedule(recolor, updateTrajectory));
 for (const id of ['cmap', 'invert', 'sym', 'sat', 'vmin', 'vmax']) ui[id].addEventListener('input', () => schedule(recolor));
@@ -1093,9 +1120,9 @@ ui['show-spectrum'].addEventListener('change', () => {
   schedule(updateSpectrum);
   requestAnimationFrame(() => { resize(); fitView(); });
 });
-for (const id of ['show-axes', 'show-coast', 'coast-color']) ui[id].addEventListener('input', () => { schedule(); requestRender(); });
+for (const id of ['show-axes', 'show-grid', 'show-coast', 'coast-color']) ui[id].addEventListener('input', () => { schedule(); requestRender(); });
 for (const id of ['show-lines', 'nlines', 'seeding']) ui[id].addEventListener('input', () => schedule(updateLines));
-ui.rmax.addEventListener('input', () => { schedule(updateLines); buildAxes(axisLimit()); });
+ui.rmax.addEventListener('input', () => schedule(updateLines));
 for (const id of ['line-color', 'lw']) ui[id].addEventListener('input', () => schedule(buildLines));
 document.querySelector('[data-reset="r"]').addEventListener('click', () => {
   ui.r.value = 1;
@@ -1249,6 +1276,8 @@ shareMenu.addEventListener('click', async (e) => {
 // ---------------------------------------------------------------------------
 // View, hover readout and rendering
 // ---------------------------------------------------------------------------
+// Axes reach a little past the planet (not the field lines) so they stay in view.
+const axesLength = () => 1.5 * Math.max(val.r, 1);
 const axisLimit = () => Math.max(ui['show-lines'].checked ? val.rmax : 1, val.r) + 0.5;
 const trajExtent = () => (traj ? Math.min(traj.rmaxPath, 24) : 0);
 
@@ -1329,7 +1358,7 @@ function requestRender() {
 
 // Initial draw.
 ui['show-spectrum'].checked = params.get('spectrum') === '1';
-buildAxes(axisLimit());
+buildAxes(axesLength());
 resize();
 schedule(...ALL);
 if (params.has('traj')) loadExample(params.get('traj') === 'example' ? 'synthetic' : params.get('traj'));

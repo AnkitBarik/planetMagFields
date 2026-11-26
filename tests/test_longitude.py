@@ -147,3 +147,27 @@ class TestFastGetB:
         ref = getB_reference(p.lmax, p.mmax, p.glm.astype(float), p.hlm.astype(float),
                              p.idx, 1.0, p.p2D, p.th2D)
         np.testing.assert_allclose(br_int, ref, rtol=1e-10, atol=1e-10 * np.abs(ref).max())
+
+
+class TestMapCentre:
+    def test_default_central_lon(self):
+        from planetmagfields.plotlib import default_central_lon
+        assert default_central_lon('earth') == 0
+        assert default_central_lon('Earth') == 0
+        for name in ('mercury', 'jupiter', 'saturn', 'uranus', 'neptune', 'ganymede'):
+            assert default_central_lon(name) == 180
+        assert default_central_lon('jupiter', 0) == 0
+        assert default_central_lon('earth', 90) == 90
+
+    @pytest.mark.parametrize("clon", [0, 180, 90, -60])
+    def test_lonlat_grid_centre(self, clon):
+        """Longitudes span [clon-180, clon+180] and data stay with their phi."""
+        from planetmagfields.plotlib import lonlat_grid
+        p = Planet('jupiter', model='jrm33', nphi=64, info=False)
+        lon2D, lat2D, B = lonlat_grid(p.p2D, p.th2D, p.Br, central_lon=clon)
+        lon = np.rad2deg(lon2D[:, 0])
+        np.testing.assert_allclose([lon[0], lon[-1]], [clon - 180, clon + 180])
+        assert np.all(np.diff(lon) > 0)
+        for i in range(1, len(lon) - 1):
+            j = np.argmin(np.abs((p.phi - np.deg2rad(lon[i]) + np.pi) % (2*np.pi) - np.pi))
+            np.testing.assert_allclose(B[i], p.Br[j])

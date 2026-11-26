@@ -8,6 +8,8 @@ maintainers = [
   { name="Ankit Barik", email="ankit.barik@gmail.com" },
   { name="Regupathi Angappan", email="rangapp1@jhu.edu" },
 ]
+license = "GPL-3.0-or-later"
+license-files = ["LICENSE"]
 description = "Routines to easily access information about magnetic fields of planets in our solar system and visualize them in both 2D and 3D"
 keywords = ['Spherical Harmonics','Planetary Science','Spectra','Magnetic Field','Visualization','3D visualization']
 readme = "README.md"
@@ -16,7 +18,6 @@ classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Environment :: Console",
     "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
     "Operating System :: OS Independent",
     "Intended Audience :: Science/Research",
     "Intended Audience :: Education",
@@ -49,16 +50,17 @@ Homepage = "https://ankitbarik.github.io/planetMagFields/"
 Issues = "https://github.com/AnkitBarik/planetMagFields/issues"
 
 [tool.setuptools]
-packages = ["planetmagfields"]
+packages = ["planetmagfields", "planetmagfields.data"]
 
 [tool.setuptools.package-data]
-planetmagfields = ["config.json", "data/*"]
+planetmagfields = ["config.json"]
+"planetmagfields.data" = ["*.dat", "models.json"]
 
 [tool.setuptools.dynamic]
 version = {attr = "planetmagfields.__version__"}
 
 [build-system]
-requires = ["setuptools >= 61.0"]
+requires = ["setuptools >= 77.0"]
 build-backend = "setuptools.build_meta"
 
 [tool.pytest.ini_options]

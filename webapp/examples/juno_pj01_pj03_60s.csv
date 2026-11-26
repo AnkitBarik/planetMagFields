@@ -1,9 +1,11 @@
 # Juno magnetometer (MAG/FGM) at Jupiter, perijoves 1 and 3, 60 s averages, within 10 R_J
 # Data: Connerney, J.E.P., NASA Planetary Data System, doi:10.17189/1519711
 #   (PDS PPI JNO-J-3-FGM-CAL-V1.0), converted from planetocentric Cartesian.
-#   pass 1 = PJ1: perijove 2016-08-27 12:50:38 UTC, r = 1.058 R_J, lat 4.0; fgm_jno_l3_2016240pc_pj01_r60s_v02.sts
-#   pass 2 = PJ3: perijove 2016-12-11 17:03:35 UTC, r = 1.057 R_J, lat 5.9; fgm_jno_l3_2016346pc_pj03_r60s_v02.sts
-# pass   : 1 or 2;  t: hours from that pass's perijove
+#   pass 1 = PJ1: perijove 2016-08-27 12:50:44 UTC, r = 1.058 R_J, lat 4.0; fgm_jno_l3_2016240pc_pj01_r60s_v02.sts
+#   pass 2 = PJ3: perijove 2016-12-11 17:03:41 UTC, r = 1.057 R_J, lat 5.9; fgm_jno_l3_2016346pc_pj03_r60s_v02.sts
+#   Perijove times from the dataset's CATALOG/MISSION.CAT.
+# pass   : 1 or 2;  t: hours from the 60 s sample closest to perijove (12:50:38.998 and
+#          17:03:35.993 UTC, i.e. 5-6 s before the catalog perijove times)
 # r      : distance from Jupiter's centre in Jupiter radii (71,492 km)
 # theta  : co-latitude (deg); phi: east longitude (deg), System III (1965)
 # Br, Btheta, Bphi : measured field (nT), spherical components (outward, southward, eastward)

@@ -7,4 +7,4 @@ from .libgauss import getB, get_grid
 from .models import planetlist, default_model, model_info
 from .utils import get_models
 
-__version__ = '1.9'
+__version__ = '1.9.1'

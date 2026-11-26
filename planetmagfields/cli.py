@@ -37,6 +37,7 @@ _CONFIG_TYPES = {
     "cmap": str,
     "levels": int,
     "proj": str,
+    "central_lon": float,
     "vmin": float,
     "vmax": float,
     "save_path": str,
@@ -211,13 +212,10 @@ def plot_single_planet(args):
     """Plot magnetic field for a single planet."""
     logger.info(f"Plotting magnetic field for {args.planet}...")
 
-    try:
-        planet = Planet(name=args.planet, r=args.r, model=args.model, units=args.unit)
-        planet.plot(r=args.r, levels=args.levels, cmap=args.cmap, proj=args.proj,
-                    vmin=args.vmin, vmax=args.vmax)
-    except Exception as e:
-        logger.error(f"Failed to plot {args.planet}: {e}")
-        raise
+    # Errors propagate to main(), which reports them once.
+    planet = Planet(name=args.planet, r=args.r, model=args.model, units=args.unit)
+    planet.plot(r=args.r, levels=args.levels, cmap=args.cmap, proj=args.proj,
+                vmin=args.vmin, vmax=args.vmax, central_lon=args.central_lon)
 
 
 def save_plot(output_path):
@@ -319,6 +317,15 @@ def create_parser():
         default='Mollweide',
         dest='proj',
         help='Map projection type (default: Mollweide)'
+    )
+    plot_group.add_argument(
+        '--central-lon',
+        type=float,
+        default=None,
+        dest='central_lon',
+        metavar='DEG',
+        help=('East longitude at the centre of the map '
+              '(default: 0 for Earth, 180 for other planets)')
     )
     plot_group.add_argument(
         '--vmin',

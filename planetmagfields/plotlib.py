@@ -4,6 +4,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
+from .termcolors import yellow
 
 
 def _import_cartopy():
@@ -11,8 +12,28 @@ def _import_cartopy():
         import cartopy.crs as ccrs
         return ccrs
     except ImportError:
-        print("cartopy library not available, using Hammer projection")
+        print(yellow("cartopy library not available, using Hammer projection"))
         return None
+
+
+def default_central_lon(planetname, central_lon=None):
+    """Map centre (east longitude, degrees): central_lon if given, else 0
+    for Earth, as in geomagnetism (e.g. the IGRF papers), and 180 for other
+    planets, as in planetary field papers (e.g. Connerney et al. 2022)."""
+    if central_lon is not None:
+        return central_lon
+    return 0 if planetname.lower() == 'earth' else 180
+
+
+def map_projection(ccrs, proj, central_lon=0):
+    """cartopy projection proj (a class name in cartopy.crs) centred on east
+    longitude central_lon (degrees). Projections without a
+    central_longitude parameter are returned with their own default."""
+    proj_cls = getattr(ccrs, proj)
+    try:
+        return proj_cls(central_longitude=central_lon)
+    except TypeError:
+        return proj_cls()
 
 
 def radius_label(r):
@@ -80,14 +101,15 @@ def get_color_limits(dat,vmin=None,vmax=None):
         vmax = bmax
     return vmin, vmax
 
-def lonlat_grid(p2D, th2D, B):
+def lonlat_grid(p2D, th2D, B, central_lon=0):
     """
     Convert a (phi, theta) grid to longitude/latitude arrays for map plotting.
 
-    phi is east longitude, so longitude is phi wrapped into [-pi, pi]. Columns
-    are reordered so longitude increases monotonically, and exact columns at
-    -pi and +pi (interpolated across the seam) are added so filled contours
-    cover the whole map without a gap.
+    phi is east longitude, so longitude is phi wrapped into
+    [c - pi, c + pi] around the map centre c = central_lon. Columns are
+    reordered so longitude increases monotonically, and exact columns at
+    c - pi and c + pi (interpolated across the seam) are added so filled
+    contours cover the whole map without a gap.
 
     Parameters
     ----------
@@ -97,6 +119,8 @@ def lonlat_grid(p2D, th2D, B):
         Co-latitude on the same grid
     B : ndarray(float, ndim=2)
         Data on the same grid
+    central_lon : float, optional
+        East longitude (degrees) at the centre of the map, by default 0
 
     Returns
     -------
@@ -108,15 +132,21 @@ def lonlat_grid(p2D, th2D, B):
     # Drop the duplicated periodic end point (phi = 2 pi) if present
     if np.isclose(phi[-1] - phi[0], 2*np.pi):
         phi, B = phi[:-1], B[:-1]
-    lon = (phi + np.pi) % (2*np.pi) - np.pi
+    c = np.deg2rad(central_lon)
+    lon = (phi - c + np.pi) % (2*np.pi) - np.pi     # relative to the centre
     order = np.argsort(lon, kind='stable')
     lon, B = lon[order], B[order]
-    # Linear interpolation across the seam to get the values at exactly +-pi
-    gap = lon[0] + 2*np.pi - lon[-1]
-    w = (np.pi - lon[-1]) / gap if gap > 0 else 0.
-    B_seam = (1 - w) * B[-1] + w * B[0]
-    lon = np.concatenate([[-np.pi], lon, [np.pi]])
-    B = np.concatenate([B_seam[None], B, B_seam[None]])
+    if np.isclose(lon[0], -np.pi, rtol=0, atol=1e-12):
+        # A grid column lies on the seam: repeat it at +pi
+        lon = np.concatenate([[-np.pi], lon[1:], [np.pi]]) + c
+        B = np.concatenate([B, B[:1]])
+    else:
+        # Linear interpolation across the seam to get the values at exactly +-pi
+        gap = lon[0] + 2*np.pi - lon[-1]
+        w = (np.pi - lon[-1]) / gap
+        B_seam = (1 - w) * B[-1] + w * B[0]
+        lon = np.concatenate([[-np.pi], lon, [np.pi]]) + c
+        B = np.concatenate([B_seam[None], B, B_seam[None]])
     lon2D, th2D = np.meshgrid(lon, th, indexing='ij')
     return lon2D, np.pi/2 - th2D, B
 
@@ -153,7 +183,8 @@ def hammer2cart(ttheta, pphi, colat=False):
     return xx, yy
 
 def plotSurf(p2D,th2D,B,levels=60,cmap='RdBu_r',
-             proj='Mollweide',vmin=None,vmax=None):
+             proj='Mollweide',vmin=None,vmax=None,central_lon=None,
+             planetname='earth'):
     """
     Plots magnetic field on a surface defined by 2D arrays
     of longitude and co-latitude.
@@ -180,6 +211,11 @@ def plotSurf(p2D,th2D,B,levels=60,cmap='RdBu_r',
         Minimum of colorscale, by default None
     vmax : float, optional
         Maximum of colorscale, by default None
+    central_lon : float, optional
+        East longitude (degrees) at the centre of the map, by default 0 for
+        Earth and 180 for other planets
+    planetname : str, optional
+        Name of the planet, used for the default central_lon, by default earth
 
     Returns
     -------
@@ -197,7 +233,8 @@ def plotSurf(p2D,th2D,B,levels=60,cmap='RdBu_r',
     cs = np.linspace(vmin,vmax,levels)
 
 
-    lon2D, lat2D, B = lonlat_grid(p2D, th2D, B)
+    central_lon = default_central_lon(planetname, central_lon)
+    lon2D, lat2D, B = lonlat_grid(p2D, th2D, B, central_lon)
 
     ccrs = _import_cartopy()
     if ccrs is None:
@@ -205,10 +242,10 @@ def plotSurf(p2D,th2D,B,levels=60,cmap='RdBu_r',
 
     if proj.lower() == 'hammer':
         ax = plt.axes()
-        xx,yy = hammer2cart(lat2D,lon2D)
+        xx,yy = hammer2cart(lat2D,lon2D-np.deg2rad(central_lon))
         cont = ax.contourf(xx,yy,B,cs,cmap=cmap,norm=divnorm,extend='both')
     else:
-        ax = plt.axes(projection=getattr(ccrs, proj)())
+        ax = plt.axes(projection=map_projection(ccrs, proj, central_lon))
 
         cont = ax.contourf(lon2D*180/np.pi,lat2D*180/np.pi,B,cs,  \
             transform=ccrs.PlateCarree(),cmap=cmap,norm=divnorm,extend='both')
@@ -222,7 +259,7 @@ def plotSurf(p2D,th2D,B,levels=60,cmap='RdBu_r',
     return ax, cbar, proj
 
 def plotB_subplot(ax,p2D,th2D,B,planetname="earth",levels=60,cmap='RdBu_r',
-                  proj='Mollweide',vmin=None,vmax=None):
+                  proj='Mollweide',vmin=None,vmax=None,central_lon=None):
     """
     Plots subplot of magnetic field on a surface defined by 2D arrays
     of longitude and co-latitude. The subplot is defined by the axes handle ax.
@@ -253,6 +290,11 @@ def plotB_subplot(ax,p2D,th2D,B,planetname="earth",levels=60,cmap='RdBu_r',
         Minimum of colorscale, by default None
     vmax : float, optional
         Maximum of colorscale, by default None
+    central_lon : float, optional
+        East longitude (degrees) at the centre of the map, by default 0 for
+        Earth and 180 for other planets. For cartopy projections, ax should be
+        created with the same centre, e.g. with
+        map_projection(ccrs, proj, default_central_lon(planetname, central_lon)).
 
     Returns
     -------
@@ -260,7 +302,8 @@ def plotB_subplot(ax,p2D,th2D,B,planetname="earth",levels=60,cmap='RdBu_r',
     """
     planetname = planetname.lower()
 
-    lon2D, lat2D, B = lonlat_grid(p2D, th2D, B)
+    central_lon = default_central_lon(planetname, central_lon)
+    lon2D, lat2D, B = lonlat_grid(p2D, th2D, B, central_lon)
 
     vmin,vmax = get_color_limits(B,vmin,vmax)
     divnorm = colors.TwoSlopeNorm(vmin=vmin, vcenter=0, vmax=vmax)
@@ -271,7 +314,7 @@ def plotB_subplot(ax,p2D,th2D,B,planetname="earth",levels=60,cmap='RdBu_r',
         proj = 'hammer'
 
     if proj.lower() == 'hammer':
-        xx,yy = hammer2cart(lat2D,lon2D)
+        xx,yy = hammer2cart(lat2D,lon2D-np.deg2rad(central_lon))
         cont = ax.contourf(xx,yy,B,cs,cmap=cmap,norm=divnorm,extend='both')
     else:
         if planetname == "earth":

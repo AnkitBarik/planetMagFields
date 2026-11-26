@@ -3,7 +3,7 @@ import numpy as np
 import pytest
 from planetmagfields import Planet, get_models
 from planetmagfields.libgauss import get_grid, getGauss
-from planetmagfields.models import PLANETS, MODELS, planetlist, default_model
+from planetmagfields.models import PLANETS, planetlist, default_model
 from planetmagfields.utils import stdDatDir, get_unit
 
 
@@ -15,7 +15,16 @@ def test_default_model_available(planet):
 def test_all_models_have_info():
     for planet in PLANETS:
         for model in get_models(planet):
-            assert model in MODELS, f"{planet}_{model}.dat has no MODELS entry"
+            assert model in PLANETS[planet]["models"], \
+                f"{planet}_{model}.dat has no entry under {planet} in data/models.json"
+
+
+def test_registry_models_have_data():
+    for planet in PLANETS:
+        assert default_model(planet) in PLANETS[planet]["models"]
+        for model in PLANETS[planet]["models"]:
+            assert model in get_models(planet), \
+                f"data/models.json lists {planet}/{model} but {planet}_{model}.dat is missing"
 
 
 def test_get_models_path_with_underscore(tmp_path):

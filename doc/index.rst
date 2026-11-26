@@ -81,7 +81,7 @@ Code contribution and reporting issues
 
  - Please make sure the tests pass before opening a pull request.
  - Please follow Python `PEP-8 <https://peps.python.org/pep-0008/>`_ guidelines when it comes to code style.
- - If you wish to add new data file, please name it following the convention `<planet>_<model>.dat`, where `planet` and `model` denote the names of the planet and the magnetic field model being used. See the `data` directory for examples.
+ - If you wish to add new data file, please name it following the convention `<planet>_<model>.dat`, where `planet` and `model` denote the names of the planet and the magnetic field model being used. See the `data` directory for examples. Then add an entry for the model under that planet's `"models"` in `planetmagfields/data/models.json` with its name and reference (`"name"`, `"url"`), plus `"format"` if the file layout differs from the planet's default.
  - If you implement a new feature or data source, please update the documentation accordingly.
 
 Please report any bugs or other issues through `GitHub Issues <https://github.com/AnkitBarik/planetMagFields/issues>`_.

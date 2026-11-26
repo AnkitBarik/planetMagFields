@@ -4,14 +4,15 @@
 import numpy as np
 from .libgauss import get_grid
 from .models import phase_factor
+from .termcolors import yellow
 from .utils import has_module, require
 
 
 def _use_shtns():
     if has_module('shtns'):
         return True
-    print("SHTns library not found, falling back to scipy!")
-    print("Consider installing SHTns from https://bitbucket.org/nschaeff/shtns")
+    print(yellow("SHTns library not found, falling back to scipy!"))
+    print(yellow("Consider installing SHTns from https://bitbucket.org/nschaeff/shtns"))
     return False
 
 

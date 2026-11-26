@@ -6,8 +6,10 @@ import matplotlib.pyplot as plt
 from .libdata import get_data
 from .libgauss import filt_Gauss, getB, get_grid, get_spec, get_dipole_tilt
 from .plotlib import (plotSurf, plotB_subplot, plot_spec, radius_label,
-                      filter_label, _import_cartopy)
+                      filter_label, _import_cartopy, map_projection,
+                      default_central_lon)
 from .models import check_planet, default_model, planetlist
+from .termcolors import bold, cyan
 from .utils import stdDatDir, get_unit
 
 
@@ -80,17 +82,18 @@ class Planet:
                     self.p2D, self.th2D, planetname=self.name) * self.unitfac
 
     def print_info(self):
-        print("Planet: %s" %self.name.capitalize())
-        print("Model: %s" %self.model)
-        print("l_max = %d" %self.lmax)
-        print("Dipole tilt (degrees) = %f" %self.dipTheta)
+        print("%s %s" % (bold("Planet:"), cyan(self.name.capitalize())))
+        print("%s %s" % (bold("Model:"), cyan(self.model)))
+        print("%s %s" % (bold("l_max ="), cyan("%d" % self.lmax)))
+        print("%s %s" % (bold("Dipole tilt (degrees) ="), cyan("%f" % self.dipTheta)))
         if self.name == 'earth':
-            print("Year = %d" %self.year)
+            print("%s %s" % (bold("Year ="), cyan("%d" % self.year)))
 
-    def _plot_map(self, Br, title, levels, cmap, proj, vmin, vmax):
+    def _plot_map(self, Br, title, levels, cmap, proj, vmin, vmax, clon):
         fig = plt.figure(figsize=(12,6.75))
         ax,cbar,proj = plotSurf(self.p2D,self.th2D,Br,levels=levels,cmap=cmap,
-                                proj=proj,vmin=vmin,vmax=vmax)
+                                proj=proj,vmin=vmin,vmax=vmax,central_lon=clon,
+                                planetname=self.name)
 
         cbar.ax.set_xlabel(r'Radial magnetic field (%s)' %self.unitlabel,fontsize=25)
         cbar.ax.tick_params(labelsize=20)
@@ -104,7 +107,7 @@ class Planet:
         return fig, ax, cbar
 
     def plot(self,r=None,levels=30,cmap='RdBu_r',
-             proj='Mollweide',vmin=None,vmax=None):
+             proj='Mollweide',vmin=None,vmax=None,central_lon=None):
         """
         Plots the radial magnetic field of a planet at a radial surface.
 
@@ -122,6 +125,9 @@ class Planet:
             Minimum of colorscale, by default None
         vmax : float, optional
             Maximum of colorscale, by default None
+        central_lon : float, optional
+            East longitude (degrees) at the centre of the map. By default 0
+            for Earth and 180 for the other planets
 
         Returns
         -------
@@ -142,7 +148,8 @@ class Planet:
         if self.name == 'earth':
             title = title + ', %d' %self.year
 
-        return self._plot_map(Br, title, levels, cmap, proj, vmin, vmax)
+        return self._plot_map(Br, title, levels, cmap, proj, vmin, vmax,
+                              central_lon)
 
 
     def extrapolate(self,rout):
@@ -253,7 +260,7 @@ class Planet:
 
     def plot_filt(self,r=1.0,larr=None,marr=None,lCutMin=0,lCutMax=None,mmin=0,mmax=None,
                   levels=30,cmap='RdBu_r',proj='Mollweide',
-                  vmin=None,vmax=None,iplot=True):
+                  vmin=None,vmax=None,iplot=True,central_lon=None):
         """
         Plots a filtered radial magnetic field at a radial level. Filters can be
         set using specific values of degree and order of spherical harmonics given
@@ -288,6 +295,9 @@ class Planet:
             Maximum of colorscale, by default None
         iplot: logical, optional
             Flag for producing a plot, by default True
+        central_lon : float, optional
+            East longitude (degrees) at the centre of the map. By default 0
+            for Earth and 180 for the other planets
 
         Returns
         -------
@@ -326,7 +336,8 @@ class Planet:
                      + filter_label(self.lmax, self.larr_filt, self.marr_filt,
                                     self.lCutMin, self.lCutMax,
                                     self.mmin_filt, self.mmax_filt))
-            return self._plot_map(self.Br_filt, title, levels, cmap, proj, vmin, vmax)
+            return self._plot_map(self.Br_filt, title, levels, cmap, proj, vmin, vmax,
+                                  central_lon)
 
 
     def spec(self,r=1.0,iplot=True):
@@ -410,7 +421,8 @@ def plotAllFields(datDir=stdDatDir,r=1.0,levels=30,cmap='RdBu_r',
         if ccrs is None:
             ax = plt.subplot(3,3,nplot)
         else:
-            ax = plt.subplot(3,3,nplot,projection=getattr(ccrs, proj)())
+            ax = plt.subplot(3,3,nplot,projection=map_projection(ccrs, proj,
+                                                                 default_central_lon(name)))
 
         plotB_subplot(ax,planet.p2D,
                       planet.th2D,

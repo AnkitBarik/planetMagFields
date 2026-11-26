@@ -30,7 +30,7 @@ import numpy as np
 
 from planetmagfields import get_models, planetlist, default_model
 from planetmagfields.libdata import get_data
-from planetmagfields.models import MODELS, model_format
+from planetmagfields.models import model_info, model_format
 from planetmagfields.utils import stdDatDir
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -105,7 +105,7 @@ def _round(a, nd=4):
 
 
 def export_model(planet, model):
-    info = MODELS.get(model, {})
+    info = model_info(model, planet)
     entry = {
         "id": model,
         "name": info.get("name", model),
